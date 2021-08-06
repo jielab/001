@@ -272,7 +272,7 @@ LDpred2 https://privefl.github.io/bigsnpr/articles/LDpred2.html
 ![Figure group-3](./images/grp3-basic.jpg)
 
 还有一篇2020年的综述，也值得一读：From GWAS to Function: Using Functional Genomics to Identify the Mechanisms Underlying Complex Diseases (https://pubmed.ncbi.nlm.nih.gov/32477401/)
-这篇文章里面写到：**In particular, fine-mapping aims to define causal variants, SNP enrichment methods prioritize disease relevant cell types and colocalization nominates likely target genes**
+这篇文章里面写到：**In particular, fine-mapping aims to define causal variants, SNP enrichment methods prioritize disease relevant cell types and colocalization nominates likely target genes.**
 ![Figure function](./images/grp3-function.jpg) 
 
 2020年哈佛大学公卫学院的梁黎明，以asthma为例，写了一篇文章进行了讲述。
