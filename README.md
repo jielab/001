@@ -271,14 +271,18 @@ LDpred2 https://privefl.github.io/bigsnpr/articles/LDpred2.html
 
 ![Figure group-3](./images/grp3-basic.jpg)
 
+还有一篇2020年的综述，也值得一读：From GWAS to Function: Using Functional Genomics to Identify the Mechanisms Underlying Complex Diseases (https://pubmed.ncbi.nlm.nih.gov/32477401/)
+
+![Figure function](./images/grp3-function.jpg) 
+
 2020年哈佛大学公卫学院的梁黎明，以asthma为例，写了一篇文章进行了讲述。
 Investigating asthma heterogeneity through shared and distinct genetics: Insights from genome-wide cross-trait analysis (https://pubmed.ncbi.nlm.nih.gov/32693092/)
 
 ![Figure group-3](./images/grp3-main.jpg)
 
-还有一篇2020年的综述，也值得一读：From GWAS to Function: Using Functional Genomics to Identify the Mechanisms Underlying Complex Diseases (https://pubmed.ncbi.nlm.nih.gov/32477401/)
+![page1](./images/page1.png)
 
-![Figure function](./images/grp3-function.jpg) 
+![page2](./images/page2.png)
 
 
 三件套，基本就是3行代码的事。其它的代码都是胶水（glue）和信号灯（when and who）。
