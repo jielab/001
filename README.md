@@ -263,6 +263,7 @@ done
 
 [TWAS](http://gusevlab.org/projects/fusion/) 
 ![TWAS](./images/twas.png) 
+![TWAS](./images/twas.fig1.png) 
 
 多基因风险评分PRS
 PRSice: https://github.com/choishingwan/PRSice
