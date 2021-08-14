@@ -279,7 +279,9 @@ done
 
 
 # #5. 多个GWAS 之间的分析（genetic correlation -> Mendelian Randomization -> TWAS 三件套）
+
 <br/>
+
 ### 关于“三件套”之间的逻辑关系，The putative causal effect of type 2 diabetes in risk of cataract: a Mendelian randomization study in East Asian 里的一张图，给了比较好的总结
 
 ![Figure group-3](./images/grp3-basic.jpg)
