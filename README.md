@@ -254,11 +254,11 @@ done
 ## #4.6 GWAS的数据的功能分析 
 
 
-生物学功能查询 VEP: http://grch37.ensembl.org/info/docs/tools/vep/index.html
+###生物学功能查询 VEP: http://grch37.ensembl.org/info/docs/tools/vep/index.html
 
-一站式解决方案 post-GWAS analysis pipeline github.com/Ensembl/postgap
+###一站式解决方案 [post-GWAS analysis pipeline](github.com/Ensembl/postgap)
 
-"驸马" [FUMA](https://fuma.ctglab.nl/) 网上解读系统
+###"驸马" [FUMA](https://fuma.ctglab.nl/) 网上解读系统
 
 ![FUMA](./images/fuma.png) 
 
@@ -269,27 +269,25 @@ done
 ![TWAS](./images/twas.fig1.png) 
 
 
-多基因风险评分PRS
+###多基因风险评分PRS
 
-PRSice: https://github.com/choishingwan/PRSice
+###PRSice: https://github.com/choishingwan/PRSice
 
-LDpred2 https://privefl.github.io/bigsnpr/articles/LDpred2.html
+###LDpred2 https://privefl.github.io/bigsnpr/articles/LDpred2.html
 
 <br/>
 
 
 # #5. 多个GWAS 之间的分析（genetic correlation -> Mendelian Randomization -> TWAS 三件套）
 <br/>
-关于“三件套”之间的逻辑关系，The putative causal effect of type 2 diabetes in risk of cataract: a Mendelian randomization study in East Asian 里的一张图，给了比较好的总结
+###关于“三件套”之间的逻辑关系，The putative causal effect of type 2 diabetes in risk of cataract: a Mendelian randomization study in East Asian 里的一张图，给了比较好的总结
 
 ![Figure group-3](./images/grp3-basic.jpg)
 
-还有一篇2020年的综述，也值得一读：From GWAS to Function: Using Functional Genomics to Identify the Mechanisms Underlying Complex Diseases (https://pubmed.ncbi.nlm.nih.gov/32477401/)
-这篇文章里面写到：**In particular, fine-mapping aims to define causal variants, SNP enrichment methods prioritize disease relevant cell types and colocalization nominates likely target genes.**
+###还有一篇2020年的综述，也值得一读：[From GWAS to Function: Using Functional Genomics to Identify the Mechanisms Underlying Complex Diseases](https://pubmed.ncbi.nlm.nih.gov/32477401/)。这篇文章里面写到：**In particular, fine-mapping aims to define causal variants, SNP enrichment methods prioritize disease relevant cell types and colocalization nominates likely target genes.**
 ![Figure function](./images/grp3-function.jpg) 
 
-2020年哈佛大学公卫学院的梁黎明，以asthma为例，写了一篇文章进行了讲述。
-Investigating asthma heterogeneity through shared and distinct genetics: Insights from genome-wide cross-trait analysis (https://pubmed.ncbi.nlm.nih.gov/32693092/)
+###2020年哈佛大学公卫学院的梁黎明，以asthma为例，写了一篇文章进行了讲述。[Investigating asthma heterogeneity through shared and distinct genetics: Insights from genome-wide cross-trait analysis](https://pubmed.ncbi.nlm.nih.gov/32693092/)
 
 ![Figure group-3](./images/grp3-main.jpg)
 
@@ -297,9 +295,7 @@ Investigating asthma heterogeneity through shared and distinct genetics: Insight
 
 ![page2](./images/page2.png)
 
-
-三件套，基本就是3行代码的事。其它的代码都是胶水（glue）和信号灯（when and who）。
-还有就是，前面做数据的格式化，后面做分析结果汇总和画图，那样的代码。
+###三件套，基本就是3行代码的事。其它的代码都是胶水（glue）和信号灯（when and who）。还有就是，前面做数据的格式化，后面做分析结果汇总和画图，那样的代码。
 
 ```
 #1 LDSC：ldsc.py --rg % --out $trait.rg --ref-ld-chr $ldsc_dir/eur_w_ld_chr/ --w-ld-chr $ldsc_dir/eur_w_ld_chr/
@@ -309,10 +305,7 @@ Investigating asthma heterogeneity through shared and distinct genetics: Insight
 #3 TWAS： Rscript $fusion/FUSION.assoc_test.R --sumstats $trait.sumstats.gz --chr $chr --out $trait.$tissue.chr$chr.txt --weights $dir_gt/$tissue.P01.pos --weights_dir $dir_gt --ref_ld_chr $dir_ld/1000G.EUR.
 ```
 
-大家在弄懂了一个 X 和一个 Y 之间的分析后，要学会让计算机去 “傻干”，去没完没了的循环往复。
-请参照 scripts 文件夹里面的 001.gc-mr-twas.sh 代码，我就用了 for tx in traits_x 然后里面再套 for y in traits_y，这样就能把几十个 X 和 几十个 Y 一下按照“流水线作业” 跑完。
-这种流水线的好处是：如果有错，就全部错了，就很容易发现。
-经过上述分析，得出一堆 x1, x2, x3 ... 跟一堆 y1, y2, y3 ... 两两之间的 BETA 和 P 值后，汇总到一个 TXT 文件里，就可以用下面几行R 代码:
+###大家在弄懂了一个 X 和一个 Y 之间的分析后，要学会让计算机去 “傻干”，去没完没了的循环往复。请参照 scripts 文件夹里面的 001.gc-mr-twas.sh 代码，我就用了 for tx in traits_x 然后里面再套 for y in traits_y，这样就能把几十个 X 和 几十个 Y 一下按照“流水线作业” 跑完。这种流水线的好处是：如果有错，就全部错了，就很容易发现。经过上述分析，得出一堆 x1, x2, x3 ... 跟一堆 y1, y2, y3 ... 两两之间的 BETA 和 P 值后，汇总到一个 TXT 文件里，就可以用下面几行R 代码:
 ```
 library(corrplot); library(reshape2)
 dat <- read.table('my-summary.gsmr', header=T, as.is=T)
@@ -320,31 +313,24 @@ beta <- acast(dat, Outcome ~ Exposure, value.var='bxy'); b1cor[is.na(b1cor)] =0
 pval <- acast(dat, Outcome ~ Exposure, value.var='p'); p1cor[is.na(p1cor)] =1
 corrplot(beta, is.corr=F, method='color', type='full', addCoef.col='black', number.cex=0.7, p.mat=pval, sig.level=1e-03, insig="pch", pch.col="green", pch.cex=2, tl.col="black", tl.srt=45, outline=T)
 ```
-画出下面这样的图
+
+###画出下面这样的图
 
 ![Figure corrplot](./images/corrplot.png)
 
 
 ## #5.1. genetic correlation 分析, LDSC (https://github.com/bulik/ldsc)
 
-其实，美国的 Broad Insitute ，已经用 LDSC 把几百个 traits 的 h2 和他们两两之间的基因相关性都计算出来，公布出来了 http://ldsc.broadinstitute.org 
-请
+###其实，美国的 Broad Insitute ，已经用 LDSC 把几百个 traits 的 h2 和他们两两之间的基因相关性都计算出来，公布出来了 http://ldsc.broadinstitute.org 
+
 <br/>
 
 ## #5.2. 因果分析 Mendelian Randomization
 
-MR的文章已经发表了无数篇，方法至少十几种。
-对于原始的GWAS数据，我们可以采用 GSMR进行流程化处理 https://cnsgenomics.com/software/gcta/#GSMR
-请认真阅读杨剑2018年的GSMR 文章 https://www.nature.com/articles/s41467-017-02317-2
-这不是一个R包，而是一个成熟的软件 GCTA中的一部分，因此运行起来会比较快。
-GSMR 需要用到参考基因组计算 LD 的软件，我们建议用 hapmap3 的数据作为 LD reference。
-如果用上述提取的千人基因组数据作为 LD 参考，由于数据是按照染色体分开的，就需要用 --mbfile （而不是 --bfile）。
-GCTA 对文件的格式有比较固定和严格的要求，SNP A1 A2 freq b se p N 必须按照这个顺序，请参考 GCTA 官网。
-
-如果有简单的数据，别人文章里面已经报道了的 exposure 和 outcome 的 BETA 和 SE，最简单的是使用 MendelianRandomization 的R包：https://wellcomeopenresearch.org/articles/5-252/v2
-还有一个特别针对 UKB 处理海量数据的 TwoSampleMR 的R包：https://mrcieu.github.io/TwoSampleMR/index.html
+###MR的文章已经发表了无数篇，方法至少十几种。对于原始的GWAS数据，我们可以采用 [GSMR](https://cnsgenomics.com/software/gcta/#GSMR) 进行流程化处理。请认真阅读杨剑2018年的[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 。这不是一个R包，而是一个成熟的软件 GCTA中的一部分，因此运行起来会比较快。GSMR 需要用到参考基因组计算 LD 的软件，我们建议用 hapmap3 的数据作为 LD reference。
+###如果用上述提取的千人基因组数据作为 LD 参考，由于数据是按照染色体分开的，就需要用 --mbfile （而不是 --bfile）。GCTA 对文件的格式有比较固定和严格的要求，SNP A1 A2 freq b se p N 必须按照这个顺序，请参考 GCTA 官网。如果有简单的数据，别人文章里面已经报道了的 exposure 和 outcome 的 BETA 和 SE，最简单的是使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)。还有一个特别针对 UKB 处理海量数据的 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)
 <br/>
-GSMR 分析得到的文件，可以通过下面的R代码，导入到MendelianRandomization 的R包，这样就不用自己去生产 X 和Y 的数据。
+###GSMR 分析得到的文件，可以通过下面的R代码，导入到MendelianRandomization 的R包，这样就不用自己去生产 X 和Y 的数据。
 
 ```
 source('gsmr_plot.r')
@@ -381,7 +367,5 @@ Mendelian Randomization 入门介绍
 2017. Statistical methods to detect pleiotropy in human complex traits (pubmed.ncbi.nlm.nih.gov/29093210/)
 2019. Meta-analysis and Mendelian randomization: A review (pubmed.ncbi.nlm.nih.gov/30861319/)
 ```
-
-学会使用公开的 GWAS 数据，借力、空手道、站在巨人的肩膀上！
 
 ![Figure portal](./images/portal.png)
