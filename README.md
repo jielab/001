@@ -341,7 +341,7 @@ mr_plot(mr_input(XGb, XGse, YGb, YGse))
 ```
 <br/>
 
-## #5.3. TWAS (http://gusevlab.org/projects/fusion/)
+## #5.3. 从单个GWAS的 [TWAS](http://gusevlab.org/projects/fusion/) 到 两个 GWAS 的 TWAS 的信号的 Overlap。
 <br/>
 
 
