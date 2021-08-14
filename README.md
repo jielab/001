@@ -251,17 +251,23 @@ done
 ```
 <br/>
 
-#4.6 单个GWAS的数据的深度分析 
+#4.6 GWAS的数据的功能分析 
 
-```
+
 生物学功能查询 VEP: http://grch37.ensembl.org/info/docs/tools/vep/index.html
 
 一站式解决方案 post-GWAS analysis pipeline github.com/Ensembl/postgap
 
+"驸马" [FUMA](https://fuma.ctglab.nl/) 网上解读系统
+![FUMA](./images/fuma.png) 
+
+[TWAS](http://gusevlab.org/projects/fusion/) 
+![TWAS](./images/twas.png) 
+
 多基因风险评分PRS
 PRSice: https://github.com/choishingwan/PRSice
 LDpred2 https://privefl.github.io/bigsnpr/articles/LDpred2.html
-```
+
 <br/>
 
 
