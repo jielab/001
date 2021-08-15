@@ -264,7 +264,9 @@ done
 
 [TWAS](http://gusevlab.org/projects/fusion/) 
 
-![TWAS](./images/twas.png) 
+![TWAS](./images/twas-paper.png) 
+
+![TWAS](./images/twas-github.png) 
 
 ![TWAS](./images/twas.fig1.png) 
 
