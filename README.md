@@ -243,7 +243,7 @@ bedtools intersect -a A.bed -b B.bed -wo
 <br/>
 <br/>
 
-![Function](./images/panda.gif) 
+![Function](./images/panda1.gif) 
 
 # #4. 多个GWAS 之间的分析（genetic correlation -> Mendelian Randomization -> TWAS 三件套）
 
