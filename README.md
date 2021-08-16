@@ -106,12 +106,14 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 
 > 对于疾病的binary 表型，只需要把需要 adjust 的covarites 和表型数据放在同一个表型数据文件里面，
 > 然后在 GWAS里面的命令指明哪个是表型，哪些是 covariates。
+
 <br/>
 
 
 # #3. GWAS 运行和 结果 “挖掘”
 
 ![GWAS](./images/GWAS.jpg)
+
 <br/>
 
 ## #3.1 专人在服务器上运行
@@ -154,6 +156,8 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 > ### 请参照 scripts 文件夹里面的 compareB.R 代码， 该代码可以快速画出下面这样的图。请注意，两个文件的第一行不能以 “#” 开头。compareB.R 相当于一个前台，让用户提供两个比较的文件的具体信息。然后，前台会把用户提交的信息交给后端的 compareB.f.R，不要去碰这个后端的代码。
 ![Figure beta](./images/beta.jpg)
 
+<br/>
+<br/>
 
 ## #3.4 注释 GWAS信号，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。本组专属的 pheweb 网站 http://www.jielab.org 
 
@@ -210,14 +214,8 @@ bedtools intersect -a A.bed -b B.bed -wo
 
 <br/>
 
-## #4.3 多基因风险评分PRS
 
-### 相关的方法学，请参考经典版的 [PLINK0.9](http://zzz.bwh.harvard.edu/plink/profile.shtml) 和新版的 [PLINK1.9](https://www.cog-genomics.org/plink/1.9/score) 
-### 本组开发的 [PAGEANT](https://github.com/jielab/pageant) 大力推荐！
-
-<br/>
-
-## #4.4 可供使用的 GWAS 文件功能（functional）分析软件 
+## #3.5 GWAS 文件功能（functional）分析 
 
 > ### 生物学功能查询 VEP: http://grch37.ensembl.org/info/docs/tools/vep/index.html
 
@@ -236,8 +234,15 @@ bedtools intersect -a A.bed -b B.bed -wo
 
 <br/>
 
+## #3.6 多基因风险评分PRS
 
-# #5. 多个GWAS 之间的分析（genetic correlation -> Mendelian Randomization -> TWAS 三件套）
+> ### 相关的方法学，请参考经典版的 [PLINK0.9](http://zzz.bwh.harvard.edu/plink/profile.shtml) 和新版的 [PLINK1.9](https://www.cog-genomics.org/plink/1.9/score) 
+> ### 本组开发的 [PAGEANT](https://github.com/jielab/pageant) 大力推荐！
+
+<br/>
+
+
+# #4. 多个GWAS 之间的分析（genetic correlation -> Mendelian Randomization -> TWAS 三件套）
 
 > ### 关于三件套之间的逻辑关系，The putative causal effect of type 2 diabetes in risk of cataract: a Mendelian randomization study in East Asian 里的一张图，给了比较好的总结。
 
@@ -278,9 +283,9 @@ corrplot(beta, is.corr=F, method='color', type='full', addCoef.col='black', numb
 > > ![Figure corrplot](./images/corrplot.png)
 
 
-> ## #5.1. genetic correlation 分析, 可以用 [LDSC](https://github.com/bulik/ldsc), 参考 [LDSC Hub](http://ldsc.broadinstitute.org)
+> ## #4.1. genetic correlation 分析, 可以用 [LDSC](https://github.com/bulik/ldsc), 参考 [LDSC Hub](http://ldsc.broadinstitute.org)
 
-> ## #5.2. 因果分析 Mendelian Randomization
+> ## #4.2. 因果分析 Mendelian Randomization
 > - ### MR的文章已经发表了无数篇，方法至少十几种。对于原始的GWAS数据，我们可以采用 [GSMR](https://cnsgenomics.com/software/gcta/#GSMR) 进行流程化处理。请认真阅读杨剑2018年的[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 。这不是一个R包，而是一个成熟的软件 GCTA中的一部分，因此运行起来会比较快。GSMR 需要用到参考基因组计算 LD 的软件，我们建议用 hapmap3 的数据作为 LD reference。
 > - ### 如果用上述提取的千人基因组数据作为 LD 参考，由于数据是按照染色体分开的，就需要用 --mbfile （而不是 --bfile）。GCTA 对文件的格式有比较固定和严格的要求，SNP A1 A2 freq b se p N 必须按照这个顺序，请参考 GCTA 官网。如果有简单的数据，别人文章里面已经报道了的 exposure 和 outcome 的 BETA 和 SE，最简单的是使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)。还有一个特别针对 UKB 处理海量数据的 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)
 > - ### GSMR 分析得到的文件，可以通过下面的R代码，导入到MendelianRandomization 的R包，这样就不用自己去生产 X 和Y 的数据。
@@ -292,7 +297,7 @@ XGb = eff$bzx; XGse = eff$bzx_se; YGb = eff$bzy; YGse = eff$bzy_se
 mr_plot(mr_input(XGb, XGse, YGb, YGse))
 ```
 
-> ## #5.3. 从单个GWAS的 [TWAS](http://gusevlab.org/projects/fusion/) 到 两个 GWAS 的 TWAS 的信号的 Overlap。
+> ## #4.3. 从单个GWAS的 [TWAS](http://gusevlab.org/projects/fusion/) 到 两个 GWAS 的 TWAS 的信号的 Overlap。
 
 
 # # 参考文献和网站
