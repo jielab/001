@@ -240,7 +240,9 @@ bedtools intersect -a A.bed -b B.bed -wo
 > ### 本组开发的 [PAGEANT](https://github.com/jielab/pageant) 大力推荐！
 
 <br/>
+<br/>
 
+![Function](./images/evolution.gif) 
 
 # #4. 多个GWAS 之间的分析（genetic correlation -> Mendelian Randomization -> TWAS 三件套）
 
