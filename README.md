@@ -159,7 +159,7 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 
 ![pheweb](./images/pheweb.png)
 
-![Figure pheweb-jp](./images/pheweb.jp.png)
+![Figure pheweb-jp](./images/pheweb-jp.png)
 
 > ### 密西根大学还开发了 [LocusZOOM](http://locuszoom.org), 具有类似的功能。
 
