@@ -62,7 +62,7 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 读完整个文档的话，你就什么都知道了。苹果电脑，参考 https://github.com/spiros/docker-ukbiobank-utils
 
 1. 先解压表型数据的大文件
-    - unkunpack ukb42156.enc 48?0?6475f14648f8a114?5279c06b64a78aa70454efb55b00cc1510e5?db372
+    - unkunpack ukb47947.enc 084cf93e4b?d?95?cdb7cf?c7??9c9458?159a64be4c?435cd43147105?7b2e8
 
 2. 写一个 VIP.fields.txt 文件，列出想提取的变量和对应的 data-field，比如 
     - 21022 age
