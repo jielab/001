@@ -56,7 +56,7 @@ for tx in $traits; do
 		echo -e "
 		source('/mnt/d/scripts/library/compareB.f.R')
 		pdf('$tx.$ty.compareB.pdf')
-		par(mfrow=c(2,2), mai=c(1,1,0.5,0.5))
+		par(mfrow=c(3,2), mai=c(0.5,1,0.5,0.5))
 		compareB(
 			f1='$tx.top.txt', f1_name='$tx', f1_snp='SNP', f1_ea='A1', f1_nea='A2', f1_eaf='freq', f1_beta='b', f1_se='se', f1_p='p',
 			f2='$ty.for.$tx.top.txt', f2_name='$ty', f2_snp='SNP', f2_ea='A1', f2_nea='A2', f2_eaf='freq', f2_beta='b', f2_se='se', f2_p='p'
@@ -72,10 +72,10 @@ for tx in $traits; do
 		dev.off()
 		" > $tx.$ty.mr.R
 		echo run gsmr on $tx vs. $ty
-		gcta64 --bfile /mnt/d/data/hm3/hm3.b37 --gsmr-file $tx.exposure $ty.outcome --gsmr2-beta --gsmr-direction 2 --diff-freq 1 --gwas-thresh 5e-8 --effect-plot --out $tx.$ty
-		Rscript $tx.$ty.gcta-plot.R
 		Rscript $tx.$ty.compareB.R
 		Rscript $tx.$ty.mr.R
+		gcta64 --bfile /mnt/d/data/hm3/hm3.b37 --gsmr-file $tx.exposure $ty.outcome --gsmr2-beta --gsmr-direction 2 --diff-freq 1 --gwas-thresh 5e-8 --effect-plot --out $tx.$ty
+		Rscript $tx.$ty.gcta-plot.R
 		awk -v t=$tx 'NR==1 || $1==t' $tx.$ty.gsmr > $tx.$ty.way1.gsmr
 		awk -v t=$tx 'NR==1 || $2==t' $tx.$ty.gsmr > $tx.$ty.way2.gsmr
 	done
