@@ -217,18 +217,8 @@ bedtools intersect -a A.bed -b B.bed -wo
 
 ## #3.5 GWAS 文件功能（functional）分析 
 
-> ### 生物学功能查询 VEP: http://grch37.ensembl.org/info/docs/tools/vep/index.html
 
-> ### 一站式解决方案 [post-GWAS analysis pipeline](github.com/Ensembl/postgap)
-
-> ### [TWAS](http://gusevlab.org/projects/fusion/) 
-> > ![TWAS](./images/twas-paper.png) 
-
-> > ![TWAS](./images/twas-github.png) 
-
-> > ![TWAS](./images/twas.fig1.png) 
-
-> ### "驸马" [FUMA](https://fuma.ctglab.nl/) 网上解读系统
+> ### 引用过千的[FUMA](https://fuma.ctglab.nl/) 网上解读系统
 
 > > ![FUMA](./images/fuma.png) 
 
