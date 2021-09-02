@@ -2,7 +2,7 @@
 
 dir=/mnt/d/data/gwas/pheweb
 ldsc_dir=/mnt/d/software_lin/ldsc
-traits=`cd $dir; ls *.gcta.txt | sed 's/.gcta.txt//' | tr '\n' ' '`
+traits=`cd $dir; ls *.gcta.txt | grep -v diet | sed 's/.gcta.txt//' | tr '\n' ' '`
 #traits_x="bilirubin bmi.female bmi bmi.male calcium ck creatinine crp dbp hba1c hdl ht ldl menarche menopause monocyte na plt pulsep rbc sbp tg ua wbc"
 #traits_y="arrhythmia asthma breastcancer cad cataract chf copd lungcancer osteoporosis pad ra stroke t2d"
 
@@ -28,7 +28,12 @@ for trait in $traits_x $traits_y; do
 done
 for tx in $traits; do
 	echo "$tx $dir/$tx.gcta.txt" > $tx.exposure
+	
 	for ty in $traits; do
+		if [[ -f $dir/$tx.$ty.compareB.pdf ]]; then
+			echo $tx $ty already analyzed
+			continue
+		fi
 		if [[ $ty == $tx ]]; then
 			echo $tx $ty the same
 			continue
@@ -36,15 +41,8 @@ for tx in $traits; do
 		if [[ ! -f $ty.outcome ]]; then
 			echo "$ty $dir/$ty.gcta.txt" > $ty.outcome
 		fi
-		if [[ ! -f $dir/$tx.top.snps ]]; then
-			continue
-		fi
-		if [[ ! -f $tx.top.txt ]]; then
-			cat $dir/$tx.gcta.txt | fgrep -wf $dir/$tx.top.snps > $tx.top.txt
-		fi
-		if [[ ! -f $ty.for.$tx.top.txt ]]; then
-			cat $dir/$ty.gcta.txt | fgrep -wf $dir/$tx.top.snps > $ty.for.$tx.top.txt 
-		fi
+		
+		echo run GCTA-GSMR on $tx -> $ty
 		echo -e "
 		source('/mnt/d/scripts/library/gsmr_plot.r')
 		gsmr_data = read_gsmr_data('$tx.$ty.eff_plot.gz')
@@ -53,6 +51,24 @@ for tx in $traits; do
 		plot_gsmr_effect(gsmr_data, '$tx', '$ty', colors()[75])
 		dev.off()
 		" > $tx.$ty.gcta-plot.R
+		gcta64 --bfile /mnt/d/data/hm3/hm3.b37 --gsmr-file $tx.exposure $ty.outcome --gsmr2-beta --gsmr-direction 2 --diff-freq 1 --gwas-thresh 5e-8 --effect-plot --out $tx.$ty
+		Rscript $tx.$ty.gcta-plot.R
+		awk -v t=$tx 'NR==1 || $1==t' $tx.$ty.gsmr > $tx.$ty.way1.gsmr
+		awk -v t=$tx 'NR==1 || $2==t' $tx.$ty.gsmr > $tx.$ty.way2.gsmr
+	
+		if [[ ! -f $dir/$tx.top.snps ]]; then
+			echo exposure $tx has NO top SNPs defined
+			continue
+		else
+			if [[ ! -f $tx.top.txt ]]; then
+				cat $dir/$tx.gcta.txt | fgrep -wf $dir/$tx.top.snps > $tx.top.txt
+			fi
+			if [[ ! -f $ty.for.$tx.top.txt ]]; then
+				cat $dir/$ty.gcta.txt | fgrep -wf $dir/$tx.top.snps > $ty.for.$tx.top.txt 
+			fi
+		fi
+		
+		echo run compare_B on $tx -> $ty
 		echo -e "
 		source('/mnt/d/scripts/library/compareB.f.R')
 		pdf('$tx.$ty.compareB.pdf')
@@ -63,6 +79,9 @@ for tx in $traits; do
 		)
 		dev.off()
 		" > $tx.$ty.compareB.R
+		Rscript $tx.$ty.compareB.R
+			
+		echo run MendelianRandomization on $tx -> $ty			
 		echo -e "
 		library('MendelianRandomization')
 		png('$tx.$ty.mr.png', w=800, res=128)
@@ -71,20 +90,16 @@ for tx in $traits; do
 		mr_forest(mr_input(XGb, XGse, YGb, YGse), snp_estimates=F, methods=c('ivw', 'median', 'wmedian', 'egger', 'maxlik', 'mbe', 'conmix'))
 		dev.off()
 		" > $tx.$ty.mr.R
-		echo run gsmr on $tx vs. $ty
-		Rscript $tx.$ty.compareB.R
 		Rscript $tx.$ty.mr.R
-		gcta64 --bfile /mnt/d/data/hm3/hm3.b37 --gsmr-file $tx.exposure $ty.outcome --gsmr2-beta --gsmr-direction 2 --diff-freq 1 --gwas-thresh 5e-8 --effect-plot --out $tx.$ty
-		Rscript $tx.$ty.gcta-plot.R
-		awk -v t=$tx 'NR==1 || $1==t' $tx.$ty.gsmr > $tx.$ty.way1.gsmr
-		awk -v t=$tx 'NR==1 || $2==t' $tx.$ty.gsmr > $tx.$ty.way2.gsmr
+		
 	done
 done
-
 
 fgrep Error *log # make sure no error
 awk 'NR==1 || FNR>1' *.way1.gsmr > way1.gsmr
 awk 'NR==1 || FNR>1' *.way2.gsmr > way2.gsmr
+
+# Generate a single plot to show all pair-wise BETA and P
 echo -e "
 library(corrplot); library(reshape2)
 way1 <- read.table('D:/analysis/gsmr.pheweb/way1.gsmr', header=T, as.is=T)
@@ -102,8 +117,7 @@ dev.off()
 Rscript 001.corrplot.R
 
 
-## FUSION TWAS ##
-## 安装 TWAS (http://gusevlab.org/projects/fusion/)
+## FUSION TWAS (http://gusevlab.org/projects/fusion/) ##
 dir_tw=/mnt/d/data/twas_data
 dir_gt=$dir_tw/GTEx_v7_multi_tissue
 dir_ld=$dir_tw/LDREF

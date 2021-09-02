@@ -170,14 +170,12 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 > ### 别人发布到网上的数据，可能不是用rsID，而是类似 CHR:POS_REF_ALT 这样的格式。刚提到的Pheweb可以添加 rsID！！我们也可以通过下面这么的代码，跟前面提到的 UKB上将近一亿个SNP的参考信息进行合并，然后改成 rsID 格式。第一步是提取GWAS里面的位点，如果GWAS的位点有几百万甚至几千万个SNP，这个时候最好是对每一个 CHR 进行分开处理。第二部是合并。这里的 join_file.py 是我写的，使用了多年，可以合并多个文件。该代码的优点是，合并后的数据顺序跟第一个文件的一模一样，而其它的很多合并命令或软件会很慢，会打乱顺序。这个地方不建议采用 ANNOVAR 那样的软件来做。因为用 ANNOVAR 来出来一个具有几百万个SNP的GWAS会很费事，并且 ANNOVAR主要不是做这个用的。
 
 ```
-trait=CAD # 比如说
-for chr in {1..22}; do # 对每一个染色体，分别生成一个 .cmd 的命令文件，然后可以submit 到 服务器上运行
-	echo "#!/bin/bash -l
-	zcat $trait.gz | awk c=$chr 'NR==1 || $1==c' | sed '1 s/SNPID/SNP/; s/_/:/' > $trait.chr$chr.tmp
-	awk '{print $3}' $trait.chr$chr.tmp > $trait.chr$chr.snpid
-	fgrep -wf $trait.chr$chr.snpid ukb_imp_mfi/ukb_mfi_chr$chr_v3.txt | awk '{print $1,$2}' | sed 's/:/_/' > $trait.chr$chr.ukb
-	python join_file.py -i \"$trait.chr$chr.tmp,SPACE,2 $trait.chr$chr.ukb,SPACE,0\" -o $trait.chr$chr.merged
-	" > chr$chr.cmd
+trait=t2d
+for chr in {1..22}; do 
+	zcat /mnt/d/data/gwas/pheweb/$trait.gwas.txt.gz | awk -v c=$chr 'NR==1 || $2==c' > $trait.chr$chr.tmp
+	awk '{print $1}' $trait.chr$chr.tmp > $trait.chr$chr.snpid
+	fgrep -wf $trait.chr$chr.snpid /mnt/d/data/ukb/ukb_imp_mfi/ukb_mfi_chr${chr}_v3.txt | awk '{print $1,$3,$5,$6}' > $trait.chr$chr.ukb
+	python /mnt/d/scripts/library/join_file.py -i "$trait.chr$chr.tmp,TAB,0 $trait.chr$chr.ukb,SPACE,0" -o $trait.chr$chr.merged
 done
 ```
 
