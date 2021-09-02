@@ -165,7 +165,7 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 
 ![Figure pheweb-jp](./images/pheweb-jp.png)
 
-> ### 请先在 EXCEL 里面生成一个下面这样的文件，存为 csv 格式，确保我们记录下来每一个 GWAS 的关键信息，然后根据 pheweb github 网页上给出的命令操作 pheweb phenolist import-phenolist "/path/to/pheno-list.csv" 
+> ### 请先在 EXCEL 里面生成一个下面这样的文件，存为 csv 格式。前3列是pheweb必须的，后面是每一个 GWAS 的关键信息。然后根据 pheweb github 网页上给出的命令操作 pheweb phenolist import-phenolist "/path/to/pheno-list.csv" 
 ![Figure pheweb-pheno](./images/pheweb-pheno.png)
 
 > ### 密西根大学还开发了 [LocusZOOM](http://locuszoom.org), 具有类似和互补的功能。
