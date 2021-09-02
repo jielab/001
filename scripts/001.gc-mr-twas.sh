@@ -9,7 +9,9 @@ traits=`cd $dir; ls *.gcta.txt | sed 's/.gcta.txt//' | tr '\n' ' '`
 
 ## 首先，将GWAS数据转换为GCTA格式
 for trait in $traits_x $traits_y; do
-	zcat $dir/$trait.gwas.txt.gz | awk '{if (NR==1) print "SNP A1 A2 freq b se p N"; else if (NF==18 && arr[$5] !="Y") print $3,$6,$7,$11, $15,$16,$18,$14; else; arr[$5]="Y"}' > $trait.gcta.txt	
+
+	cat $dir/$trait.gwas.raw | awk '{chrpos=$2":"$3; if (snp[$1] !="Y" && pos[chrpos] !="Y") print $0; snp[$1]="Y"; pos[chrpos]="Y"}' | gzip -f > $dir/$trait.gwas.txt.gz
+	zcat $dir/$trait.gwas.txt.gz | awk '{if (NR==1) print "SNP A1 A2 freq b se p N"; else print $1,$4,$5,$6, $8,$9,$10,100000}' > $trait.gcta.txt	
 	fi
 done
 
@@ -32,7 +34,7 @@ for tx in $traits; do
 	echo "$tx $dir/$tx.gcta.txt" > $tx.exposure
 	
 	for ty in $traits; do
-		if [[ -f $dir/$tx.$ty.compareB.pdf ]]; then
+		if [[ -f $tx.$ty.log ]]; then
 			echo $tx $ty already analyzed
 			continue
 		fi
