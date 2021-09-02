@@ -2,30 +2,32 @@
 
 dir=/mnt/d/data/gwas/pheweb
 ldsc_dir=/mnt/d/software_lin/ldsc
-traits=`cd $dir; ls *.gcta.txt | grep -v diet | sed 's/.gcta.txt//' | tr '\n' ' '`
+traits=`cd $dir; ls *.gcta.txt | sed 's/.gcta.txt//' | tr '\n' ' '`
 #traits_x="bilirubin bmi.female bmi bmi.male calcium ck creatinine crp dbp hba1c hdl ht ldl menarche menopause monocyte na plt pulsep rbc sbp tg ua wbc"
 #traits_y="arrhythmia asthma breastcancer cad cataract chf copd lungcancer osteoporosis pad ra stroke t2d"
 
 
+## 首先，将GWAS数据转换为GCTA格式
+for trait in $traits_x $traits_y; do
+	zcat $dir/$trait.gwas.txt.gz | awk '{if (NR==1) print "SNP A1 A2 freq b se p N"; else if (NF==18 && arr[$5] !="Y") print $3,$6,$7,$11, $15,$16,$18,$14; else; arr[$5]="Y"}' > $trait.gcta.txt	
+	fi
+done
+
+
 ## 第一步：LDSC (https://github.com/bulik/ldsc) ##
 conda activate ldsc
-for trait in $traits_x $traits_y; do
-	# zcat $trait.gz | sed 's/\t\t/\tNA\t/g' | gzip -f > $trait.$dat.chk # 确保没有确实数据
-	python2 $ldsc_dir/munge_sumstats.py --sumstats $dir/bbj.$trait.gz --chunksize 10000 --snp rsids --a1 alt --a2 ref --frq maf --p pval --N 200000 --signed-sumstats beta,0 --merge-alleles $ldsc_dir/hm3.snplist --out $trait
-	# python2 $ldsc_dir/munge_sumstats.py --sumstats $dir/$trait.gwas.gz --chunksize 10000 --snp SNP --a1 A1 --a2 A2 --frq A1_FREQ --p P --N-col N --signed-sumstats Z,0 --merge-alleles $ldsc_dir/hm3.snplist --out $trait
+awk 'BEGIN{print "SNP A1 A2"}{print $2,$5,$6"\n" $2,$6,$5 }' hm3.b37.bim > hm3.snplist # 生成 LDSC 需要的 SNP list
+for trait in $traits; do
+	python2 $ldsc_dir/munge_sumstats.py --sumstats $dir/$trait.gcta.txt --chunksize 10000 --snp SNP --a1 A1 --a2 A2 --frq freq --p p --N-col N --signed-sumstats b,0 --merge-alleles /mnt/d/data/hm3/hm3.snplist --out $trait
 done
-for trait in $traits_x $traits_y; do
-	echo process $trait
-    echo $trait $traits_x $traits_y | sed -e 's/ /.sumstats.gz,/g' -e 's/$/.sumstats.gz/' | xargs -n1 -I % /mnt/d/software_lin/ldsc/ldsc.py --rg % --out $trait.rg --ref-ld-chr $ldsc_dir/eur_w_ld_chr/ --w-ld-chr $ldsc_dir/eur_w_ld_chr/
+for trait in $traits; do
+	echo run LDSC on $trait
+    echo $trait $traits | sed -e 's/ /.sumstats.gz,/g' -e 's/$/.sumstats.gz/' | xargs -n1 -I % /mnt/d/software_lin/ldsc/ldsc.py --rg % --out $trait.rg --ref-ld-chr $ldsc_dir/eur_w_ld_chr/ --w-ld-chr $ldsc_dir/eur_w_ld_chr/
     awk '$1=="Summary" {printf NR}' $trait.rg.log | xargs -n1 -I % awk -v s=% 'FNR >=s' $trait.rg.log | sed 's/.sumstats.gz//g' > $trait.rg.txt
 done
 
 
 ## 第二步：GSMR (https://cnsgenomics.com/software/gcta/#GSMR) ** 请用 --gsmr2-beta 而不是 --gsmr-beta ##
-for trait in $traits_x $traits_y; do
-#	zcat $dir/$trait.gwas.gz | awk '{if (NR==1) print "SNP A1 A2 freq b se p N"; else if (NF==18 && arr[$5] !="Y") print $3,$6,$7,$11, $15,$16,$18,$14; else; arr[$5]="Y"}' > $trait.gcta.txt	
-	fi
-done
 for tx in $traits; do
 	echo "$tx $dir/$tx.gcta.txt" > $tx.exposure
 	
@@ -117,7 +119,7 @@ dev.off()
 Rscript 001.corrplot.R
 
 
-## FUSION TWAS (http://gusevlab.org/projects/fusion/) ##
+## 第三步：FUSION TWAS (http://gusevlab.org/projects/fusion/) ##
 dir_tw=/mnt/d/data/twas_data
 dir_gt=$dir_tw/GTEx_v7_multi_tissue
 dir_ld=$dir_tw/LDREF
