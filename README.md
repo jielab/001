@@ -165,10 +165,10 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 
 ![Figure pheweb-jp](./images/pheweb-jp.png)
 
-> ### 密西根大学还开发了 [LocusZOOM](http://locuszoom.org), 具有类似和互补的功能。
-
 > ### 请先在 EXCEL 里面生成一个下面这样的文件，存为 csv 格式，确保我们记录下来每一个 GWAS 的关键信息，然后根据 pheweb github 网页上给出的命令操作 pheweb phenolist import-phenolist "/path/to/pheno-list.csv" 
 ![Figure pheweb-pheno](./images/pheweb-pheno.png)
+
+> ### 密西根大学还开发了 [LocusZOOM](http://locuszoom.org), 具有类似和互补的功能。
 
 > ### 别人发布到网上的数据，可能不是用rsID，而是类似 CHR:POS_REF_ALT 这样的格式。刚提到的Pheweb可以添加 rsID！！我们也可以通过下面这么的代码，跟前面提到的 UKB上将近一亿个SNP的参考信息进行合并，然后改成 rsID 格式。第一步是提取GWAS里面的位点，如果GWAS的位点有几百万甚至几千万个SNP，这个时候最好是对每一个 CHR 进行分开处理。第二部是合并。这里的 join_file.py 是我写的，使用了多年，可以合并多个文件。该代码的优点是，合并后的数据顺序跟第一个文件的一模一样，而其它的很多合并命令或软件会很慢，会打乱顺序。这个地方不建议采用 ANNOVAR 那样的软件来做。因为用 ANNOVAR 来出来一个具有几百万个SNP的GWAS会很费事，并且 ANNOVAR主要不是做这个用的。
 
