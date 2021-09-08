@@ -141,6 +141,7 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 > > - 哈佛大学的CVD knowlege portal: https://hugeamp.org/
 > > - 南加州大学的神经影像基因组国际合作团队：http://enigma.ini.usc.edu/
 
+<br/><br/>
 
 
 ## #3.3 确认结果可靠，从[GWAS catalog](https://www.ebi.ac.uk/gwas) 寻找已经发表的该表型的GWAS文章，比较 BETA。
