@@ -141,7 +141,6 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 > > - 哈佛大学的CVD knowlege portal: https://hugeamp.org/
 > > - 南加州大学的神经影像基因组国际合作团队：http://enigma.ini.usc.edu/
 
->  ***如果下载下来的数据是VCF 格式，可以用 bcftools query 提取需要的 data fileds，生成 TXT 格式。bcftools query 的使用，请参考 http://samtools.github.io/bcftools/bcftools.html***
 
 
 ## #3.3 确认结果可靠，从[GWAS catalog](https://www.ebi.ac.uk/gwas) 寻找已经发表的该表型的GWAS文章，比较 BETA。
@@ -150,18 +149,16 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 > ### 下面示意图，来自 2018年的一篇文章（PMID: 30297969）
 ![Figure Z](./images/T2D.Z.png)
 
-> ### 但是 X 的BETA最好是正数，免得出来这样看起来很强的“假阳性”，也会有“假阴性”。
+> ### 但是 X 的BETA最好是正数，免得出来这样看起来很强的“假阳性”。
 ![Figure beta-Wrong](./images/beta.wrong.png)
 
 > ### 请参照 scripts 文件夹里面的 compareB.R 代码， 该代码可以快速画出下面这样的图。请注意，两个文件的第一行不能以 “#” 开头。compareB.R 相当于一个前台，让用户提供两个比较的文件的具体信息。然后，前台会把用户提交的信息交给后端的 compareB.f.R，不要去碰这个后端的代码。
 ![Figure beta](./images/beta.jpg)
 
-> ### 上面提到的这些，属于 QC 范畴的内容，其实也有很多的系统化软件，包括
-> - easyQC: 2014. Nature Protocol. Quality control and conduct of genome-wide association metaanalyses
-> - easyGWAS: 2017. easyGWAS: A Cloud-Based Platform for Comparing the Results of Genome-Wide Association StudiesOPEN
+> ### 上面提到的这些，属于 QC 范畴的内容，其实也有很多的系统化软件，包括 2014年的 [easyQC ](https://www.nature.com/articles/nprot.2014.071) 和 2017年的 [easyGWAS](https://academic.oup.com/plcell/article/29/1/5/6099036)。
 
-> ### 最理想的是讲 GWAS 转化为 VCF 格式。请见2021年的文章 [GWAS2VCF](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02248-0)。然后可以通过下面这样的命令来添加新的信息，比如 rsID。
-> - bcftools annotate MY.vcf.gz -o NEW.vcf.gz -a dbsnp/hg19/All_20180423.vcf.gz -c ID  
+> ### 最理想的是讲 GWAS 转化为 VCF 格式。请见2021年的文章 [GWAS2VCF](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02248-0)。然后可以通过 [bcftools](https://samtools.github.io/bcftools/bcftools.html)来添加新的信息，比如下面的命令可以添加 rsID。
+> - ### bcftools annotate MY.vcf.gz -o NEW.vcf.gz -a dbsnp/hg19/All_20180423.vcf.gz -c ID  
 
 <br/><br/>
 
