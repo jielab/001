@@ -241,9 +241,9 @@ bedtools intersect -a A.bed -b B.bed -wo
 
 ![Function](./images/panda1.gif) 
 
-# #4. 多个GWAS 之间的分析（genetic correlation -> Mendelian Randomization -> TWAS 三件套）
+# #4. GWAS 之间的两两分析以及功能性分析（genetic correlation -> Mendelian Randomization -> function !!!）
 
-> ### 关于三件套之间的逻辑关系，The putative causal effect of type 2 diabetes in risk of cataract: a Mendelian randomization study in East Asian 里的一张图，给了比较好的总结。
+> ### 下图来自The putative causal effect of type 2 diabetes in risk of cataract: a Mendelian randomization study in East Asian 里的一张图，给了比较好的总结。
 
 > > ![Figure group-3](./images/grp3-basic.jpg)
 
@@ -259,7 +259,7 @@ bedtools intersect -a A.bed -b B.bed -wo
 
 > > ![page2](./images/page2.png)
 
-> ### 三件套，基本就是3行代码的事。其它的代码都是胶水（glue）和信号灯（when and who）。还有就是，前面做数据的格式化，后面做分析结果汇总和画图，那样的代码。
+> ### 很多分析听起来复杂，其实每一个软件安装好了之后，就是一行代码的事。其它的代码都是胶水（glue）和信号灯（when and who）。还有就是，前面做数据的格式化，后面做分析结果汇总和画图。
 
 ```
 #1 LDSC：ldsc.py --rg % --out $trait.rg --ref-ld-chr $ldsc_dir/eur_w_ld_chr/ --w-ld-chr $ldsc_dir/eur_w_ld_chr/
@@ -286,17 +286,11 @@ corrplot(beta, is.corr=F, method='color', type='full', addCoef.col='black', numb
 
 > ## #4.2. 因果分析 Mendelian Randomization
 > - ### MR的文章已经发表了无数篇，方法至少十几种。对于原始的GWAS数据，我们可以采用 [GSMR](https://cnsgenomics.com/software/gcta/#GSMR) 进行流程化处理。请认真阅读杨剑2018年的[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 。这不是一个R包，而是一个成熟的软件 GCTA中的一部分，因此运行起来会比较快。GSMR 需要用到参考基因组计算 LD 的软件，我们建议用 hapmap3 的数据作为 LD reference。
-> - ### 如果用上述提取的千人基因组数据作为 LD 参考，由于数据是按照染色体分开的，就需要用 --mbfile （而不是 --bfile）。GCTA 对文件的格式有比较固定和严格的要求，SNP A1 A2 freq b se p N 必须按照这个顺序，请参考 GCTA 官网。如果有简单的数据，别人文章里面已经报道了的 exposure 和 outcome 的 BETA 和 SE，最简单的是使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)。还有一个特别针对 UKB 处理海量数据的 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)
-> - ### GSMR 分析得到的文件，可以通过下面的R代码，导入到MendelianRandomization 的R包，这样就不用自己去生产 X 和Y 的数据。
-```
-source('gsmr_plot.r')
-gsmr.data = read_gsmr_data('cad.t2d.eff_plot.gz'); str(gsmr.data)
-eff = gsmr_snp_effect(gsmr.data, "t2d", "cad"); str(eff)
-XGb = eff$bzx; XGse = eff$bzx_se; YGb = eff$bzy; YGse = eff$bzy_se
-mr_plot(mr_input(XGb, XGse, YGb, YGse))
-```
 
-> ## #4.3. 从单个GWAS的 [TWAS](http://gusevlab.org/projects/fusion/) 到 两个 GWAS 的 TWAS 的信号的 Overlap。
+> - 如果有简单的数据，别人文章里面已经报道了的 exposure 和 outcome 的 BETA 和 SE，最简单的是使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)。还有一个特别针对 UKB 处理海量数据的 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)。
+> - 我喜欢 MendelianRandomizaiton 的简单透明。我们只需要先把两个数据运行一下 compare-B, 然后得到一个只有4列的小文件 （BETA1, SE1, BETA2, SE2），手机上都能看见文件的全部。然后两三行命令，就可以跑 MR并画图。TwoSampleMR 自然是不错，连数据都不需要了，只需要写一个 MRC-IEU的代码，远程的数据就用起来了。一个简单的 extract_instruments() 和 harmonise_data() 就把所有的QC 事情搞定了，连一个clump_data()这样的命令都不用写了。再也不用compare-B了，反正 harmonise_data()自会处理好各种问题。我们连 clump 的reference genome 都不知道在哪，就跑一个 clump_data() 或 extract_instruments(clump=T) 就可以了。
+> - 但是，除了MS office 和 GPS导航这样的软件，全世界都在用，都在测试，都在有大团队fix bug之外，别人写的大而全的东西，有大而全的问题。有些时候，我们并不知道那些命令真的包括了什么，可能会被错误的GPS导航带到沟里去，后者让我们完全不再记路了，指望GSP把我们直接导航到别人的客厅里。所以，就算我们用强大的 TwoSampleMR，得到什么有趣的分析结果的话，也需要用比较手工的方法再重复一下。
+> - 别人的数据，都不需要下载就能用，自然是好。但是试想一下，哪天上不了那个网，或者对方将数据大量更新修改，我们的结果就再也重复不了了。
 
 
 # # 参考文献和网站
