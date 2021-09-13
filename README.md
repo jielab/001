@@ -128,7 +128,11 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 
 ## #3.2 公开的GWAS数据进行练手，或对比
 
-> 最经典的，历史悠久的 GWAS Catalog: https://www.ebi.ac.uk/gwas
+> 最经典的，起源于美国NIH 的 GWAS Catalog: https://www.ebi.ac.uk/gwas
+![Figure gcta](./images/gcat.png)
+
+> 欧洲版本，提倡 VCF 格式，不需要下载就能 TwoSampleMR
+![Figure IEU](./images/ieu-open.jpg)
 
 > UKB GWAS 完整的分析结果，网上发布
 > > - 美国哈佛大学：http://www.nealelab.is/uk-biobank 
