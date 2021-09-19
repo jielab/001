@@ -157,7 +157,7 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 > ### 但是 X 的BETA最好是正数，免得出来这样看起来很强的“假阳性”。
 ![Figure beta-Wrong](./images/beta.wrong.png)
 
-> ### 请参照 scripts 文件夹里面的 compareB.R 代码， 该代码可以快速画出下面这样的图。请注意，两个文件的第一行不能以 “#” 开头。compareB.R 相当于一个前台，让用户提供两个比较的文件的具体信息。然后，前台会把用户提交的信息交给后端的 compareB.f.R，不要去碰这个后端的代码。
+> ### 请参照 scripts 文件夹里面的 compareB.R 代码， 该代码可以快速画出下面这样的图。请注意，两个文件的第一行不能以 “#” 开头。
 ![Figure beta](./images/beta.jpg)
 
 > ### 上面提到的这些，属于 QC 范畴的内容，其实也有很多的系统化软件，包括 2014年的 [easyQC ](https://www.nature.com/articles/nprot.2014.071) 和 2017年的 [easyGWAS](https://academic.oup.com/plcell/article/29/1/5/6099036)。
@@ -168,28 +168,10 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 <br/><br/>
 
 
-## #3.4 注释 GWAS信号，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。本组专属的 pheweb 网站 http://www.jielab.org 
+## #3.4 注释 GWAS信号，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。密西根大学还开发了 [LocusZOOM](http://locuszoom.org), 具有类似和互补的功能。
 
 ![pheweb](./images/pheweb.png)
 
-![Figure pheweb-jp](./images/pheweb-jp.png)
-
-> ### 请先在 EXCEL 里面生成一个下面这样的文件，存为 csv 格式。前2列是pheweb必须的，后面黄色标注的是最好要有的，再后面是每一个 GWAS 的关键信息。然后根 pheweb github 上给出的命令将这个文件转换成 pheweb能读懂的格式：pheweb phenolist import-phenolist "/path/to/pheno-list.csv" 
-![Figure pheweb-pheno](./images/pheweb-pheno.png)
-
-> ### 密西根大学还开发了 [LocusZOOM](http://locuszoom.org), 具有类似和互补的功能。
-
-> ### 别人发布到网上的数据，可能不是用rsID，而是类似 CHR:POS_REF_ALT 这样的格式。刚提到的Pheweb可以添加 rsID！！我们也可以通过下面这么的代码，跟前面提到的 UKB上将近一亿个SNP的参考信息进行合并，然后改成 rsID 格式。第一步是提取GWAS里面的位点，如果GWAS的位点有几百万甚至几千万个SNP，这个时候最好是对每一个 CHR 进行分开处理。第二部是合并。这里的 join_file.py 是我写的，使用了多年，可以合并多个文件。该代码的优点是，合并后的数据顺序跟第一个文件的一模一样，而其它的很多合并命令或软件会很慢，会打乱顺序。这个地方不建议采用 ANNOVAR 那样的软件来做。因为用 ANNOVAR 来出来一个具有几百万个SNP的GWAS会很费事，并且 ANNOVAR主要不是做这个用的。
-
-```
-trait=t2d
-for chr in {1..22}; do 
-	zcat /mnt/d/data/gwas/pheweb/$trait.gwas.txt.gz | awk -v c=$chr 'NR==1 || $2==c' > $trait.chr$chr.tmp
-	awk '{print $1}' $trait.chr$chr.tmp > $trait.chr$chr.snpid
-	fgrep -wf $trait.chr$chr.snpid /mnt/d/data/ukb/ukb_imp_mfi/ukb_mfi_chr${chr}_v3.txt | awk '{print $1,$3,$5,$6}' > $trait.chr$chr.ukb
-	python /mnt/d/scripts/library/join_file.py -i "$trait.chr$chr.tmp,TAB,0 $trait.chr$chr.ukb,SPACE,0" -o $trait.chr$chr.merged
-done
-```
 
 > ### 如果不用上述的系统，可以使用 [PLINK](https://www.cog-genomics.org/plink/1.9/) 人工操作。请点击左边菜单中的 Report postprocess 中的 3个命令（--annotate, --clump, --gene-report）
 
@@ -244,7 +226,7 @@ bedtools intersect -a A.bed -b B.bed -wo
 <br/>
 
 
-> ## #3.6. 因果分析 Mendelian Randomization
+> ## #3.7. 因果分析 Mendelian Randomization
 > - ### MR的文章已经发表了无数篇，方法至少十几种。对于原始的GWAS数据，我们可以采用 [GSMR](https://cnsgenomics.com/software/gcta/#GSMR) 进行流程化处理。请认真阅读杨剑2018年的[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 。这不是一个R包，而是一个成熟的软件 GCTA中的一部分，因此运行起来会比较快。GSMR 需要用到参考基因组计算 LD 的软件，我们建议用 hapmap3 的数据作为 LD reference。
 
 > - 如果有简单的数据，别人文章里面已经报道了的 exposure 和 outcome 的 BETA 和 SE，最简单的是使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)。还有一个特别针对 UKB 处理海量数据的 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)。
