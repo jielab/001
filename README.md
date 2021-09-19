@@ -148,26 +148,6 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 <br/><br/>
 
 
-## #3.3 确认结果可靠，从[GWAS catalog](https://www.ebi.ac.uk/gwas) 寻找已经发表的该表型的GWAS文章，比较 BETA。
-
-
-> ### 下面示意图，来自 2018年的一篇文章（PMID: 30297969）
-![Figure Z](./images/T2D.Z.png)
-
-> ### 但是 X 的BETA最好是正数，免得出来这样看起来很强的“假阳性”。
-![Figure beta-Wrong](./images/beta.wrong.png)
-
-> ### 请参照 scripts 文件夹里面的 compareB.R 代码， 该代码可以快速画出下面这样的图。请注意，两个文件的第一行不能以 “#” 开头。
-![Figure beta](./images/beta.jpg)
-
-> ### 上面提到的这些，属于 QC 范畴的内容，其实也有很多的系统化软件，包括 2014年的 [easyQC ](https://www.nature.com/articles/nprot.2014.071) 和 2017年的 [easyGWAS](https://academic.oup.com/plcell/article/29/1/5/6099036)。
-
-> ### 最理想的是讲 GWAS 转化为 VCF 格式。请见2021年的文章 [GWAS2VCF](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02248-0)。然后可以通过 [bcftools](https://samtools.github.io/bcftools/bcftools.html)来添加新的信息，比如下面的命令可以添加 rsID。
-> - ### bcftools annotate MY.vcf.gz -o NEW.vcf.gz -a dbsnp/hg19/All_20180423.vcf.gz -c ID  
-
-<br/><br/>
-
-
 ## #3.4 注释 GWAS信号，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。密西根大学还开发了 [LocusZOOM](http://locuszoom.org), 具有类似和互补的功能。
 
 ![pheweb](./images/pheweb.png)
