@@ -243,52 +243,8 @@ bedtools intersect -a A.bed -b B.bed -wo
 <br/>
 <br/>
 
-![Function](./images/panda1.gif) 
 
-# #4. GWAS 之间的两两分析以及功能性分析（genetic correlation -> Mendelian Randomization -> function !!!）
-
-> ### 下图来自The putative causal effect of type 2 diabetes in risk of cataract: a Mendelian randomization study in East Asian 里的一张图，给了比较好的总结。
-
-> > ![Figure group-3](./images/grp3-basic.jpg)
-
-> ### 还有一篇2020年的综述，也值得一读：[From GWAS to Function: Using Functional Genomics to Identify the Mechanisms Underlying Complex Diseases](https://pubmed.ncbi.nlm.nih.gov/32477401/)。这篇文章里面写到：**In particular, fine-mapping aims to define causal variants, SNP enrichment methods prioritize disease relevant cell types and colocalization nominates likely target genes.**
-
-> > ![Figure function](./images/grp3-function.jpg) 
-
-> ### 2020年哈佛大学公卫学院的梁黎明，以asthma为例，写了一篇文章进行了讲述。[Investigating asthma heterogeneity through shared and distinct genetics: Insights from genome-wide cross-trait analysis](https://pubmed.ncbi.nlm.nih.gov/32693092/)
-
-> > ![Figure group-3](./images/grp3-main.jpg)
-
-> > ![page1](./images/page1.png)
-
-> > ![page2](./images/page2.png)
-
-> ### 很多分析听起来复杂，其实每一个软件安装好了之后，就是一行代码的事。其它的代码都是胶水（glue）和信号灯（when and who）。还有就是，前面做数据的格式化，后面做分析结果汇总和画图。
-
-```
-#1 LDSC：ldsc.py --rg % --out $trait.rg --ref-ld-chr $ldsc_dir/eur_w_ld_chr/ --w-ld-chr $ldsc_dir/eur_w_ld_chr/
-
-#2 GSMR：gcta64 --bfile hapmap3/g1k.b37 --gsmr-file test.exposure test.outcome --gsmr-direction 2 --gwas-thresh 1e-5 --effect-plot --out test
-
-#3 TWAS： Rscript $fusion/FUSION.assoc_test.R --sumstats $trait.sumstats.gz --chr $chr --out $trait.$tissue.chr$chr.txt --weights $dir_gt/$tissue.P01.pos --weights_dir $dir_gt --ref_ld_chr $dir_ld/1000G.EUR.
-```
-
-> ### 在弄懂了一个 X 和一个 Y 之间的分析后，请参照 scripts 文件夹里面的 001.gc-mr-twas.sh 代码，用 for loop。这种流水线的好处是：如果有错，就全部错了，就很容易发现。经过上述分析，得出一堆 x1, x2, x3 ... 跟一堆 y1, y2, y3 ... 两两之间的 BETA 和 P 值后，汇总到一个 TXT 文件里，就可以用下面几行R 代码:
-
-```
-library(corrplot); library(reshape2)
-dat <- read.table('my-summary.gsmr', header=T, as.is=T)
-beta <- acast(dat, Outcome ~ Exposure, value.var='bxy'); b1cor[is.na(b1cor)] =0
-pval <- acast(dat, Outcome ~ Exposure, value.var='p'); p1cor[is.na(p1cor)] =1
-corrplot(beta, is.corr=F, method='color', type='full', addCoef.col='black', number.cex=0.7, p.mat=pval, sig.level=1e-03, insig="pch", pch.col="green", pch.cex=2, tl.col="black", tl.srt=45, outline=T)
-```
-
-> > ![Figure corrplot](./images/corrplot.png)
-
-
-> ## #4.1. genetic correlation 分析, 可以用 [LDSC](https://github.com/bulik/ldsc), 参考 [LDSC Hub](http://ldsc.broadinstitute.org)
-
-> ## #4.2. 因果分析 Mendelian Randomization
+> ## #3.6. 因果分析 Mendelian Randomization
 > - ### MR的文章已经发表了无数篇，方法至少十几种。对于原始的GWAS数据，我们可以采用 [GSMR](https://cnsgenomics.com/software/gcta/#GSMR) 进行流程化处理。请认真阅读杨剑2018年的[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 。这不是一个R包，而是一个成熟的软件 GCTA中的一部分，因此运行起来会比较快。GSMR 需要用到参考基因组计算 LD 的软件，我们建议用 hapmap3 的数据作为 LD reference。
 
 > - 如果有简单的数据，别人文章里面已经报道了的 exposure 和 outcome 的 BETA 和 SE，最简单的是使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)。还有一个特别针对 UKB 处理海量数据的 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)。
