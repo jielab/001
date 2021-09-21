@@ -221,7 +221,7 @@ bedtools intersect -a A.bed -b B.bed -wo
 基因注释信息浏览器：
 dbSNP: https://www.ncbi.nlm.nih.gov/snp/
 UCSC genome browser: https://www.genome.ucsc.edu/
-奥巴马时期国家队 https://databrowser.researchallofus.org/  TopMed browser: https://bravo.sph.umich.edu/
+美国精准医学：https://databrowser.researchallofus.org/  TopMed browser: https://bravo.sph.umich.edu/
 Gnomad browser: https://gnomad.broadinstitute.org/
 GlobalBiobankEngine 和 nanopore 数据分析等：https://github.com/rivas-lab
 
