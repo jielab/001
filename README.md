@@ -219,11 +219,11 @@ bedtools intersect -a A.bed -b B.bed -wo
 
 ```
 基因注释信息浏览器：
-历史悠久的国家队 dbSNP: https://www.ncbi.nlm.nih.gov/snp/
-历史悠久的加州大学学院派 UCSC genome browser: https://www.genome.ucsc.edu/
+dbSNP: https://www.ncbi.nlm.nih.gov/snp/
+UCSC genome browser: https://www.genome.ucsc.edu/
 奥巴马时期国家队 https://databrowser.researchallofus.org/  TopMed browser: https://bravo.sph.umich.edu/
-哈佛麻省理工主导 Gnomad browser: https://gnomad.broadinstitute.org/
-斯坦福大学的 GlobalBiobankEngine 和 nanopore 数据分析等：https://github.com/rivas-lab
+Gnomad browser: https://gnomad.broadinstitute.org/
+GlobalBiobankEngine 和 nanopore 数据分析等：https://github.com/rivas-lab
 
 
 GWAS 入门介绍
@@ -236,4 +236,12 @@ GWAS 入门介绍
 Mendelian Randomization 入门介绍
 2017. Statistical methods to detect pleiotropy in human complex traits (pubmed.ncbi.nlm.nih.gov/29093210/)
 2019. Meta-analysis and Mendelian randomization: A review (pubmed.ncbi.nlm.nih.gov/30861319/)
+
 ```
+
+## R入门：
+[Add P-values and Significance Levels to ggplots](https://www.r-bloggers.com/2017/06/add-p-values-and-significance-levels-to-ggplots/)_
+[Two-Way ANOVA Test in R](http://www.sthda.com/english/wiki/two-way-anova-test-in-r)
+[ggfortify : Extension to ggplot2 to handle some popular packages](http://www.sthda.com/english/wiki/ggfortify-extension-to-ggplot2-to-handle-some-popular-packages-r-software-and-data-visualization)
+[An Intro to Phylogenetic Tree Construction in R](https://fuzzyatelin.github.io/bioanth-stats/module-24/module-24.html)
+
