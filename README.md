@@ -62,7 +62,7 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 读完整个文档的话，你就什么都知道了。苹果电脑，参考 https://github.com/spiros/docker-ukbiobank-utils
 
 1. 先解压表型数据的大文件
-    - unkunpack ukb48807.enc e64?3f7811c2c8200ed4ecf?e9a4f32?0b5115aeb77e1cb1eba01f3?4e3463af
+    - unbunpack ukb48807.enc e64?3f7811c2c8200ed4ecf?e9a4f32?0b5115aeb77e1cb1eba01f3?4e3463af
 	- 如果是下载基因数据，第一行写上66137，然后第二行写上上面的密码
 
 2. 写一个 VIP.fields.txt 文件，列出想提取的变量和对应的 data-field，比如 
