@@ -235,9 +235,11 @@ GWAS 入门介绍
 芬兰赫尔辛基大学 GWAS 课程：https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/
 
 Mendelian Randomization 入门介绍
+2012. Plasma HDL cholesterol and risk of myocardial infarction: a mendelian randomisation study (pubmed.ncbi.nlm.nih.gov/22607825/)
 2017. Statistical methods to detect pleiotropy in human complex traits (pubmed.ncbi.nlm.nih.gov/29093210/)
 2019. Meta-analysis and Mendelian randomization: A review (pubmed.ncbi.nlm.nih.gov/30861319/)
-
+2022. Assessing the Causal Role of Sleep Traits on Glycated Hemoglobin: A Mendelian Randomization Study (pubmed.ncbi.nlm.nih.gov/35349659/)
+2022. Genetically predicted sex hormone levels and health outcomes: phenome-wide Mendelian randomization investigation (pubmed.ncbi.nlm.nih.gov/35218343/)
 ```
 
 ## R入门：
