@@ -160,7 +160,7 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 ## #3.5 GWAS 文件功能（functional）分析 
 
 
-> ### 引用过千的[FUMA](https://fuma.ctglab.nl/) 网上解读系统
+> ### 可先尝试傻瓜相机式的[FUMA](https://fuma.ctglab.nl/) 网上解读系统
 
 > > ![FUMA](./images/fuma.png) 
 
@@ -194,12 +194,16 @@ Gnomad browser: https://gnomad.broadinstitute.org/
 GlobalBiobankEngine：https://github.com/rivas-lab
 
 
-GWAS 入门学习资料：
+GWAS 入门：
 芬兰赫尔辛基大学 GWAS 课程：https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/
 2020. NEJM. Genomewide Association Study of Severe Covid-19 with Respiratory Failure (https://www.nejm.org/doi/full/10.1056/NEJMoa2020283)
 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 
-GWAS-GC-MR 三部曲学习资料：
+多基因效应：polygeny （PRS）
+2019. Lancet Respiratory Medicine. [Identification of risk loci and a polygenic risk score for lung cancer: a large-scale prospective cohort study in Chinese populations](pubmed.ncbi.nlm.nih.gov/31326317/)
+2022. EHJ. [A polygenic risk score improves risk stratification of coronary artery disease: a large-scale prospective Chinese cohort study](pubmed.ncbi.nlm.nih.gov/35195259/)
+
+基因多效性：Pleiotropy （分为横向和纵向）。其中纵向 Pleiotropy 是孟德尔随机化方法的基本要素。
 2012. [Plasma HDL cholesterol and risk of myocardial infarction: a mendelian randomisation study](pubmed.ncbi.nlm.nih.gov/22607825/)
 2017. [Statistical methods to detect pleiotropy in human complex traits](pubmed.ncbi.nlm.nih.gov/29093210/)
 2019. [Meta-analysis and Mendelian randomization: A review](pubmed.ncbi.nlm.nih.gov/30861319/)
