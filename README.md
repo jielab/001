@@ -175,16 +175,15 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 <br/>
 
 
-> ## #3.7. 因果分析 Mendelian Randomization
-> - ### MR的文章已经发表了无数篇，方法至少十几种。对于原始的GWAS数据，我们可以采用 [GSMR](https://cnsgenomics.com/software/gcta/#GSMR) 进行流程化处理。请认真阅读杨剑2018年的[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 。这不是一个R包，而是一个成熟的软件 GCTA中的一部分，因此运行起来会比较快。GSMR 需要用到参考基因组计算 LD 的软件，我们建议用 hapmap3 的数据作为 LD reference。
+## #3.7. 因果分析 Mendelian Randomization
+> ### MR的文章已经发表了无数篇，方法至少十几种。对于原始的GWAS数据，我们可以采用 [GSMR](https://cnsgenomics.com/software/gcta/#GSMR) 进行流程化处理。请认真阅读杨剑2018年的[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 。这不是一个R包，而是一个成熟的软件 GCTA中的一部分，因此运行起来会比较快。GSMR 需要用到参考基因组计算 LD 的软件，我们建议用 hapmap3 的数据作为 LD reference。
 
-> - 如果有简单的数据，别人文章里面已经报道了的 exposure 和 outcome 的 BETA 和 SE，最简单的是使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)。还有一个特别针对 UKB 处理海量数据的 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)。
-> - MendelianRandomizaiton R包简单透明。只需要先把两个表型的summary数据运行一下 compare-B, 然后得到一个只有4列的小文件 （BETA1, SE1, BETA2, SE2）。TwoSampleMR 自然是不错，连数据都不需要了，只需要写一个 MRC-IEU的代码，就可以运行远程的数据。但是试想一下，哪天上不了那个网，或者对方将数据大量更新修改，我们的结果就再也重复不了了。建议两种方法都用，double check!
+> 如果有简单的数据，别人文章里面已经报道了的 exposure 和 outcome 的 BETA 和 SE，最简单的是使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)。还有一个特别针对 UKB 处理海量数据的 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)。
+> MendelianRandomizaiton R包简单透明。只需要先把两个表型的summary数据运行一下 compare-B, 然后得到一个只有4列的小文件 （BETA1, SE1, BETA2, SE2）。TwoSampleMR 自然是不错，连数据都不需要了，只需要写一个 MRC-IEU的代码，就可以运行远程的数据。但是试想一下，哪天上不了那个网，或者对方将数据大量更新修改，我们的结果就再也重复不了了。建议两种方法都用，double check!
 > > ![compareB](./images/T2D.Z.png) 
 
 # # 参考文献和网站
 
-```
 基因注释信息浏览器：
 dbSNP: https://www.ncbi.nlm.nih.gov/snp/
 UCSC genome browser: https://www.genome.ucsc.edu/
@@ -199,7 +198,7 @@ GWAS 入门：
 2020. NEJM. Genomewide Association Study of Severe Covid-19 with Respiratory Failure (https://www.nejm.org/doi/full/10.1056/NEJMoa2020283)
 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 
-多基因效应：polygeny （PRS）
+多基因效应：Polygeny 以及 PRS
 2019. Lancet Respiratory Medicine. [Identification of risk loci and a polygenic risk score for lung cancer: a large-scale prospective cohort study in Chinese populations](pubmed.ncbi.nlm.nih.gov/31326317/)
 2022. EHJ. [A polygenic risk score improves risk stratification of coronary artery disease: a large-scale prospective Chinese cohort study](pubmed.ncbi.nlm.nih.gov/35195259/)
 
@@ -210,7 +209,7 @@ GWAS 入门：
 2021. [Genetic correlation and causal relationships between cardio-metabolic traits and lung function impairment](https://pubmed.ncbi.nlm.nih.gov/34154662/)
 2022. [Assessing the Causal Role of Sleep Traits on Glycated Hemoglobin: A Mendelian Randomization Study](pubmed.ncbi.nlm.nih.gov/35349659/)
 2022. [Genetically predicted sex hormone levels and health outcomes: phenome-wide Mendelian randomization investigation](pubmed.ncbi.nlm.nih.gov/35218343/)
-```
+
 
 R入门：
 > - [Add P-values and Significance Levels to ggplots](https://www.r-bloggers.com/2017/06/add-p-values-and-significance-levels-to-ggplots/)
