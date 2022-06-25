@@ -206,8 +206,8 @@ GWAS 入门：
 > - Y 2017. [Statistical methods to detect pleiotropy in human complex traits](pubmed.ncbi.nlm.nih.gov/29093210/)
 > - Y 2019. [Meta-analysis and Mendelian randomization: A review](pubmed.ncbi.nlm.nih.gov/30861319/)
 > - Y 2021. [Genetic correlation and causal relationships between cardio-metabolic traits and lung function impairment](https://pubmed.ncbi.nlm.nih.gov/34154662/)
-> - Y 2022. [Assessing the Causal Role of Sleep Traits on Glycated Hemoglobin: A Mendelian Randomization Study](pubmed.ncbi.nlm.nih.gov/35349659/)
-> - Y 2022. [Genetically predicted sex hormone levels and health outcomes: phenome-wide Mendelian randomization investigation](pubmed.ncbi.nlm.nih.gov/35218343/)
+> - Y 2022. [Assessing the Causal Role of Sleep Traits on Glycated Hemoglobin: A Mendelian Randomization Study](https://pubmed.ncbi.nlm.nih.gov/35349659/)
+> - Y 2022. [Genetically predicted sex hormone levels and health outcomes: phenome-wide Mendelian randomization investigation](https://pubmed.ncbi.nlm.nih.gov/35218343/)
 
 
 R入门：
