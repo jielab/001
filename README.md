@@ -182,6 +182,9 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 > MendelianRandomizaiton R包简单透明。只需要先把两个表型的summary数据运行一下 compare-B, 然后得到一个只有4列的小文件 （BETA1, SE1, BETA2, SE2）。TwoSampleMR 自然是不错，连数据都不需要了，只需要写一个 MRC-IEU的代码，就可以运行远程的数据。但是试想一下，哪天上不了那个网，或者对方将数据大量更新修改，我们的结果就再也重复不了了。建议两种方法都用，double check!
 > > ![compareB](./images/T2D.Z.png) 
 
+<br/>
+<br/>
+
 # # 参考文献和网站
 
 基因注释信息浏览器：
@@ -202,7 +205,7 @@ GWAS 入门：
 > - Y 2019. Lancet Respiratory Medicine. [Identification of risk loci and a polygenic risk score for lung cancer: a large-scale prospective cohort study in Chinese populations](pubmed.ncbi.nlm.nih.gov/31326317/)
 > - Y 2022. EHJ. [A polygenic risk score improves risk stratification of coronary artery disease: a large-scale prospective Chinese cohort study](pubmed.ncbi.nlm.nih.gov/35195259/)
 
-基因多效性：Pleiotropy （分为横向和纵向）。其中纵向 Pleiotropy 是孟德尔随机化方法的基本要素。
+基因多效性：Pleiotropy （分为横向和纵向），其中纵向 Pleiotropy 是孟德尔随机化方法的基本要素。
 > - Y 2012. Lancet. [Plasma HDL cholesterol and risk of myocardial infarction: a mendelian randomisation study](pubmed.ncbi.nlm.nih.gov/22607825/)
 > - Y 2017. [Statistical methods to detect pleiotropy in human complex traits](pubmed.ncbi.nlm.nih.gov/29093210/)
 > - Y 2019. [Meta-analysis and Mendelian randomization: A review](pubmed.ncbi.nlm.nih.gov/30861319/)
