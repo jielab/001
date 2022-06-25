@@ -169,7 +169,6 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 
 <br/>
 <br/>
-<br/>
 
 
 ## #3.7. 因果分析 Mendelian Randomization
