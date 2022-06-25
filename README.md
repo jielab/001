@@ -19,7 +19,7 @@
 
 ## #1.2. 1000 genomes (千人基因组) genotype 数据， 一般作为 imputation 的 reference panel.
 
-> 打开 https://www.internationalgenome.org/data，在 Available data 下面，点击该页面 Phase 3 对应的 VCF 链接，
+> 在[千人基因组官网](https://www.internationalgenome.org/data) 的 Available data 下面，下载 Phase 3 对应的 VCF 链接，
 > 倒数第二个 integrated_call_samples_v3.20130502.ALL.panel 文件罗列了每一个样本的人群（pop）和人种 (super_pop)，以及性别。
 > 根据这个文件，可以提取特定人种的样本。当然，如果不想生成太多的基因数据，就只保留一个完整数据，后续用PLINK --keep 就行。
 > 下载下来的数据，有将近一个亿的SNP，每个染色体都是单独的文件。后续跑 GWAS 或提取 PRS 的时候，也是每条染色体的数据分开来跑。
