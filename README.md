@@ -185,30 +185,30 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 # # 参考文献和网站
 
 基因注释信息浏览器：
-1. dbSNP: https://www.ncbi.nlm.nih.gov/snp/   
-2. UCSC genome browser: https://www.genome.ucsc.edu/ 
-3. 美国精准医学：https://databrowser.researchallofus.org/   
-4. TopMed browser: https://bravo.sph.umich.edu/ 
-5. Gnomad browser: https://gnomad.broadinstitute.org/ 
-6. GlobalBiobankEngine：https://github.com/rivas-lab 
+> - dbSNP: https://www.ncbi.nlm.nih.gov/snp/   
+> - UCSC genome browser: https://www.genome.ucsc.edu/ 
+> - 美国精准医学：https://databrowser.researchallofus.org/   
+> - TopMed browser: https://bravo.sph.umich.edu/ 
+> - Gnomad browser: https://gnomad.broadinstitute.org/ 
+> - GlobalBiobankEngine：https://github.com/rivas-lab 
 
 
 GWAS 入门：
-- 芬兰赫尔辛基大学 GWAS 课程：https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/
-- NEJM. 2020. Genomewide Association Study of Severe Covid-19 with Respiratory Failure (https://www.nejm.org/doi/full/10.1056/NEJMoa2020283)
-- Nature Reviews Methods Primers. 2021. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
+> - 芬兰赫尔辛基大学 GWAS 课程：https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/
+> - Y 2020. NEJM. Genomewide Association Study of Severe Covid-19 with Respiratory Failure (https://www.nejm.org/doi/full/10.1056/NEJMoa2020283)
+> - Y 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 
 多基因效应：Polygeny 以及 PRS
-1. 2019. Lancet Respiratory Medicine. [Identification of risk loci and a polygenic risk score for lung cancer: a large-scale prospective cohort study in Chinese populations](pubmed.ncbi.nlm.nih.gov/31326317/)
-2. 2022. EHJ. [A polygenic risk score improves risk stratification of coronary artery disease: a large-scale prospective Chinese cohort study](pubmed.ncbi.nlm.nih.gov/35195259/)
+> - Y 2019. Lancet Respiratory Medicine. [Identification of risk loci and a polygenic risk score for lung cancer: a large-scale prospective cohort study in Chinese populations](pubmed.ncbi.nlm.nih.gov/31326317/)
+> - Y 2022. EHJ. [A polygenic risk score improves risk stratification of coronary artery disease: a large-scale prospective Chinese cohort study](pubmed.ncbi.nlm.nih.gov/35195259/)
 
 基因多效性：Pleiotropy （分为横向和纵向）。其中纵向 Pleiotropy 是孟德尔随机化方法的基本要素。
-2012. [Plasma HDL cholesterol and risk of myocardial infarction: a mendelian randomisation study](pubmed.ncbi.nlm.nih.gov/22607825/)
-2017. [Statistical methods to detect pleiotropy in human complex traits](pubmed.ncbi.nlm.nih.gov/29093210/)
-2019. [Meta-analysis and Mendelian randomization: A review](pubmed.ncbi.nlm.nih.gov/30861319/)
-2021. [Genetic correlation and causal relationships between cardio-metabolic traits and lung function impairment](https://pubmed.ncbi.nlm.nih.gov/34154662/)
-2022. [Assessing the Causal Role of Sleep Traits on Glycated Hemoglobin: A Mendelian Randomization Study](pubmed.ncbi.nlm.nih.gov/35349659/)
-2022. [Genetically predicted sex hormone levels and health outcomes: phenome-wide Mendelian randomization investigation](pubmed.ncbi.nlm.nih.gov/35218343/)
+> - Y 2012. Lancet. [Plasma HDL cholesterol and risk of myocardial infarction: a mendelian randomisation study](pubmed.ncbi.nlm.nih.gov/22607825/)
+> - Y 2017. [Statistical methods to detect pleiotropy in human complex traits](pubmed.ncbi.nlm.nih.gov/29093210/)
+> - Y 2019. [Meta-analysis and Mendelian randomization: A review](pubmed.ncbi.nlm.nih.gov/30861319/)
+> - Y 2021. [Genetic correlation and causal relationships between cardio-metabolic traits and lung function impairment](https://pubmed.ncbi.nlm.nih.gov/34154662/)
+> - Y 2022. [Assessing the Causal Role of Sleep Traits on Glycated Hemoglobin: A Mendelian Randomization Study](pubmed.ncbi.nlm.nih.gov/35349659/)
+> - Y 2022. [Genetically predicted sex hormone levels and health outcomes: phenome-wide Mendelian randomization investigation](pubmed.ncbi.nlm.nih.gov/35218343/)
 
 
 R入门：
