@@ -30,6 +30,7 @@
 
 
 # #2.  提取 UKB 表型数据
+从 [ukbiobank](ukbiobank.ac.uk) 官网，点击 data showcase进入，然后看到 Search 或 Browse（截图如下）
 
 ![UKB](./images/ukb.png)
 
