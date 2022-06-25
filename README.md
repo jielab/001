@@ -185,12 +185,12 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 # # 参考文献和网站
 
 基因注释信息浏览器：
-dbSNP: https://www.ncbi.nlm.nih.gov/snp/
-UCSC genome browser: https://www.genome.ucsc.edu/
-美国精准医学：https://databrowser.researchallofus.org/  
-TopMed browser: https://bravo.sph.umich.edu/
-Gnomad browser: https://gnomad.broadinstitute.org/
-GlobalBiobankEngine：https://github.com/rivas-lab
+dbSNP: https://www.ncbi.nlm.nih.gov/snp/   
+UCSC genome browser: https://www.genome.ucsc.edu/ 
+美国精准医学：https://databrowser.researchallofus.org/   
+TopMed browser: https://bravo.sph.umich.edu/ 
+Gnomad browser: https://gnomad.broadinstitute.org/ 
+GlobalBiobankEngine：https://github.com/rivas-lab 
 
 
 GWAS 入门：
