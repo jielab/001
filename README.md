@@ -125,12 +125,9 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 <br/><br/>
 
 
-## #3.4 注释 GWAS信号，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。密西根大学还开发了 [LocusZOOM](http://locuszoom.org), 具有类似和互补的功能。
+## #3.4 注释 GWAS信号，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业，日本人就用这个做出了 [pheweb.jp](pheweb.jp)。密西根大学还开发了 [LocusZOOM](http://locuszoom.org), 具有类似和互补的功能。
 
-![pheweb](./images/pheweb.png)
-
-
-> ### 如果不用上述的系统，可以使用 [PLINK](https://www.cog-genomics.org/plink/1.9/) 人工操作。请点击左边菜单中的 Report postprocess 中的 3个命令（--annotate, --clump, --gene-report）
+> ### 如果不用上述的系统，也可以用 [PLINK](https://www.cog-genomics.org/plink/1.9/) 人工操作。点击左边菜单中的 Report postprocess 中的 3个命令（--annotate, --clump, --gene-report）
 
 ```
 trait=MI
@@ -154,12 +151,7 @@ done
 zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2,$3,$NF,b}' | \
 	sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $0; arr[$NF] ="Y"}' 
 
-# 要把上述得到的显著区域跟别人已经发表的 SNP进行比较，看是不是有重叠（1MB范围之内的重叠都算），可以用下面的 bedtools 命令。 
-# 该文件需要将 A 和 B 两个文件转换成 bed 格式，并把其中的一个文件的SNP的位置，左右各扩张1MB。如果起始位置出现负数，一定要将负数改为 0。
-# 比如A文件中的某个 rsXYZ 位于1号染色体上的3000000 位置，那么bed 文件中就写： 1  2000000  2000000   rsXYZ
-
-bedtools intersect -a A.bed -b B.bed -wo
-```
+# 要把上述得到的显著区域跟别人已经发表的 SNP进行比较，看是不是有重叠（1MB范围之内的重叠都算），可以用 bedtools 命令。
 
 <br/>
 
@@ -187,7 +179,7 @@ bedtools intersect -a A.bed -b B.bed -wo
 
 > - 如果有简单的数据，别人文章里面已经报道了的 exposure 和 outcome 的 BETA 和 SE，最简单的是使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)。还有一个特别针对 UKB 处理海量数据的 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)。
 > - MendelianRandomizaiton R包简单透明。只需要先把两个表型的summary数据运行一下 compare-B, 然后得到一个只有4列的小文件 （BETA1, SE1, BETA2, SE2）。TwoSampleMR 自然是不错，连数据都不需要了，只需要写一个 MRC-IEU的代码，就可以运行远程的数据。但是试想一下，哪天上不了那个网，或者对方将数据大量更新修改，我们的结果就再也重复不了了。建议两种方法都用，double check!
-
+> > ![compareB](./images/T2D.Z.png) 
 
 # # 参考文献和网站
 
