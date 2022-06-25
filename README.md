@@ -19,12 +19,10 @@
 
 ## #1.2. 1000 genomes (千人基因组) genotype 数据， 一般作为 imputation 的 reference panel.
 
-> 在[千人基因组官网](https://www.internationalgenome.org/data) 的 Available data 下面，下载 Phase 3 对应的 VCF 链接，
-> 倒数第二个 integrated_call_samples_v3.20130502.ALL.panel 文件罗列了每一个样本的人群（pop）和人种 (super_pop)，以及性别。
-> 根据这个文件，可以提取特定人种的样本。当然，如果不想生成太多的基因数据，就只保留一个完整数据，后续用PLINK --keep 就行。
+> 在[千人基因组官网](https://www.internationalgenome.org/data) 下载 Phase 3 对应的 VCF 链接，
+> 有一个文件罗列了每一个样本的人群（pop）和人种 (super_pop)，以及性别，可以用PLINK --keep 选取特定人种的样本。
 > 下载下来的数据，有将近一个亿的SNP，每个染色体都是单独的文件。后续跑 GWAS 或提取 PRS 的时候，也是每条染色体的数据分开来跑。
-> 其实，PLINK的网站上也有千人基因组的数据，点击左下方菜单“1000 genomes phase3” 链接，按照操作下载和处理。
-> 不管是哪个方法得到的PLINK格式的数据，有的软件不允许 .bim 文件里面的 SNP 名字有重复，这个时候可以用下面的命令来处理。
+> 其实，PLINK的网站上也有“1000 genomes phase3” 数据。PLINK 不允许 SNP 名字有重复，可以用下面的命令来处理。
 > > - awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim.COPY > chr1.bim 
 <br/>
 
@@ -35,9 +33,8 @@
 ![UKB](./images/ukb.png)
 
 ## #2.1 关于UKB 基因数据
-> 首先要明确，UKB的基因数据很大，所有申请者都能得到一样的数据（样本的ID不一样），一般下载到服务器上去储存和使用。
-> 对于表型数据的提取，有人做了一个 [ukbtools R软件包](https://kenhanscombe.github.io/ukbtools/articles/explore-ukb-data.html)
-> 但我觉得不是太好用，并且很慢。可以参考这个，用两种不同的方法来提取数据，进行比较。
+> UKB的基因数据很大，所有申请者都能得到一样的数据（样本的ID不一样），一般下载到服务器上去储存和使用。
+> 对于表型数据的提取，有人做了一个 [ukbtools R软件包](https://kenhanscombe.github.io/ukbtools/articles/explore-ukb-data.html)。 但不是太好用，并且很慢。
 <br/>
 
 ## #2.2 只有一列或者少数计列的一般表型（age, sex, race, bmi, etc.）
