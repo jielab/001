@@ -195,8 +195,8 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 
 GWAS 入门：
 > - 芬兰赫尔辛基大学 GWAS 课程：https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/
-> - 2020. NEJM. Genomewide Association Study of Severe Covid-19 with Respiratory Failure (https://www.nejm.org/doi/full/10.1056/NEJMoa2020283)
-> - 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
+> - NEJM. 2020. Genomewide Association Study of Severe Covid-19 with Respiratory Failure (https://www.nejm.org/doi/full/10.1056/NEJMoa2020283)
+> - Nature Reviews Methods Primers. 2021. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 
 多基因效应：Polygeny 以及 PRS
 1. 2019. Lancet Respiratory Medicine. [Identification of risk loci and a polygenic risk score for lung cancer: a large-scale prospective cohort study in Chinese populations](pubmed.ncbi.nlm.nih.gov/31326317/)
