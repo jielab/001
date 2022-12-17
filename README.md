@@ -13,8 +13,7 @@
 > 点击 How To Download This Release 下面的 A. SNP Genotype Data 段落的中间3个链接。
 > 文件名字里面有 "b36"，现在一般都用 b37（比如 UK Biobank），甚至有的用 b38，
 > 所以下载后解压后需要将那个 .map 文件先用 liftOver 转化为 b37 格式，然后用 PLINK 生成 bed/bim/fam 文件。
-> 这一步已经完成，生成的 PLINK 格式文件已经放到百度网盘，请大家下载。  
-> 这个基因数据将作为我们组进行 LDSC 和 GSMR 分析的标准文件。
+> 这个基因数据可供 LDSC 和 GSMR 等软件使用。
 <br/>
 
 ## #1.2. 1000 genomes (千人基因组) genotype 数据， 一般作为 imputation 的 reference panel.
@@ -22,28 +21,22 @@
 > 在[千人基因组官网](https://www.internationalgenome.org/data) 下载 Phase 3 对应的 VCF 链接，
 > 有一个文件罗列了每一个样本的人群（pop）和人种 (super_pop)，以及性别，可以用PLINK --keep 选取特定人种的样本。
 > 下载下来的数据，有将近一个亿的SNP，每个染色体都是单独的文件。后续跑 GWAS 或提取 PRS 的时候，也是每条染色体的数据分开来跑。
-> 其实，PLINK的网站上也有“1000 genomes phase3” 数据。PLINK 不允许 SNP 名字有重复，可以用下面的命令来处理。
+> PLINK的网站上也有“1000 genomes phase3” 数据。PLINK 不允许 SNP 名字有重复，可以用下面的命令来处理。
 > > - awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim.COPY > chr1.bim 
 <br/>
 
 
 # #2.  提取 UKB 表型数据
-从 [ukbiobank](ukbiobank.ac.uk) 官网，点击 data showcase进入，然后看到 Search 或 Browse（截图如下）
-
+从 [ukbiobank](ukbiobank.ac.uk) 官网，点击 data showcase --> Essential information --> Accessing UK Biobank data，阅读 Data access guide 文件。
+然后，可以通过 Search 或 Browse（截图如下）去熟悉 UKB 里面的数据结构。具体的数据，需要申请得到批准后，从最上面的 Researcher log in 登录后获取。
 ![UKB](./images/ukb.png)
 
-## #2.1 关于UKB 基因数据
-> UKB的基因数据很大，所有申请者都能得到一样的数据（样本的ID不一样），一般下载到服务器上去储存和使用。
-> 对于表型数据的提取，有人做了一个 [ukbtools R软件包](https://kenhanscombe.github.io/ukbtools/articles/explore-ukb-data.html)。 但不是太好用，并且很慢。
-<br/>
 
-## #2.2 只有一列或者少数计列的一般表型（age, sex, race, bmi, etc.）
+## #2.1 提取简单的表型数据（比如 age, sex, race, bmi, etc.）
 
 WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/d/ （而不是 D:/）进入 D 盘。
-打开ukbiobank.ac.uk, 点击 Data Showcase 菜单。然后点击第一个“Essential Information”，阅读 Access and using your data。
-读完整个文档的话，就什么都知道了。苹果电脑，参考 https://github.com/spiros/docker-ukbiobank-utils
 
-1. 先用 ukbunpack 解压表型数据的大文件
+1. 先根据上述的Data access guide，执行 ukbunpack 解压表型数据的大文件。
 
 2. 写一个 VIP.fields.txt 文件，列出想提取的变量和对应的 data-field，比如 
     - 21022 age
@@ -61,10 +54,11 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
     - pnames$V1 <- paste0("f.", pnames$V1, ".0.0")
     - phe <- subset(bd, select=grep("f.eid|\\.0\\.0", names(bd)))
 
+注：> 对于表型数据的提取，有一个 [ukbtools R软件包](https://kenhanscombe.github.io/ukbtools/articles/explore-ukb-data.html)。 但不是太好用，并且很慢。
+
 <br/>
 
-
-## #2.3 跨越很多列的数据，比如 ICD (data field 42170）
+## #2.2 提取跨越很多列的数据，比如 ICD (data field 42170）
 
 > ICD 这样的指标，包含了很多不同时间的时间点，量很大，建议分开来处理。
 > > ukbconv ukb42156.enc_ukb r -s42170 -oicd
@@ -73,9 +67,10 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 > 将 icd.tab 文件整合为两列，便于读入R。
 > > cat icd.tab | sed -e 's/\tNA//g' -e 's/\t/,/2g' | \
 > > awk '{ if(NR==1) print "IID icd"; else if (NF==1) print $1 " NA"; else print $0"," }' > icd.2cols
+
 <br/>
 
-## #2.4. 对表型数据进行 GWAS 运行之前的处理
+## #2.3. 对表型数据进行 GWAS 运行之前的处理
 
 > 提取需要研究的表型数据和相关的covariates，比如 age, sex, PCs。
 > 一般来说，quantitative的表型数据要 adjust for covariates 和转化成正态分布，这个可以在R里面用下面的命令来实现。
@@ -83,7 +78,12 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 > > trait_inv = qnorm((rank(trait_res,na.last="keep")-0.5) / length(na.omit(trait_res)))
 
 > 对于疾病的binary 表型，只需要把需要 adjust 的covarites 和表型数据放在同一个表型数据文件里面，
-> 然后在 GWAS里面的命令指明哪个是表型，哪些是 covariates。
+> 然后在 GWAS里面的plink命令指明哪个是表型，哪些是 covariates。
+
+<br/>
+
+## #2.4 关于UKB 基因数据
+> UKB的基因数据很大，所有申请者都能得到一样的数据（样本的ID不一样），一般下载到服务器上去储存和使用。
 
 <br/>
 
