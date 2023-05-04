@@ -35,23 +35,19 @@
 ## #2.1 提取简单的表型数据（比如 age, sex, race, bmi, etc.）
 
 > WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/d/ （而不是 D:/）进入 D 盘。
-
-1. 执行 ukbmd5 ukb50136.enc, 确认得到 981b47f85c6b2fb849320c7a3559ba23，确保数据完整。
-
-2. 执行 ukbunpack 解压、解密数据：ukbunpack ukb50136.enc fd5b09bb6f6dbXe9e0774e91f81Xaf1a2d9e3aeaXddad42a2ff6ea60f2f23XX8
-
-3. 执行 ukbconv，提取需要的列，并生成想要的格式：ukbconv ukb50136.enc_ukb r -iMY.fields.id -oMY
+> 1. 执行 ukbmd5 ukb50136.enc, 确认得到 981b47f85c6b2fb849320c7a3559ba23，确保数据完整。
+> 2. 执行 ukbunpack 解压、解密数据：ukbunpack ukb50136.enc fd5b09bb6f6dbXe9e0774e91f81Xaf1a2d9e3aeaXddad42a2ff6ea60f2f23XX8
+> 3. 执行 ukbconv，提取需要的列，并生成想要的格式：ukbconv ukb50136.enc_ukb r -iMY.fields.id -oMY
 > 可以先写一个 MY.fields.txt 文件，列出想提取的变量和对应的 data-field，比如 21022 age ... ...
 > 然后手动或者用下面的命令，提取出该文件的第一列（需要提取的表型的ID），并确认没有重复的ID。
 >   - awk '{print $1}' MY.fields.txt > MY.fields.id; sort MY.fields.id | uniq -d
-	
-4. 用下面的R代码，通过上面生成的 MY.r 读入上面生成的 MY.tab 数据，并且给每个变量赋予上述 MY.fields.txt给出的名字。需要注意 MY.r 第一行里面的路劲正确。
+> 4. 用下面的R代码，通过上面生成的 MY.r 读入上面生成的 MY.tab 数据，并且给每个变量赋予上述 MY.fields.txt给出的名字。需要注意 MY.r 第一行里面的路劲正确。
     - source("D:/MY.r")
     - pnames <- read.table("D:/MY.fields", header=F)
     - pnames$V1 <- paste0("f.", pnames$V1, ".0.0")
     - phe <- subset(bd, select=grep("f.eid|\\.0\\.0", names(bd)))
 
-注：> 对于表型数据的提取，有一个 [ukbtools R软件包](https://kenhanscombe.github.io/ukbtools/articles/explore-ukb-data.html)。 但不是太好用，并且很慢，可供参考。
+> 注：> 对于表型数据的提取，有一个 [ukbtools R软件包](https://kenhanscombe.github.io/ukbtools/articles/explore-ukb-data.html)。 但不是太好用，并且很慢，可供参考。
 
 <br/>
 
