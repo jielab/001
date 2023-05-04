@@ -154,7 +154,7 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 > ### 可阅读2020年的文章[From GWAS to Function: Using Functional Genomics to Identify the Mechanisms Underlying Complex Diseases](https://www.frontiersin.org/articles/10.3389/fgene.2020.00424/full)
 > ### 可先尝试傻瓜相机式的[FUMA](https://fuma.ctglab.nl/) 网上解读系统
 
-> > ![FUMA](./images/fuma.png) 
+> ![FUMA](./images/fuma.png) 
 
 <br/>
 
@@ -172,7 +172,7 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 
 > 如果没有个体数据，只有别人报道的 exposure 和 outcome 的 BETA 和 SE，就可以使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)，或 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)。
 > MendelianRandomizaiton R包简单透明。TwoSampleMR 可以连数据都不需要了，只需要GWAS的ID就可以运行远程的数据。但是试想一下，哪天上不了那个网，或者对方将数据大量更新修改，我们的结果就再也重复不了了。建议两种方法都用，double check!
-> > ![compareB](./images/T2D.Z.png) 
+> ![compareB](./images/T2D.Z.png) 
 
 <br/>
 <br/>
