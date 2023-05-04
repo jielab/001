@@ -27,8 +27,8 @@
 
 
 # #2.  提取 UKB 表型数据
-从 [ukbiobank](ukbiobank.ac.uk) 官网，点击 data showcase --> Essential information --> Accessing UK Biobank data，阅读 Data access guide 文件。
-然后，可以通过 Search 或 Browse（截图如下）去熟悉 UKB 里面的数据结构。具体的数据，需要申请得到批准后，从最上面的 Researcher log in 登录后获取。
+从 [ukbiobank](ukbiobank.ac.uk) 官网，点击 data showcase --> Essential information --> Accessing UK Biobank data，阅读 Data access guide 文件，里面会提到如何下载用来下载UKB数据的小软件（比如ukbunpack和unkconv）。
+可以通过 Search 或 Browse（截图如下）去熟悉 UKB 里面的数据结构。具体的数据，需要申请得到批准后，从最上面的 Researcher log in 登录后获取，见百度网盘上的 ukb50136.enc。
 ![UKB](./images/ukb.png)
 
 
@@ -36,25 +36,23 @@
 
 WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/d/ （而不是 D:/）进入 D 盘。
 
-1. 先根据上述的Data access guide，执行 ukbunpack 解压表型数据的大文件。
+1. 执行 ukbmd5 ukb50136.enc, 确认得到 981b47f85c6b2fb849320c7a3559ba23，确保数据完整。
 
-2. 写一个 VIP.fields.txt 文件，列出想提取的变量和对应的 data-field，比如 
-    - 21022 age
+2. 执行 ukbunpack 解压、解密数据：ukbunpack ukb50136.enc fd5b09bb6f6dbXe9e0774e91f81Xaf1a2d9e3aeaXddad42a2ff6ea60f2f23XX8
 
-3. 然后手动或者用下面的命令，提取出该文件的第一列（需要提取的表型的ID），并确认没有重复的ID。
-    - awk '{print $1}' ukb.vip.fields > ukb.vip.fields.id
-    - sort ukb.vip.fields.id | uniq -d
-
-4. 用 ukbconv 提取上面的ID所对应的表型数据
-    - ukbconv ukb42156.enc_ukb r -iukb.vip.fields.id -ovip
+3. 执行 ukbconv，提取需要的列，并生成想要的格式：ukbconv ukb50136.enc_ukb r -iMY.fields.id -oMY
+> > 可以先写一个 MY.fields.txt 文件，列出想提取的变量和对应的 data-field，比如 21022 age ... ...
+> > 然后手动或者用下面的命令，提取出该文件的第一列（需要提取的表型的ID），并确认没有重复的ID。
+    - awk '{print $1}' MY.fields.txt > MY.fields.id
+    - sort MY.fields.id | uniq -d
 	
-5. 用下面的R代码，通过上面生成的 vip.r 读入上面生成的 vip.tab 数据，并且给每个变量赋予上述 VIP.fields.txt给出的名字。需要注意 vip.r 第一行里面的路劲正确。
-    - source("D:/vip.r")
-    - pnames <- read.table("D:/ukb.vip.fields", header=F)
+4. 用下面的R代码，通过上面生成的 MY.r 读入上面生成的 MY.tab 数据，并且给每个变量赋予上述 MY.fields.txt给出的名字。需要注意 MY.r 第一行里面的路劲正确。
+    - source("D:/MY.r")
+    - pnames <- read.table("D:/MY.fields", header=F)
     - pnames$V1 <- paste0("f.", pnames$V1, ".0.0")
     - phe <- subset(bd, select=grep("f.eid|\\.0\\.0", names(bd)))
 
-注：> 对于表型数据的提取，有一个 [ukbtools R软件包](https://kenhanscombe.github.io/ukbtools/articles/explore-ukb-data.html)。 但不是太好用，并且很慢。
+注：> 对于表型数据的提取，有一个 [ukbtools R软件包](https://kenhanscombe.github.io/ukbtools/articles/explore-ukb-data.html)。 但不是太好用，并且很慢，可供参考。
 
 <br/>
 
@@ -107,9 +105,7 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 ## #3.2 公开的GWAS数据进行练手，或对比
 
 > 最经典的，起源于美国NIH 的 [GWAS Catalog](https://www.ebi.ac.uk/gwas). 这个页面也罗列了一些大型GWAS数据联盟。
-![Figure gcta](./images/gcat.png)
-
-> 欧洲版本，提倡 VCF 格式，不需要下载就能通过 TwoSampleMR 远程读入。
+> 欧洲版本，不需要下载就能通过 TwoSampleMR 远程读入。他们提倡 使用 VCF 格式的GWAS文件。
 ![Figure IEU](./images/ieu-open.png)
 
 > UKB GWAS 完整的分析结果，网上发布
@@ -117,13 +113,13 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 > > - 英国爱丁堡大学：geneatlas: http://geneatlas.roslin.ed.ac.uk
 
 > 各大疾病联盟
-> > - 哈佛大学的CVD knowlege portal: https://hugeamp.org/
+> > - 哈佛大学的 CVD knowlege portal: https://hugeamp.org/
 > > - 南加州大学的神经影像基因组国际合作团队：http://enigma.ini.usc.edu/
 
 <br/><br/>
 
 
-## #3.3 注释 GWAS信号，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业，日本人就用这个做出了 [pheweb.jp](pheweb.jp)。密西根大学还开发了 [LocusZOOM](http://locuszoom.org), 具有类似和互补的功能。
+## #3.3 GWAS的显示和注释，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业，日本人就用这个弄出了 [pheweb.jp](pheweb.jp)。密西根大学还开发了 [LocusZOOM](http://locuszoom.org), 具有类似和互补的功能。
 
 > ### 如果不用上述的系统，也可以用 [PLINK](https://www.cog-genomics.org/plink/1.9/) 人工操作。点击左边菜单中的 Report postprocess 中的 3个命令（--annotate, --clump, --gene-report）
 
@@ -172,10 +168,11 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 
 
 ## #3.7. 因果分析 Mendelian Randomization
-> ### MR的文章已经发表了无数篇，方法至少十几种。对于原始的GWAS数据，我们可以采用 [GSMR](https://cnsgenomics.com/software/gcta/#GSMR) 进行流程化处理。请认真阅读杨剑2018年的[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 。这不是一个R包，而是一个成熟的软件 GCTA中的一部分，因此运行起来会比较快。GSMR 需要用到参考基因组计算 LD 的软件，我们建议用 hapmap3 的数据作为 LD reference。
+> ### MR的文章已经发表了无数篇，方法至少十几种。对于原始的GWAS数据，我们可以采用 [GSMR](https://cnsgenomics.com/software/gcta/#GSMR)。
+> 参考杨剑2018年的[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 。
 
-> 如果有简单的数据，别人文章里面已经报道了的 exposure 和 outcome 的 BETA 和 SE，最简单的是使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)。还有一个特别针对 UKB 处理海量数据的 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)。
-> MendelianRandomizaiton R包简单透明。只需要先把两个表型的summary数据运行一下 compare-B, 然后得到一个只有4列的小文件 （BETA1, SE1, BETA2, SE2）。TwoSampleMR 自然是不错，连数据都不需要了，只需要写一个 MRC-IEU的代码，就可以运行远程的数据。但是试想一下，哪天上不了那个网，或者对方将数据大量更新修改，我们的结果就再也重复不了了。建议两种方法都用，double check!
+> 如果没有个体数据，只有别人报道的 exposure 和 outcome 的 BETA 和 SE，就可以使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)，或 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)。
+> MendelianRandomizaiton R包简单透明。TwoSampleMR 可以连数据都不需要了，只需要GWAS的ID就可以运行远程的数据。但是试想一下，哪天上不了那个网，或者对方将数据大量更新修改，我们的结果就再也重复不了了。建议两种方法都用，double check!
 > > ![compareB](./images/T2D.Z.png) 
 
 <br/>
