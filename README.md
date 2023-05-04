@@ -34,7 +34,7 @@
 
 ## #2.1 提取简单的表型数据（比如 age, sex, race, bmi, etc.）
 
-WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/d/ （而不是 D:/）进入 D 盘。
+> WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/d/ （而不是 D:/）进入 D 盘。
 
 1. 执行 ukbmd5 ukb50136.enc, 确认得到 981b47f85c6b2fb849320c7a3559ba23，确保数据完整。
 
@@ -57,13 +57,13 @@ WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/
 
 ## #2.2 提取跨越很多列的数据，比如 ICD (data field 42170）
 
-ICD 这样的指标，包含了很多不同时间的时间点，量很大，建议分开来处理。
-> ukbconv ukb42156.enc_ukb r -s42170 -oicd
-> sed -i 's/"//g icd.tab
+> ICD 这样的指标，包含了很多不同时间的时间点，量很大，建议分开来处理。
+> > ukbconv ukb42156.enc_ukb r -s42170 -oicd
+> > sed -i 's/"//g icd.tab
 
-将 icd.tab 文件整合为两列，便于读入R。
-> cat icd.tab | sed -e 's/\tNA//g' -e 's/\t/,/2g' | \
-> awk '{ if(NR==1) print "IID icd"; else if (NF==1) print $1 " NA"; else print $0"," }' > icd.2cols
+> 将 icd.tab 文件整合为两列，便于读入R。
+> > cat icd.tab | sed -e 's/\tNA//g' -e 's/\t/,/2g' | \
+> > awk '{ if(NR==1) print "IID icd"; else if (NF==1) print $1 " NA"; else print $0"," }' > icd.2cols
 
 <br/>
 
