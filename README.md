@@ -204,8 +204,7 @@ GWAS-PRS-MR 入门：
 <br/>
 <br/>
 
-# # 
-R分析和画图示例：
+# # R分析和画图示例：
 > - [The R Graph Gallery](https://r-graph-gallery.com/index.html)
 > - [Doing and reporting your first mediation analysis in R](https://towardsdatascience.com/doing-and-reporting-your-first-mediation-analysis-in-r-2fe423b92171)
 > - [Add P-values and Significance Levels to ggplots](https://www.r-bloggers.com/2017/06/add-p-values-and-significance-levels-to-ggplots/)
