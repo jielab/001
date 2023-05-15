@@ -176,10 +176,10 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 
 GWAS-PRS-MR 入门：
 > GWAS:
-> > - 芬兰赫尔辛基大学 GWAS 课程：https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/
-> > - Y 2020. NEJM. Genomewide Association Study of Severe Covid-19 with Respiratory Failure (https://www.nejm.org/doi/full/10.1056/NEJMoa2020283)
 > > - Y 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
-2006. Nature Review Genetics. [A tutorial on statistical methods for population association studies](https://pubmed.ncbi.nlm.nih.gov/16983374/)
+> > - Y 2006. Nature Review Genetics. [A tutorial on statistical methods for population association studies](https://pubmed.ncbi.nlm.nih.gov/16983374/)
+> > - Y 2020. NEJM. Genomewide Association Study of Severe Covid-19 with Respiratory Failure (https://www.nejm.org/doi/full/10.1056/NEJMoa2020283)
+> > - 芬兰赫尔辛基大学 GWAS 课程：https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/
 
 > PRS:
 > > - Y 2020. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
@@ -191,14 +191,20 @@ GWAS-PRS-MR 入门：
 > > - Y 2022. Diabetes Care. [Assessing the Causal Role of Sleep Traits on Glycated Hemoglobin: A Mendelian Randomization Study](https://pubmed.ncbi.nlm.nih.gov/35349659/)
 
 
-高阶理论与方法：
+<br/>
+<br/>
+
+# # 高阶理论与方法：
 > - Y 2017. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
 > - Y 2019. [Meta-analysis and Mendelian randomization: A review](https://pubmed.ncbi.nlm.nih.gov/30861319/)
 > - Y 2019. Nature Genetics. [A global overview of pleiotropy and genetic architecture in complex traits](https://www.nature.com/articles/s41588-019-0481-0)
 > - Y 2021. [Genetic correlation and causal relationships between cardio-metabolic traits and lung function impairment](https://pubmed.ncbi.nlm.nih.gov/34154662/)
 > - Y 2022. [Genetically predicted sex hormone levels and health outcomes: phenome-wide Mendelian randomization investigation](https://pubmed.ncbi.nlm.nih.gov/35218343/)
 
+<br/>
+<br/>
 
+# # 
 R分析和画图示例：
 > - [The R Graph Gallery](https://r-graph-gallery.com/index.html)
 > - [Doing and reporting your first mediation analysis in R](https://towardsdatascience.com/doing-and-reporting-your-first-mediation-analysis-in-r-2fe423b92171)
