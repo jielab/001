@@ -32,4 +32,5 @@ phe <- phe0 %>%
 	alcohol_status = factor(alcohol_status, levels=0:2, labels=c("never","previous","current"))
 	)
 saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
-
+	# covid0 <- read.table("D:/data/ukb/hes/covid19_result_england.txt", header=T)[,c(1,2,5,6)]
+	# covid <- aggregate(result ~ eid, data=covid0, sum) %>% rename(inf=result) 
