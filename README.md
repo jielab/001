@@ -40,14 +40,14 @@
 > 1. 执行 ukbmd5 ukb50136.enc, 确认得到 981b47f85c6b2fb849320c7a3559ba23，确保数据完整。
 > 2. 执行 ukbunpack 解压、解密数据，比如：
 ```
-> > ukbunpack ukb50136.enc fd5b09bb6f6db1e9e0774e91f812af1a2d9e3aea3ddad42a2ff6ea60f2f23458
-> > ukbunpack ukb50136.enc a93100fe54833270898b8e87f96646fdf52f509de2b87248ed1ea92b560c2ba1
+ukbunpack ukb50136.enc fd5b09bb6f6db1e9e0774e91f812af1a2d9e3aea3ddad42a2ff6ea60f2f23458
+ukbunpack ukb50136.enc a93100fe54833270898b8e87f96646fdf52f509de2b87248ed1ea92b560c2ba1
 ```
 > 3. 执行 ukbconv，提取需要的列，并生成想要的格式：ukbconv ukb50136.enc_ukb r -iMY.fields.id -oMY
 > 可以先写一个 MY.fields.txt 文件，列出想提取的变量和对应的 data-field，比如第一行是sex	31，第二行是 age 21022，等。
 > 然后手动或者用下面的命令，提取出该文件的第一列（需要提取的表型的ID），并确认没有重复的ID。
 ```
->   - awk '{print $1}' MY.fields.txt > MY.fields.id; sort MY.fields.id | uniq -d
+awk '{print $1}' MY.fields.txt > MY.fields.id; sort MY.fields.id | uniq -d
 ```
 > 4. 参考 scripts/phe.R 代码，通过上面生成的 MY.r 读入上面生成的 MY.tab 数据，并且给每个变量赋予上述 MY.fields.txt给出的名字。需要注意 MY.r 第一行里面的路劲正确。
 > 注：> 对于表型数据的提取，有一个 [ukbtools R软件包](https://kenhanscombe.github.io/ukbtools/articles/explore-ukb-data.html)。 但不是太好用，并且很慢，可供参考。
@@ -58,13 +58,13 @@
 
 > ICD 这样的指标，包含了很多不同时间的时间点，量很大，建议分开来处理。
 ```
-> > ukbconv ukb42156.enc_ukb r -s42170 -oicd
-> > sed -i 's/"//g icd.tab
+ukbconv ukb42156.enc_ukb r -s42170 -oicd
+sed -i 's/"//g icd.tab
 ```
 > 将 icd.tab 文件整合为两列，便于读入R。
 ```
-> > cat icd.tab | sed -e 's/\tNA//g' -e 's/\t/,/2g' | \
-> > awk '{ if(NR==1) print "IID icd"; else if (NF==1) print $1 " NA"; else print $0"," }' > icd.2cols
+cat icd.tab | sed -e 's/\tNA//g' -e 's/\t/,/2g' | \
+awk '{ if(NR==1) print "IID icd"; else if (NF==1) print $1 " NA"; else print $0"," }' > icd.2cols
 ```
 <br/>
 
@@ -73,8 +73,8 @@
 > 提取需要研究的表型数据和相关的covariates，比如 age, sex, PCs。
 > 一般来说，quantitative的表型数据要 adjust for covariates 和转化成正态分布，这个可以在R里面用下面的命令来实现。
 ```
-> trait_res = residuals(lm(trait ~ age+sex+PC1+PC2, na.action=na.exclude)
-> trait_inv = qnorm((rank(trait_res,na.last="keep")-0.5) / length(na.omit(trait_res)))
+trait_res = residuals(lm(trait ~ age+sex+PC1+PC2, na.action=na.exclude)
+trait_inv = qnorm((rank(trait_res,na.last="keep")-0.5) / length(na.omit(trait_res)))
 ```
 > 对于疾病的binary 表型，只需要把需要 adjust 的covarites 和表型数据放在同一个表型数据文件里面，
 > 然后在 GWAS里面的plink命令指明哪个是表型，哪些是 covariates。
