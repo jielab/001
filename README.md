@@ -23,7 +23,7 @@
 > 下载下来的数据，有将近一个亿的SNP，每个染色体都是单独的文件。后续跑 GWAS 或提取 PRS 的时候，也是每条染色体的数据分开来跑。
 > PLINK的网站上也有“1000 genomes phase3” 数据。PLINK 不允许 SNP 名字有重复，可以用下面的命令来处理。
 ```
-> > - awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim.COPY > chr1.bim 
+awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim.COPY > chr1.bim 
 ```
 <br/>
 
