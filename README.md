@@ -41,7 +41,7 @@ awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim
 > 2. 执行 ukbunpack 解压、解密数据，比如：
 ```
 ukbunpack ukb50136.enc fd5b09bb6f6db1e9e0774e91f812af1a2d9e3aea3ddad42a2ff6ea60f2f23458
-ukbunpack ukb50136.enc a93100fe54833270898b8e87f96646fdf52f509de2b87248ed1ea92b560c2ba1
+ukbunpack ukb670287.enc a93100fe54833270898b8e87f96646fdf52f509de2b87248ed1ea92b560c2ba1
 ```
 > 3. 执行 ukbconv，提取需要的列，并生成想要的格式：ukbconv ukb50136.enc_ukb r -iMY.fields.id -oMY
 > 可以先写一个 MY.fields.txt 文件，列出想提取的变量和对应的 data-field，比如第一行是sex	31，第二行是 age 21022，等。
