@@ -18,7 +18,7 @@ apoe <- read.table("D:/data/ukb/hap/apoe.hap", header=T, as.is=T) %>% rename(eid
 sqc <- read.table("D:/data/ukb/phe/common/ukb_sqc_v2.txt", header=T, as.is=T) %>%
 	rename(garray=genotyping.array, batch=Batch, in.british=in.white.British.ancestry.subset, in.pca=used.in.pca.calculation, aneuploidy=putative.sex.chromosome.aneuploidy)
 sqc <- subset(sqc, select=grepl("eid|garray|batch|in\\.|aneuploidy|kinship|excess|PC", names(sqc)))
-# cat ukb1941_rel_s488366.dat | awk 'NR>1 {print $2}' | sort | uniq | awk 'BEGIN{print "IID related"}{print $1,"Y"}' > ukb.related
+# 先用下面的代码，罗列那些和别的样本有亲缘关系因而需要删掉的样本：cat ukb1941_rel_s488366.dat | awk 'NR>1 {print $2}' | sort | uniq | awk 'BEGIN{print "IID related"}{print $1,"Y"}' > ukb.related
 rel <- read.table("D:/data/ukb/phe/common/ukb.related", header=T, as.is=T)
 dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(imp, abo, apoe, sqc, rel))
 dat <- dat0 %>%
