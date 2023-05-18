@@ -204,10 +204,8 @@ GWAS-PRS-MR 入门：
 > > - Y 2012. Lancet. [Plasma HDL cholesterol and risk of myocardial infarction: a mendelian randomisation study](https://pubmed.ncbi.nlm.nih.gov/22607825/)
 > > - Y 2022. Diabetes Care. [Assessing the Causal Role of Sleep Traits on Glycated Hemoglobin: A Mendelian Randomization Study](https://pubmed.ncbi.nlm.nih.gov/35349659/)
 
-
 <br/>
 <br/>
-
 
 # # R分析和画图示例：
 > - [The R Graph Gallery](https://r-graph-gallery.com/index.html)
@@ -219,6 +217,8 @@ GWAS-PRS-MR 入门：
 > - [Top 100 R resources on COVID-19 Coronavirus](https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/)
 > - 以及 modelSummary, forplo，sankey diagram, CellChat, ComplexHeatmap，等等
 
+<br/>
+<br/>
 
 # # 高阶理论与方法：
 > - Y 2017. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
