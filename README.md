@@ -208,15 +208,6 @@ GWAS-PRS-MR 入门：
 <br/>
 <br/>
 
-# # 高阶理论与方法：
-> - Y 2017. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
-> - Y 2019. [Meta-analysis and Mendelian randomization: A review](https://pubmed.ncbi.nlm.nih.gov/30861319/)
-> - Y 2019. [A global overview of pleiotropy and genetic architecture in complex traits](https://www.nature.com/articles/s41588-019-0481-0)
-> - Y 2021. [Genetic correlation and causal relationships between cardio-metabolic traits and lung function impairment](https://pubmed.ncbi.nlm.nih.gov/34154662/)
-> - Y 2022. [Genetically predicted sex hormone levels and health outcomes: phenome-wide Mendelian randomization investigation](https://pubmed.ncbi.nlm.nih.gov/35218343/)
-
-<br/>
-<br/>
 
 # # R分析和画图示例：
 > - [The R Graph Gallery](https://r-graph-gallery.com/index.html)
@@ -227,3 +218,15 @@ GWAS-PRS-MR 入门：
 > - [An Intro to Phylogenetic Tree Construction in R](https://fuzzyatelin.github.io/bioanth-stats/module-24/module-24.html)
 > - [Top 100 R resources on COVID-19 Coronavirus](https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/)
 > - 以及 modelSummary, forplo，sankey diagram, CellChat, ComplexHeatmap，等等
+
+
+# # 高阶理论与方法：
+> - Y 2017. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
+> - Y 2019. [Meta-analysis and Mendelian randomization: A review](https://pubmed.ncbi.nlm.nih.gov/30861319/)
+> - Y 2019. [A global overview of pleiotropy and genetic architecture in complex traits](https://www.nature.com/articles/s41588-019-0481-0)
+> - Y 2021. [Genetic correlation and causal relationships between cardio-metabolic traits and lung function impairment](https://pubmed.ncbi.nlm.nih.gov/34154662/)
+> - Y 2021. [Mendelian randomisation for mediation analysis: current methods and challenges for implementation](https://pubmed.ncbi.nlm.nih.gov/33961203/)
+> - Y 2022. [Genetically predicted sex hormone levels and health outcomes: phenome-wide Mendelian randomization investigation](https://pubmed.ncbi.nlm.nih.gov/35218343/)
+
+<br/>
+<br/>
