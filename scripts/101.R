@@ -8,7 +8,6 @@ table(dat0$sp1); table(dat0$blood_group); table(dat0$abo1); hist(dat0$bb_ALP)
 dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
 	mutate (
 	o_no = ifelse(blood_group !="OO", 1,0),
-	sp1_dose = 
 	inpatient_yes = ifelse(!is.na(icd_covid_date), 1, ifelse(covid_inf==1,0, NA))
 	)
 round(prop.table(table(dat$abo1, dat$covid_inf), 1), 5) # sp1, age_cat
