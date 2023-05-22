@@ -16,7 +16,7 @@ tab1 <- dat %>% group_by(abo1) %>% summarise_at(vars(grep("bb_", names(dat), val
 	ggplot(tab1.long, aes(x=variable, y=value, fill=factor(abo1))) + geom_bar(stat="identity", position="dodge") + theme(axis.text.x = element_text(angle = 90))
 naniar::gg_miss_var(subset(dat, select=grep("rheu|oest", grep("sex|bb_", names(dat), value=T), invert=T, value=T)), facet=sex)
 for (varY in grep("^bb_|^bc_", names(dat), value=T)) {
-	# dat[[var]] = inormal(dat[[var]])
+	dat[[varY]] = inormal(dat[[varY]])
 	dat$varY = dat[[varY]]
 	print(noquote(varY))
 	for (varX in grep("^sp1\\.", names(dat), value=T)) {
