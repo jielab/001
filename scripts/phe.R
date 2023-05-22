@@ -3,6 +3,7 @@ pacman::p_load(data.table, dplyr, tidyverse, crosswalkr, lubridate)
 indir = "D:/data/ukb/phe/"
 dates_bad=as.Date(c("1900-01-01", "1901-01-01", "1902-02-02", "1903-03-03", "1999-01-01", "2037-07-07"))
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # main PHE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,3 +35,63 @@ phe <- phe0 %>%
 saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
 	# covid0 <- read.table("D:/data/ukb/hes/covid19_result_england.txt", header=T)[,c(1,2,5,6)]
 	# covid <- aggregate(result ~ eid, data=covid0, sum) %>% rename(inf=result) 
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ICD 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source(paste0(indir,"raw-670287/icd.r")); icd <- bd
+source(paste0(indir,"raw-670287/icdDate.r")); icdDate <- bd
+dates <- names(bd)[sapply(bd, is.Date)]; summary(bd[,dates])
+for (date1 in dates) { icdDate[[date1]][icdDate[[date1]] %in% as.Date(c("1900-01-01", "1999-01-01"))] <- NA }
+ICDlink <- read.table("D:/data/ukb/phe/common/ukb.vip.icd", header=F); names(ICDlink) <- c("trait", "code")
+dat <- as.data.frame(icd$f.eid); names(dat) <- "eid"
+for (i in 1:nrow(ICDlink)) {
+	dat1 <- icd[,-1]; dat2 <- icdDate[,-1]
+	exclude=as.matrix(apply(dat1, 1:2, function(x){!grepl(ICDlink$code[i],x)}))
+	dat2[exclude] <- NA
+	dat[[paste0("icd_",ICDlink$trait[i],"_cnt")]] <- apply(dat2, 1, function(x){sum(!is.na(x))})
+	dat[[paste0("icd_",ICDlink$trait[i],"_date")]] = as.Date(apply(dat2, 1, FUN=min, na.rm=T)) 
+}
+saveRDS(dat, file="D:/data/ukb/Rdata/ukb.icd.rds")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# FOD (first occurrence date)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source(paste0(indir,"raw-50136/fod.r")) # bd is created
+dates <- names(bd)[sapply(bd, is.Date)]; summary(bd[,dates])
+for (date1 in dates) { bd[[date1]][bd[[date1]] %in% dates_bad] <- NA } #remove certain dates
+fields_all <- read.table(paste0(indir,"raw-50136/fields.ukb"), header=F)
+codes_all <- read.table(paste0(indir,"common/ukb.fod.code"), header=F); names(codes_all)=c("id", "code")
+FODlink1 <- read.table(paste0(indir,"common/ukb.fod.dat"), header=F)[,-2]
+	names(FODlink1) <- c("trait", "starting", "ending")
+FODlink2 <- read.table(paste0(indir,"common/ukb.fod.grp"), header=F, sep="\t") %>% rename(trait=V1) %>%
+	mutate(code1=substring(trait,1,3), code2=substring(trait,5,7)) %>%
+	merge(codes_all, by.x="code1", by.y="code", all.x=T) %>%
+	merge(codes_all, by.x="code2", by.y="code", all.x=T) %>%
+	subset(select=c("trait", "id.x", "id.y")) %>% 
+	rename(starting=id.x, ending=id.y)
+FODlink <- rbind(FODlink1, FODlink2)
+for (i in 1:nrow(FODlink)) {
+	fields <- paste0("f.", subset(fields_all, V1 >=FODlink[i,"starting"] & V1 <=FODlink[i,"ending"] & V1%%2==0)$V1, ".0.0")
+	subdata <- subset(bd, select=fields)
+	bd[[paste0("fod_",FODlink$trait[i])]] <- as.Date(apply(subdata, 1, FUN=min, na.rm=T)) 
+}
+fod <- subset(bd, select=grep("eid|fod_", names(bd), value=T)) %>% rename(eid=f.eid)
+saveRDS(fod, file="D:/data/ukb/Rdata/ukb.fod.rds")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# merge all together
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+phe <- readRDS("D:/data/ukb/Rdata/ukb.phe.rds")
+icd <- readRDS("D:/data/ukb/Rdata/ukb.icd.rds")
+fod <- readRDS("D:/data/ukb/Rdata/ukb.fod.rds")
+gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds") 
+hla <- readRDS("D:/data/ukb/Rdata/ukb.hla.rds") 
+hla <- hla %>% select(which(colMeans(.,na.rm=T) >=0.02))
+prs <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T)
+prs <- prs %>% subset(select=!grepl("eid\\.", names(prs)))
+dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, icd, fod, gen, prs)) 
+saveRDS(dat0, file="D:/data/ukb/Rdata/all.Rdata")
