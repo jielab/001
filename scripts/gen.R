@@ -1,24 +1,25 @@
 setwd("C:/Users/jiehu/Desktop")
 pacman::p_load(data.table, dplyr)
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # main GEN
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-typed = read.table(gzfile('D:/data/ukb/typed/typed.raw.gz','r'), header=T, as.is=T)
-	names(typed)=gsub("typed.IID", "eid", paste0("typed.", names(typed)))
-	typed[typed=="00"] = NA
-imp <- read.table(gzfile('D:/data/ukb/imp/imp.hard.raw.gz','r'), header=T, as.is=T) %>% rename(eid=IID) 
+typ = read.table(gzfile('D:/data/ukb/gen/typ/typ.raw.gz','r'), header=T, as.is=T)
+	names(typ)=gsub("typ.IID", "eid", paste0("typ.", names(typ)))
+	typ[typ=="00"] = NA
+imp <- read.table(gzfile('D:/data/ukb/gen/imp/imp.hard.raw.gz','r'), header=T, as.is=T) %>% rename(eid=IID) 
 	imp[imp=="00"] = NA
-abo <- read.table('D:/data/ukb/hes/covid19_misc.txt', header=T) %>% 
+abo <- read.table('D:/data/ukb/phe/hes/covid19_misc.txt', header=T) %>% 
 	mutate(
 	abo1=recode_factor(blood_group, "AA"="A", "BB"="B", "OO"="O", "AO"="A", "BO"="B"),
 	o_type=ifelse(blood_group=="OO", "O", "non-O")
 	) 
-apoe <- read.table("D:/data/ukb/hap/apoe.hap", header=T, as.is=T) %>% rename(eid=IID) 
+apoe <- read.table("D:/data/ukb/gen/hap/apoe.hap", header=T, as.is=T) %>% rename(eid=IID) 
 sqc <- read.table("D:/data/ukb/phe/common/ukb_sqc_v2.txt", header=T, as.is=T) %>%
 	rename(garray=genotyping.array, batch=Batch, in.british=in.white.British.ancestry.subset, in.pca=used.in.pca.calculation, aneuploidy=putative.sex.chromosome.aneuploidy)
 sqc <- subset(sqc, select=grepl("eid|garray|batch|in\\.|aneuploidy|kinship|excess|PC", names(sqc)))
-# 先用下面的代码，罗列那些和别的样本有亲缘关系因而需要删掉的样本：cat ukb1941_rel_s488366.dat | awk 'NR>1 {print $2}' | sort | uniq | awk 'BEGIN{print "IID related"}{print $1,"Y"}' > ukb.related
+# cat ukb1941_rel_s488366.dat | awk 'NR>1 {print $2}' | sort | uniq | awk 'BEGIN{print "IID related"}{print $1,"Y"}' > ukb.related
 rel <- read.table("D:/data/ukb/phe/common/ukb.related", header=T, as.is=T)
 dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(imp, abo, apoe, sqc, rel))
 dat <- dat0 %>%

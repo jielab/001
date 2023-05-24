@@ -3,57 +3,71 @@ pacman::p_load(data.table, lubridate, tidyverse, dplyr, ggplot2, CMplot, TwoSamp
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Read and check data 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata")
-table(dat0$sp1); table(dat0$blood_group); table(dat0$abo1); hist(dat0$bb_ALP)
+naniar::gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=T)), facet=sex)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# SP1 association with biomarkers 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+table(dat0$sp1)
 dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
 	mutate (
-	o_no = ifelse(blood_group !="OO", 1,0),
-	inpatient_yes = ifelse(!is.na(icd_covid_date), 1, ifelse(covid_inf==1,0, NA))
+		sp1.M = ifelse(sp1=="MM", 2, ifelse(grepl("M", sp1), 1, 0)),
+		sp1.S=ifelse(grepl("SS", sp1), 2,  ifelse(grepl("S", sp1), 1, 0)),
+		sp1.Z=ifelse(grepl("ZZ", sp1), 2,  ifelse(grepl("Z", sp1), 1, 0)),
+		age_mn_3p = ifelse(age_mn %in% 12:14, "normal", ifelse(age_mn>14, "late", "early")),
+		age_mn_3p = factor(age_mn_3p, levels=c("normal", "early", "late"))
 	)
-round(prop.table(table(dat$abo1, dat$covid_inf), 1), 5) # sp1, age_cat
-tab1 <- dat %>% group_by(abo1) %>% summarise_at(vars(grep("bb_", names(dat), value=T)), list(mean=mean), na.rm=T) %>% as.data.frame() %>% na.omit()
-	tab1.long <- melt(tab1, id.vars="abo1")
-	ggplot(tab1.long, aes(x=variable, y=value, fill=factor(abo1))) + geom_bar(stat="identity", position="dodge") + theme(axis.text.x = element_text(angle = 90))
-naniar::gg_miss_var(subset(dat, select=grep("rheu|oest", grep("sex|bb_", names(dat), value=T), invert=T, value=T)), facet=sex)
 for (varY in grep("^bb_|^bc_", names(dat), value=T)) {
-	dat[[varY]] = inormal(dat[[varY]])
-	dat$varY = dat[[varY]]
 	print(noquote(varY))
-	for (varX in grep("^sp1\\.", names(dat), value=T)) {
-		dat$varX <- dat[[varX]]
+	dat[[varY]] = inormal(dat[[varY]]) # normal transformation
+	dat$varY = dat[[varY]] # assign temporary variable name "varY"
+	for (varX in c("sp1.M", "sp1.S", "sp1.Z", "age_mn_3p")) {
+		dat$varX = dat[[varX]]
 		fit.lm <- lm(varY ~ varX +age+sex, data=dat)
-		print(noquote(paste("  --", varX, signif( coef(summary(fit.lm))[2,4], 3))))
+		print(noquote(paste("  --", varX, signif(coef(summary(fit.lm))[2,4],3))))
 	}
 }
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Mediation 
+# ABO - ALP - COVID Mediation 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-varX="abo1"; varY="inpatient_yes"; varM="bb_ALP"
+table(dat0$blood_group)
+dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
+	mutate (
+	exposure = ifelse(blood_group !="OO", 1,0),
+	outcome = ifelse(!is.na(icd_covid_date), 1, ifelse(covid_inf==1,0, NA))
+	)
+	round(prop.table(table(dat$exposure, dat$outcome), 1), 5) 
+	tab <- dat %>% group_by(abo1) %>% summarise_at(vars(grep("bb_", names(dat), value=T)), list(mean=mean), na.rm=T) %>% as.data.frame() %>% na.omit()
+varX="exposure"; varY="outcome"; varM="bb_ALP"
 dat1 <- subset(dat, select=c(varX, varY, varM, "age", "sex", "bmi")) %>% na.omit()
-names(dat1) <- c("varX", "varY", "varM", "age","sex", "bmi")
+	names(dat1) <- c("varX", "varY", "varM", "age","sex", "bmi")
+	dat1$varX <- as.factor(dat1$varX)
 fit.med = lm(varM ~ varX, data=dat1); summary(fit.med)	
-fit.out = glm(varY ~ varX + varM, data=dat1, family=binomial("probit")); summary(fit.out) 
-med.out = mediation::mediate(fit.med, fit.out, treat="varX", mediator="varM", control.value="O", treat.value="A", sims=500, boot=T)
-	print(summary(med.out)) # plot(med.out)
+	fit.out = glm(varY ~ varX + varM, data=dat1, family=binomial("probit")); summary(fit.out) 
+	med.out = mediation::mediate(fit.med, fit.out, treat="varX", mediator="varM", control.value="O", treat.value="A", sims=200, boot=T)
+	print(summary(med.out)); plot(med.out)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Mendelian Randomization
+# Mendelian Randomization for ALP -> COVID
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-exp="ALP" # ("ALB", "ALP", "ALT", "APOA", "APOB", "AST", "AST2ALT", "BILD", "BUN", "CA", "CHOL", "CRE", "CRP", "CYS", "EGFR", "GGT", "GLU", "HBA1C", "HDL", "IGF1", "LDLD", "LPA", "NAP", "PHOS", "SHBG", "TBIL", "TES", "TP", "TRIG", "UA", "UCR", "URMA", "URNA", "VITD")
-	exp_file=paste0("D:/data/gwas/bb/bb_", exp, ".top.txt")
-	exp_phe="Trait"; exp_snp="SNP"; exp_ea="EA"; exp_nea="NEA"; exp_beta="BETA"; exp_se="SE"; exp_p="P"
-	exp_dat <- read_exposure_data(filename=exp_file, phenotype_col=exp_phe, snp_col=exp_snp, effect_allele_col=exp_ea, other_allele_col=exp_nea, beta_col=exp_beta, se_col=exp_se, pval_col=exp_p) # %>% filter (pval.exposure <1e-3)
-out="covid_severe"
-	out_dat <- read_outcome_data(filename=out_file, sep="\t", snps=exp_dat$SNP, snp_col=out_snp, effect_allele_col=out_ea, other_allele_col=out_nea, beta_col=out_beta, se_col=out_se, pval_col=out_p) 
-	out_file="D:/data/gwas/bb/covid_severe.small" # can NOT be in .gz format
-	out_snp="rsid"; out_ea="ALT"; out_nea="REF"; out_beta="all_inv_var_meta_beta"; out_se="all_inv_var_meta_sebeta"; out_p="all_inv_var_meta_p"
+exp_dat0 <- read.table("D:/Downloads/GCST90019494_buildGRCh37.tsv.gz", header=T, as.is=T) 
+	exp_iv <- read.table("D:/data/gwas/bb/bb_ALP.top.snps", header=T, as.is=T)
+	exp_dat <- merge(exp_dat0, exp_iv, by.x="variant_id", by.y="SNP")
+	exp_dat <- format_data(exp_dat, type ="exposure", snp_col="variant_id", effect_allele_col="effect_allele", other_allele_col="other_allele", beta_col="beta", se_col="standard_error", pval_col="p_value") 
+out_dat0 <- read.table("D:/data/gwas/bb/covid_severe.gz", header=T, as.is=T) 
+	out_dat <- merge(out_dat0, exp_iv, by.x="rsid", by.y="SNP")
+	out_dat <- format_data(out_dat, type ="outcome", snp_col="rsid", effect_allele_col="ALT", other_allele_col="REF", beta_col="all_inv_var_meta_beta", se_col="all_inv_var_meta_sebeta", pval_col="all_inv_var_meta_p") 
 dat <- harmonise_data(exp_dat, out_dat)
 	res <- mr(dat, method_list=c('mr_ivw', 'mr_simple_median', 'mr_weighted_median', 'mr_two_sample_ml', 'mr_penalised_weighted_median', 'mr_egger_regression')); print(res)
 	plt <- mr_scatter_plot(res, dat)
-		#plt + theme(legend.text=element_text(size=14, face="bold"), axis.title=element_text(size=10, face="bold"), axis.text=element_text(size=15, face="bold"))
 mrdat <- mr_input(dat$beta.exposure, dat$se.exposure, dat$beta.outcome, dat$se.outcome); # mr_funnel(mrdat) 
 	plt <- mr_plot(mrdat, interactive=F)
 		plt + theme(axis.title=element_text(size=15, face="bold"), axis.text=element_text(size=12, face="bold"))
@@ -62,21 +76,9 @@ mrdat <- mr_input(dat$beta.exposure, dat$se.exposure, dat$beta.outcome, dat$se.o
 	plt <- mr_funnel(mrdat)
 		plt + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=14), axis.text=element_text(size=12, face="bold"))	
 	ggsave(plt, file=paste0(exp,".exp.png"), w=10, h=10)
-## reverse-direction
-exp_snp="rsid"; exp_ea="ALT"; exp_nea="REF"; exp_beta="all_inv_var_meta_beta"; exp_se="all_inv_var_meta_sebeta"; exp_p="all_inv_var_meta_p"
-out_phe="Trait"; out_snp="SNP"; out_ea="EA"; out_nea="NEA"; out_beta="BETA"; out_se="SE"; out_p="P"
-exp_file="D:/data/gwas/covid_sus.gwas"
-exp_dat <- read_exposure_data(filename=exp_file, sep="\t", snp_col=exp_snp, effect_allele_col=exp_ea, other_allele_col=exp_nea, beta_col=exp_beta, se_col=exp_se, pval_col=exp_p) # %>% filter (pval.exposure <1e-3)
-exp_dat <- extract_instruments(exp_dat, p1=5e-08, clump=T, r2=0.1, kb=1000, force_server=F) 
-out_file=paste0("D:/data/gwas/", out, ".top.txt")
-out_dat <- read_exposure_data(filename=out_file, phenotype_col=out_phe, snp_col=out_snp, effect_allele_col=out_ea, other_allele_col=out_nea, beta_col=out_beta, se_col=out_se, pval_col=out_p) # %>% filter (pval.exposure <1e-3)
-dat <- harmonise_data(exp_dat, out_dat)
-res <- mr(dat, method_list=c('mr_ivw', 'mr_simple_median', 'mr_weighted_median', 'mr_two_sample_ml', 'mr_penalised_weighted_median', 'mr_egger_regression')) 
-pp <- mr_scatter_plot(res, dat); ggsave(pp[[1]], file=paste0(out,".out.png"), w=7, h=7)
-## Summarize Many MR results
-# pdftk */*.cB.pdf cat output 001.cB.pdf
-# cat */*.mr.res.txt | awk 'NF ==10' > 001.mr.txt
-pacman::p_load(data.table, dplyr, tidyverse, magrittr, corrplot, reshape2)
+#Sum Many MR results: 
+#	pdftk */*.cB.pdf cat output 001.cB.pdf; cat */*.mr.res.txt | awk 'NF ==10' > 001.mr.txt
+pacman::p_load(corrplot, reshape2)
 dat <- read.table('001.mr.txt', header=F, as.is=T)
 	names(dat) <- c('ex_name', 'ou_name', 'cnt', 'p.ivw', 'p.median', 'p.maxlik', 'p.mbe', 'p.conmix', 'pleio.egger', 'p.egger')
 dat1 <- dat %>% group_by(ex_name, ou_name) %>% summarize(Pmin=min(p)) %>% mutate(p= -log10(Pmin))
@@ -86,17 +88,17 @@ dat1 <- dat %>% group_by(ex_name, ou_name) %>% summarize(Pmin=min(p)) %>% mutate
 pdf('mr.pval.pdf', w=20, h=20)
 	corrplot(pmat, is.corr=F, method='shade', bg='black', col=colorRampPalette(c("white","green","gold"))(100), tl.col='black', tl.cex=1.3, addCoef.col='black', number.cex=0.9, insig="pch", pch.cex=2, tl.srt=45, outline=T)
 	dev.off()
-	
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Manhattan Plot 
+# Circular Manhattan Plot 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat1 <- read.table('D:/data/gwas/bb/bb_ALP.p03', header=T) %>% dplyr::select(SNP, CHR, POS, P) %>% filter(!is.na(SNP)) %>% mutate(P=ifelse(P<1e-20,1e-20,P)) %>% rename(ALP=P)
-dat2 <- read.table('D:/data/gwas/bb/covid_severe.p03', header=T) %>% 
+	dat2 <- read.table('D:/data/gwas/bb/covid_severe.p03', header=T) %>% 
 	dplyr::select(rsid, CHR, POS, all_inv_var_meta_p) %>% filter(!is.na(rsid)) %>% mutate(all_inv_var_meta_p=ifelse(all_inv_var_meta_p<1e-20,1e-20,all_inv_var_meta_p)) %>% rename(SNP=rsid, CHR.2=CHR, POS.2=POS, COVID_severe=all_inv_var_meta_p)
-dat3 <- read.table('D:/data/gwas/bb/covid_inpatient.p03', header=T) %>% 
+	dat3 <- read.table('D:/data/gwas/bb/covid_inpatient.p03', header=T) %>% 
 	dplyr::select(rsid, CHR, POS, all_inv_var_meta_p) %>% filter(!is.na(rsid)) %>% mutate(all_inv_var_meta_p=ifelse(all_inv_var_meta_p<1e-20,1e-20,all_inv_var_meta_p)) %>% rename(SNP=rsid, CHR.3=CHR, POS.3=POS, COVID_inpatient=all_inv_var_meta_p)
-dat4 <- read.table('D:/data/gwas/bb/covid_infected.p03', header=T) %>% 
+	dat4 <- read.table('D:/data/gwas/bb/covid_infected.p03', header=T) %>% 
 	dplyr::select(rsid, CHR, POS, all_inv_var_meta_p) %>% filter(!is.na(rsid)) %>% mutate(all_inv_var_meta_p=ifelse(all_inv_var_meta_p<1e-20,1e-20,all_inv_var_meta_p)) %>% rename(SNP=rsid, CHR.4=CHR, POS.4=POS, COVID_infected=all_inv_var_meta_p)
 dat0 <- Reduce(function(x,y) merge(x,y,by='SNP',all=T, no.dups=T), list(dat1, dat2, dat3, dat4)) # !! Must Remove NA SNPs before merging
 dat <- dat0 %>%
