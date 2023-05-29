@@ -16,7 +16,7 @@ cor(dat$fto, dat$bmi, use="complete.obs") # 一些简单的分组统计
 	aggregate(gbmi ~ fto, data=dat, FUN=function(x) {round(c(length(x), mean(x), sd(x), quantile(x,probs=c(0,0.5,1))), 2)} )
 	round(prop.table(table(dat$bmi_cat, dat$fto, dnn=c("bmi","FTO")), 2),4)
 	round(prop.table(ftable(table(dat$sex, dat$bmi_cat, dat$fto, dnn=c("sex","bmi","FTO"))), 1),4)
-fit.lm <- lm(bmi ~ + bmi.prs3 + sex.fa, data=dat, na.action=na.exclude) # 一些简单的线性回归和预测
+fit.lm <- lm(bmi ~ bmi.prs3 + sex.fa, data=dat, na.action=na.exclude) # 一些简单的线性回归和预测
 	summary(fit.lm)$coef; signif(coef(fit.lm),3); confint(fit.lm, level=0.95)
 	dat$bmi_pred = predict.lm(fit.lm); table(dat$bmi_pred, dat$fto)
 	pred.lm <- ggiraphExtra::ggPredict(fit.lm, terms="bmi.prs3")
