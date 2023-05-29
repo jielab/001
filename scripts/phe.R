@@ -7,9 +7,9 @@ dates_bad=as.Date(c("1900-01-01", "1901-01-01", "1902-02-02", "1903-03-03", "199
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # main PHE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-PHElink <- read.table(paste0(indir,"common/ukb.vip.dat"), header=F, flush=T)
-	PHElink$V1[duplicated(PHElink$V1)]; PHElink$V2[duplicated(PHElink$V2)] #check duplication
-	PHElink$V2 <- paste0("f.", PHElink$V2, ".0.0")
+vip <- read.table(paste0(indir,"common/ukb.vip.dat"), header=F, flush=T)
+	vip$V1[duplicated(vip$V1)]; vip$V2[duplicated(vip$V2)] #check duplication
+	vip$V2 <- paste0("f.", vip$V2, ".0.0")
 source(paste0(indir,"raw-670287/vip.r")) # first use the latest version
 	phe1 <- bd %>% subset(select=grep("f.eid|\\.0\\.0", names(bd))) %>% rename(eid=f.eid)
 	names1 <- names(phe1)
@@ -17,7 +17,7 @@ source(paste0(indir,"raw-50136/vip.r")) # then add previous version
 	phe2 <- bd %>% subset(select=!names(bd) %in% names1) 
 	phe2 <- phe2 %>% subset(select=grep("f.eid|\\.0\\.0", names(phe2))) %>% rename(eid=f.eid)
 phe0 <- merge(phe1, phe2, by="eid") %>% 
-	crosswalkr::renamefrom(PHElink, V2, V1, drop_extra=F) %>% filter(eid>0)
+	crosswalkr::renamefrom(vip, V2, V1, drop_extra=F) %>% filter(eid>0)
 	phe0[phe0 <0] = NA # BE CAREFUL
 	dates <- names(phe0)[sapply(phe0, is.Date)]; summary(phe0[,dates]) # check invalid dates
 	for (date1 in dates) { phe0[[date1]][phe0[[date1]] %in% dates_bad] <- NA }
@@ -40,18 +40,19 @@ saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ICD 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source(paste0(indir,"raw-670287/icd.r")); icd <- bd
-source(paste0(indir,"raw-670287/icdDate.r")); icdDate <- bd
+source(paste0(indir,"raw-670287/icd.r")); icd <- bd # ICD data
+source(paste0(indir,"raw-670287/icdDate.r")); icdDate <- bd # ICDdate data
 dates <- names(bd)[sapply(bd, is.Date)]; summary(bd[,dates])
 for (date1 in dates) { icdDate[[date1]][icdDate[[date1]] %in% as.Date(c("1900-01-01", "1999-01-01"))] <- NA }
-ICDlink <- read.table("D:/data/ukb/phe/common/ukb.vip.icd", header=F); names(ICDlink) <- c("trait", "code")
+vip <- read.table(paste0(indir,"common/ukb.vip.icd"), header=F, flush=T) %>%
+	rename(trait=V1, code=V2)
 dat <- as.data.frame(icd$f.eid); names(dat) <- "eid"
-for (i in 1:nrow(ICDlink)) {
+for (i in 1:nrow(vip)) {
 	dat1 <- icd[,-1]; dat2 <- icdDate[,-1]
-	exclude=as.matrix(apply(dat1, 1:2, function(x){!grepl(ICDlink$code[i],x)}))
+	exclude=as.matrix(apply(dat1, 1:2, function(x){!grepl(vip$code[i],x)}))
 	dat2[exclude] <- NA
-	dat[[paste0("icd_",ICDlink$trait[i],"_cnt")]] <- apply(dat2, 1, function(x){sum(!is.na(x))})
-	dat[[paste0("icd_",ICDlink$trait[i],"_date")]] = as.Date(apply(dat2, 1, FUN=min, na.rm=T)) 
+	dat[[paste0("icd_",vip$trait[i],"_cnt")]] <- apply(dat2, 1, function(x){sum(!is.na(x))})
+	dat[[paste0("icd_",vip$trait[i],"_date")]] = as.Date(apply(dat2, 1, FUN=min, na.rm=T)) 
 }
 saveRDS(dat, file="D:/data/ukb/Rdata/ukb.icd.rds")
 
@@ -62,21 +63,22 @@ saveRDS(dat, file="D:/data/ukb/Rdata/ukb.icd.rds")
 source(paste0(indir,"raw-50136/fod.r")) # bd is created
 dates <- names(bd)[sapply(bd, is.Date)]; summary(bd[,dates])
 for (date1 in dates) { bd[[date1]][bd[[date1]] %in% dates_bad] <- NA } #remove certain dates
+code12 <- read.table(paste0(indir,"common/ukb.fod.code12"), header=F) %>%
+	rename(icd=V1, field=V2)
+vip <- read.table(paste0(indir,"common/ukb.vip.fod"), header=F, flush=T) %>% 
+	rename(trait=V1, type=V2, first=V3, last=V4) %>%
+	merge(code12, by.x="first", by.y="icd", all.x=T) %>%
+	merge(code12, by.x="last", by.y="icd", all.x=T) %>%
+	mutate(
+		first=ifelse(!is.na(field.x), field.x, first),
+		last =ifelse(!is.na(field.y), field.y, last)
+	)
+	subset(vip, is.na(field.x) & type=="icd-10") #check
 fields_all <- read.table(paste0(indir,"raw-50136/fields.ukb"), header=F)
-codes_all <- read.table(paste0(indir,"common/ukb.fod.code"), header=F); names(codes_all)=c("id", "code")
-FODlink1 <- read.table(paste0(indir,"common/ukb.fod.dat"), header=F)[,-2]
-	names(FODlink1) <- c("trait", "starting", "ending")
-FODlink2 <- read.table(paste0(indir,"common/ukb.fod.grp"), header=F, sep="\t") %>% rename(trait=V1) %>%
-	mutate(code1=substring(trait,1,3), code2=substring(trait,5,7)) %>%
-	merge(codes_all, by.x="code1", by.y="code", all.x=T) %>%
-	merge(codes_all, by.x="code2", by.y="code", all.x=T) %>%
-	subset(select=c("trait", "id.x", "id.y")) %>% 
-	rename(starting=id.x, ending=id.y)
-FODlink <- rbind(FODlink1, FODlink2)
-for (i in 1:nrow(FODlink)) {
-	fields <- paste0("f.", subset(fields_all, V1 >=FODlink[i,"starting"] & V1 <=FODlink[i,"ending"] & V1%%2==0)$V1, ".0.0")
+for (i in 1:nrow(vip)) {
+	fields <- paste0("f.", subset(fields_all, V1 >=vip[i,"first"] & V1 <=vip[i,"last"] & V1%%2==0)$V1, ".0.0")
 	subdata <- subset(bd, select=fields)
-	bd[[paste0("fod_",FODlink$trait[i])]] <- as.Date(apply(subdata, 1, FUN=min, na.rm=T)) 
+	bd[[paste0("fod_",vip$trait[i])]] <- as.Date(apply(subdata, 1, FUN=min, na.rm=T)) 
 }
 fod <- subset(bd, select=grep("eid|fod_", names(bd), value=T)) %>% rename(eid=f.eid)
 saveRDS(fod, file="D:/data/ukb/Rdata/ukb.fod.rds")
