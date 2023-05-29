@@ -11,22 +11,41 @@ naniar::gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=T)), 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# SP1 association with biomarkers 
+# 万有引力快速分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 table(dat0$sp1)
 dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
 	mutate (
 		sp1.M = ifelse(sp1=="MM", 2, ifelse(grepl("M", sp1), 1, 0)),
-		sp1.S=ifelse(grepl("SS", sp1), 2,  ifelse(grepl("S", sp1), 1, 0)),
-		sp1.Z=ifelse(grepl("ZZ", sp1), 2,  ifelse(grepl("Z", sp1), 1, 0)),
+		sp1.S = ifelse(grepl("SS", sp1), 2,  ifelse(grepl("S", sp1), 1, 0)),
+		sp1.Z = ifelse(grepl("ZZ", sp1), 2,  ifelse(grepl("Z", sp1), 1, 0)),
 		age_mn_3p = ifelse(age_mn %in% 12:14, "normal", ifelse(age_mn>14, "late", "early")),
 		age_mn_3p = factor(age_mn_3p, levels=c("normal", "early", "late"))
 	)
+varXs <- c("sp1.M", "sp1.S", "sp1.Z", "lac.rs4988235_G", "age_mn_3p")
+for (varY in c("icd_copd_date", "icd_covid_date", "fod_t1dm", "fod_t2dm", "fod_dm")) {
+	dat1 <- dat %>% 
+	mutate(
+		outcome_date = dat[[varY]],
+		outcome_yes = ifelse( is.na(dat[[varY]]), 0,1),
+		follow_end_day = data.table::fifelse(!is.na(outcome_date), outcome_date, fifelse(!is.na(death_date), death_date, as.Date("2022-01-01"))),
+		follow_years = (as.numeric(follow_end_day) - as.numeric(attend_date)) / 365.25
+	) %>% filter( follow_years >0 )
+	print(table(dat1$outcome_yes))
+	surv.obj <- Surv(time=dat1$follow_years, event=dat1$outcome_yes)
+	for (varX in varXs) {
+		dat1$varX <- dat1[[varX]]
+		fit.suv <- survival::survfit(surv.obj ~ varX + sex, data=dat1)
+		survminer::ggsurvplot(fit.suv, ylim=c(0.95,1), data=dat1) 
+		fit.cox <- coxph(surv.obj ~ varX + age+sex, data=dat1) 
+		ggforest(fit.cox, data=dat1)
+	}
+}
 for (varY in grep("^bb_|^bc_", names(dat), value=T)) {
 	print(noquote(varY))
 	dat[[varY]] = inormal(dat[[varY]]) # normal transformation
 	dat$varY = dat[[varY]] # assign temporary variable name "varY"
-	for (varX in c("sp1.M", "sp1.S", "sp1.Z", "age_mn_3p")) {
+	for (varX in varXs) {
 		dat$varX = dat[[varX]]
 		fit.lm <- lm(varY ~ varX +age+sex, data=dat)
 		print(noquote(paste("  --", varX, signif(coef(summary(fit.lm))[2,4],3))))
