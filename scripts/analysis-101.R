@@ -22,7 +22,7 @@ dat <- dat0 %>% filter(ethnicity_gen==1) %>%
 		age_mn_3p = ifelse(age_mn %in% 12:14, "normal", ifelse(age_mn>14, "late", "early")),
 		age_mn_3p = factor(age_mn_3p, levels=c("normal", "early", "late"))
 	)
-varXs <- c("sp1.M", "sp1.S", "sp1.Z", "lac.rs4988235_G", "age_mn_3p")
+varXs <- c("sp1.M", "sp1.S", "sp1.Z", "lct.rs4988235_G", "age_mn_3p")
 for (varY in c("icd_copd_date", "icd_covid_date", "fod_t1dm", "fod_t2dm", "fod_dm")) {
 	dat1 <- dat %>% 
 	mutate(
