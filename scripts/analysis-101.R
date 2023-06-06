@@ -1,4 +1,4 @@
-setwd("C:/Users/jiehu/Desktop/tmp")
+setwd("C:/Users/jiehu/Desktop")
 pacman::p_load(data.table, lubridate, tidyverse, dplyr, ggplot2, CMplot, TwoSampleMR, MendelianRandomization, survival, survminer, mediation)
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 
@@ -79,6 +79,9 @@ fit.med = lm(varM ~ varX, data=dat1); summary(fit.med)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Mendelian Randomization for ALP -> COVID
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+exp_dat0 <- read.table("D:/files/microbiome.txt", header=T, as.is=T)[2,]
+	exp_iv <- subset(exp_dat0, select="SNP")
+	exp_dat <- format_data(exp_dat0, type ="exposure", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P")
 exp_dat0 <- read.table("D:/Downloads/GCST90019494_buildGRCh37.tsv.gz", header=T, as.is=T) 
 	exp_iv <- read.table("D:/data/gwas/bb/bb_ALP.top.snps", header=T, as.is=T)
 	exp_dat <- merge(exp_dat0, exp_iv, by.x="variant_id", by.y="SNP")
@@ -86,15 +89,16 @@ exp_dat0 <- read.table("D:/Downloads/GCST90019494_buildGRCh37.tsv.gz", header=T,
 out_dat0 <- read.table("D:/data/gwas/bb/covid_severe.gz", header=T, as.is=T) 
 	out_dat <- merge(out_dat0, exp_iv, by.x="rsid", by.y="SNP")
 	out_dat <- format_data(out_dat, type ="outcome", snp_col="rsid", effect_allele_col="ALT", other_allele_col="REF", beta_col="all_inv_var_meta_beta", se_col="all_inv_var_meta_sebeta", pval_col="all_inv_var_meta_p") 
-dat <- harmonise_data(exp_dat, out_dat)
-	res <- mr(dat, method_list=c('mr_ivw', 'mr_simple_median', 'mr_weighted_median', 'mr_two_sample_ml', 'mr_penalised_weighted_median', 'mr_egger_regression')); print(res)
-	plt <- mr_scatter_plot(res, dat)
-mrdat <- mr_input(dat$beta.exposure, dat$se.exposure, dat$beta.outcome, dat$se.outcome); # mr_funnel(mrdat) 
-	plt <- mr_plot(mrdat, interactive=F)
+tsmr_dat <- harmonise_data(exp_dat, out_dat)
+	mr(tsmr_dat)
+bsmr_dat0 <- dat_to_MRInput(tsmr_dat); head(bsmr_dat0)
+	bsmr_dat <- bsmr_dat0[[1]]
+	mr_ivw(bsmr_dat)
+	plt <- mr_plot(bsmr_dat, interactive=F)
 		plt + theme(axis.title=element_text(size=15, face="bold"), axis.text=element_text(size=12, face="bold"))
-	plt <- mr_forest(mrdat, snp_estimates=F, methods=c("ivw", "median", "wmedian", "egger", "maxlik", "conmix")) 
+	plt <- mr_forest(bsmr_dat, snp_estimates=F, methods=c("ivw", "median", "wmedian", "egger", "maxlik", "conmix")) 
 		plt + scale_colour_manual(values = c("IVW estimate"="red")) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=10, face="bold"), axis.text.x=element_text(size=10, face="bold"), axis.text.y=element_text(size=15, face="bold"))
-	plt <- mr_funnel(mrdat)
+	plt <- mr_funnel(bsmr_dat)
 		plt + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=14), axis.text=element_text(size=12, face="bold"))	
 	ggsave(plt, file=paste0(exp,".exp.png"), w=10, h=10)
 #Sum Many MR results: 
