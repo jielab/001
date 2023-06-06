@@ -25,16 +25,15 @@ for chr in {1..22} X XY; do # Y MT for typed only
 	cd $outdir # short, medium, large:wq
     bsub -q smp -J ukb.chr$chr -o chr$chr.LOG -e chr$chr.ERR < chr$chr.cmd
 done
-awk 'FNR!=1 && $1 <0 {print $1,$2}' chr*.psam | sort | uniq > negative.sam.id # 人为加上 5456019
 for chr in {1..22} X XY; do
     sam_typ=`ls -1 $dir/ukb/ukb22418_c${chr}_b0_v2_s*.fam | awk '{printf $1}'`
     sam_hap=`ls -1 $dir/ukb/ukb22438_c${chr}_b0_v2_s*.sample | awk '{printf $1}'`
     sam_imp=`ls -1 $dir/ukb/ukb22828_c${chr}_b0_v3_s*.sample | awk '{printf $1}'`
     echo "#!/bin/bash
     echo \"Starting on : \$(date); Running on : \$(hostname); Job ID : \$JOB_ID\"
-    plink2 --bed $dir/ukb/ukb22418_c${chr}_b0_v2.bed --bim $dir/ukb/ukb_snp_chr${chr}_v2.bim --fam $sam_typ --remove negative.sam.id --make-bed --out chr$chr
-    plink2 --bgen $dir/ukb/ukb22438_c${chr}_b0_v2.bgen ref-first --sample $sam_hap --remove negative.sam.id --oxford-single-chr $chr --make-pgen --out chr$chr.hap
-    plink2 --bgen $dir/ukb/ukb22828_c${chr}_b0_v3.bgen ref-first --sample $sam_imp --remove negative.sam.id --make-pgen --out chr$chr
+    plink2 --bed $dir/ukb/ukb22418_c${chr}_b0_v2.bed --bim $dir/ukb/ukb_snp_chr${chr}_v2.bim --fam $sam_typ --make-bed --out chr$chr
+    plink2 --bgen $dir/ukb/ukb22438_c${chr}_b0_v2.bgen ref-first --sample $sam_hap --oxford-single-chr $chr --make-pgen --out chr$chr.hap
+    plink2 --bgen $dir/ukb/ukb22828_c${chr}_b0_v3.bgen ref-first --sample $sam_imp --make-pgen --out chr$chr
     awk '{if (NR==1) c=\"CHRPOS\"; else c=\$1\":\"\$2; id=\$3; if (arry[id]==\"Y\") {i++; id=id\".DUP\"i}; print \$1,\$2,id,\$4,\$5,c; arry[id]=\"Y\"}' chr$chr.pvar > chr$chr.NEW.pvar
     " > $outdir/chr$chr.cmd
 	cd $outdir # short, medium, large:wq
@@ -50,23 +49,27 @@ plink --bfile ukb --keep /restricted/projectnb/ukbiobank/jiehuang/files/ukb.keep
 # Extract genotype of VIP snps
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #!/bin/bash -l
-dir=/data/sph-huangj
-label=vip
-snps=/work/sph-huangj/data/ukb/phe/common/ukb.$label.snp
-outdir=/scratch/2023-06-06/sph-huangj/$label
-	if [ -d $outdir ]; then rm -r $outdir; fi; mkdir -p $outdir
+dir=/work/sph-huangj
+outdir=/scratch/2023-05-17/sph-huangj
+snps=$dir/files/ukb.vip.snps
 echo -e "#!/bin/bash -l
-for chr in {1..22} X; do
-	plink2 --pfile $dir/ukb/imp/chr\$chr --extract $snps --make-pgen --out chr\$chr
+for chr in {1..22} X XY; do
+	plink2 --bfile $dir/data/ukb/typ/chr\$chr --extract $snps --make-bed --out typ.chr\$chr
+	plink2 --pfile $dir/data/ukb/imp/chr\$chr --extract $snps --export vcf id-paste=iid vcf-dosage=DS bgz --out imp.chr\$chr
 done
-ls -1 chr*.pgen | awk '{print \$1}' | sort -k 1,1 -V | sed 's/\.pgen//' > merge-list.txt
-plink2 --pmerge-list merge-list.txt --make-pgen --out $label
-	plink2 --pfile $label --update-name $snps 1 2 --make-pgen --out $label
-	plink2 --pfile $label --maj-ref --export A --out $label
-	cut -f 2,7- $label.raw | sed 's/\t/ /g' | gzip -f > $label.raw.gz
-" > $outdir/$label.cmd
+ls -1 typ.chr*bed | awk '{print \$1,\$1,\$1}' | sort -k 1,1 -V | sed '1d; s/bed/bim/2; s/bed/fam/2' > typ.merge-list.txt
+plink --bfile typ.chr1 --merge-list typ.merge-list.txt --update-name $snps 2 1 --make-bed --out typ
+	plink2 --bfile typ --export A --out typ
+	cut -f 2,7- typ.raw | sed 's/\t/ /g' | gzip -f > typ.raw.gz
+bcftools concat -Oz -o imp.merged.vcf.gz imp.chr*.vcf.gz
+	plink2 --vcf imp.merged.vcf.gz --update-name $snps 2 1 --make-bed --out imp
+	plink2 --bfile imp --export A --out imp.hard
+		cut -f 2,7- imp.hard.raw | sed 's/\t/ /g' | gzip -f > imp.hard.raw.gz
+	plink2 --vcf imp.merged.vcf.gz dosage=DS --update-name $snps 2 1 --maj-ref --out imp.dose
+		cut -f 2,7- imp.dose.raw | sed 's/\t/ /g' | gzip -f > imp.dose.raw.gz
+" > $outdir/ukb.gen.cmd
 cd $outdir
-bsub -q smp -J $label.gen -o $label.LOG -e $label.ERR < $label.cmd
+bsub -q smp -J ukb.gen -o ukb.gen.LOG -e ukb.gen.ERR < ukb.gen.cmd
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
