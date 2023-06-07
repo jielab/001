@@ -1,4 +1,4 @@
-setwd("C:/Users/jiehu/Desktop")
+setwd("C:/Users/jiehu/Desktop/tmp")
 pacman::p_load(data.table, lubridate, tidyverse, dplyr, ggplot2, CMplot, TwoSampleMR, MendelianRandomization, survival, survminer, mediation)
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 
@@ -13,7 +13,7 @@ naniar::gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=T)), 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 万有引力快速分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-table(dat0$sp1)
+table(dat0$sp1); hist(dat0$age_mn)
 dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
 	mutate (
 		sp1.M = ifelse(sp1=="MM", 2, ifelse(grepl("M", sp1), 1, 0)),
@@ -24,6 +24,7 @@ dat <- dat0 %>% filter(ethnicity_gen==1) %>%
 	)
 varXs <- c("sp1.M", "sp1.S", "sp1.Z", "lac.rs4988235_G", "age_mn_3p")
 for (varY in c("icd_copd_date", "icd_covid_date", "fod_t1dm", "fod_t2dm", "fod_dm")) {
+	print(paste("Y变量:", varY))
 	dat1 <- dat %>% 
 	mutate(
 		outcome_date = dat[[varY]],
@@ -34,13 +35,14 @@ for (varY in c("icd_copd_date", "icd_covid_date", "fod_t1dm", "fod_t2dm", "fod_d
 	print(table(dat1$outcome_yes))
 	surv.obj <- Surv(time=dat1$follow_years, event=dat1$outcome_yes)
 	for (varX in varXs) {
+		print(paste("X变量:", varX))
 		dat1$varX <- dat1[[varX]]
 		fit.suv <- survival::survfit(surv.obj ~ varX + sex, data=dat1)
-			png(file=paste(varX,varY,"fit.png",sep="."), w=800, h=600)
-			ggsurvplot(fit.suv, ylim=c(0.95,1), data=dat1); dev.off() 
-		fit.cox <- coxph(surv.obj ~ varX + age+sex, data=dat1) 
+			#print(ggsurvplot(fit.suv, ylim=c(0.95,1), data=dat1)); dev.off() 
+		fit.cox <- coxph(surv.obj ~ varX + age+sex, data=dat1)
+			print(summary(fit.cox))
 			png(file=paste(varX,varY,"frt.png",sep="."), w=600, h=800)
-			ggforest(fit.cox, data=dat1); dev.off()
+			print(ggforest(fit.cox, data=dat1)); dev.off()
 	}
 }
 for (varY in grep("^bb_|^bc_", names(dat), value=T)) {
