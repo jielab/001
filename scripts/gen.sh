@@ -78,7 +78,8 @@ gendir=/data/sph-huangj/ukb/imp
 gwasdir=$dir/files/posCtrls
 label=dementia
 gwas=$gwasdir/$label.txt
-outdir=$dir/tmp/$label; mkdir -p $outdir
+outdir=$dir/tmp/$label
+	if [ -d $outdir ]; then rm -r $outdir; fi; mkdir -p $outdir
 head_row=`head -1 $gwas | sed 's/\t/ /g'`
 	chr_str=`echo $head_row | tr ' ' '\n' | grep -Einw 'chr|chrom|chromosome'`; chr_col=`echo $chr_str | sed 's/:.*//'`
 	snp_str=`echo $head_row | tr ' ' '\n' | grep -Einw 'snp|rsid|variant_id|markername'`; snp_col=`echo $snp_str | sed 's/:.*//'`
@@ -90,10 +91,10 @@ for chr in {1..22}; do
 	awk 'NR==1 || \$$chr_col==$chr' $gwas > chr$chr.ref
 	nref=\`wc -l chr$chr.ref | awk '{printf \$1}'\`
 	if [[ \$nref == 1 ]]; then exit; fi
-	plink2 --pgen $gendir/chr$chr.pgen --pvar $gendir/chr$chr.NEW.pvar --psam $gendir/chr$chr.psam --chr $chr --score chr$chr.ref $cols no-mean-imputation cols=+scoresums list-variants --out chr$chr
+	plink2 --pfile $gendir/chr$chr --chr $chr --score chr$chr.ref $cols no-mean-imputation cols=+scoresums list-variants --out chr$chr
 	" > $outdir/chr$chr.cmd
 	cd $outdir
-	bsub -q short -J ukb.chr$chr -o chr$chr.LOG -e chr$chr.ERR < chr$chr.cmd
+	bsub -q smp -J ukb.chr$chr -o chr$chr.LOG -e chr$chr.ERR < chr$chr.cmd
 done
 echo "#!/bin/bash
 	paste -d ' ' chr*.sscore > $label.prs.tmp	

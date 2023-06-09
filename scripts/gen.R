@@ -1,25 +1,23 @@
 setwd("C:/Users/jiehu/Desktop")
 pacman::p_load(data.table, dplyr)
 
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # main GEN
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 typ = read.table(gzfile('D:/data/ukb/gen/typ/typ.raw.gz','r'), header=T, as.is=T)
 	names(typ)=gsub("typ.IID", "eid", paste0("typ.", names(typ)))
-	typ[typ=="00"] = NA
-imp <- read.table(gzfile('D:/data/ukb/gen/imp/imp.hard.raw.gz','r'), header=T, as.is=T) %>% rename(eid=IID) 
-	imp[imp=="00"] = NA
+	typ[typ=="00"] <- NA
+imp <- read.table(gzfile('D:/data/ukb/gen/imp/vip.raw.gz','r'), header=T, as.is=T) %>% rename(eid=IID) 
 abo <- read.table('D:/data/ukb/phe/hes/covid19_misc.txt', header=T) %>% 
 	mutate(
-	abo1=recode_factor(blood_group, "AA"="A", "BB"="B", "OO"="O", "AO"="A", "BO"="B"),
+	abo=recode_factor(blood_group, "AA"="A", "BB"="B", "OO"="O", "AO"="A", "BO"="B"),
 	o_type=ifelse(blood_group=="OO", "O", "non-O")
 	) 
 apoe <- read.table("D:/data/ukb/gen/hap/apoe.hap", header=T, as.is=T) %>% rename(eid=IID) 
 sqc <- read.table("D:/data/ukb/phe/common/ukb_sqc_v2.txt", header=T, as.is=T) %>%
 	rename(garray=genotyping.array, batch=Batch, in.british=in.white.British.ancestry.subset, in.pca=used.in.pca.calculation, aneuploidy=putative.sex.chromosome.aneuploidy)
 sqc <- subset(sqc, select=grepl("eid|garray|batch|in\\.|aneuploidy|kinship|excess|PC", names(sqc)))
-# cat ukb1941_rel_s488366.dat | awk 'NR>1 {print $2}' | sort | uniq | awk 'BEGIN{print "IID related"}{print $1,"Y"}' > ukb.related
+# 先在LINUX里面跑：cat ukb1941_rel_s488366.dat | awk 'NR>1 {print $2}' | sort | uniq | awk 'BEGIN{print "eid related"}{print $1,"Y"}' > ukb.related
 rel <- read.table("D:/data/ukb/phe/common/ukb.related", header=T, as.is=T)
 dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(imp, abo, apoe, sqc, rel))
 dat <- dat0 %>%
