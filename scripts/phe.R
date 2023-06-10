@@ -40,19 +40,22 @@ saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ICD 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source(paste0(indir,"raw-670287/icd.r")); icd <- bd # ICD data
-source(paste0(indir,"raw-670287/icdDate.r")); icdDate <- bd # ICDdate data
-dates <- names(bd)[sapply(bd, is.Date)]; summary(bd[,dates])
+source(paste0(indir,"raw-670287/icd.r")); icd <- bd
+source(paste0(indir,"raw-670287/icdDate.r")); icdDate <- bd
+#icd <- icd[1:10, 1:15]; icdDate <- icdDate[1:10, 1:15]
+dates <- names(icdDate)[sapply(icdDate, is.Date)]; summary(icdDate[,-1])
 for (date1 in dates) { icdDate[[date1]][icdDate[[date1]] %in% as.Date(c("1900-01-01", "1999-01-01"))] <- NA }
 vip <- read.table(paste0(indir,"common/ukb.vip.icd"), header=F, flush=T) %>%
 	rename(trait=V1, code=V2)
-dat <- as.data.frame(icd$f.eid); names(dat) <- "eid"
+dat <- subset(icd, select=f.eid) %>% rename(eid=f.eid)
 for (i in 1:nrow(vip)) {
-	dat1 <- icd[,-1]; dat2 <- icdDate[,-1]
-	exclude=as.matrix(apply(dat1, 1:2, function(x){!grepl(vip$code[i],x)}))
+	dat1 <- icd[,-1]
+	dat2 <- icdDate[,-1]
+	exclude <- as.matrix(apply(dat1, 1:2, function(x){!grepl(vip$code[i],x)}))
+	dat1[exclude] <- NA
 	dat2[exclude] <- NA
-	dat[[paste0("icd_",vip$trait[i],"_cnt")]] <- apply(dat2, 1, function(x){sum(!is.na(x))})
-	dat[[paste0("icd_",vip$trait[i],"_date")]] = as.Date(apply(dat2, 1, FUN=min, na.rm=T)) 
+	dat[[paste0("icd_",vip$trait[i])]] <- apply(dat1, 1, function(x){sum(!is.na(x))})
+	dat[[paste0("icdDate_",vip$trait[i])]] <- as.Date(apply(dat2, 1, FUN=min, na.rm=T)) 
 }
 saveRDS(dat, file="D:/data/ukb/Rdata/ukb.icd.rds")
 
@@ -60,9 +63,9 @@ saveRDS(dat, file="D:/data/ukb/Rdata/ukb.icd.rds")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # FOD (first occurrence date)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source(paste0(indir,"raw-50136/fod.r")) # bd is created
+source(paste0(indir,"raw-50136/fod.r")) 
 dates <- names(bd)[sapply(bd, is.Date)]; summary(bd[,dates])
-for (date1 in dates) { bd[[date1]][bd[[date1]] %in% dates_bad] <- NA } #remove certain dates
+for (date1 in dates) { bd[[date1]][bd[[date1]] %in% dates_bad] <- NA }
 code12 <- read.table(paste0(indir,"common/ukb.fod.code12"), header=F) %>%
 	rename(icd=V1, field=V2)
 vip <- read.table(paste0(indir,"common/ukb.vip.fod"), header=F, flush=T) %>% 

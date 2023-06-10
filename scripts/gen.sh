@@ -60,9 +60,7 @@ for chr in {1..22} X; do
 	plink2 --pfile $dir/ukb/imp/chr\$chr --extract $snps --make-pgen --out chr\$chr
 done
 ls -1 chr*.pgen | awk '{print \$1}' | sort -k 1,1 -V | sed 's/\.pgen//' > merge-list.txt
-plink2 --pmerge-list merge-list.txt --make-pgen --out $label
-	plink2 --pfile $label --update-name $snps 1 2 --make-pgen --out $label
-	plink2 --pfile $label --maj-ref --export A --out $label
+plink2 --pmerge-list merge-list.txt --delete-pmerge-result --update-name $snps 1 2 --maj-ref --export A --out $label
 	cut -f 2,7- $label.raw | sed 's/\t/ /g' | gzip -f > $label.raw.gz
 " > $outdir/$label.cmd
 cd $outdir
