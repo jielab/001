@@ -4,15 +4,8 @@ pacman::p_load(data.table, dplyr)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # main GEN
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-typ = read.table(gzfile('D:/data/ukb/gen/typ/typ.raw.gz','r'), header=T, as.is=T)
-	names(typ)=gsub("typ.IID", "eid", paste0("typ.", names(typ)))
-	typ[typ=="00"] <- NA
 imp <- read.table(gzfile('D:/data/ukb/gen/imp/vip.raw.gz','r'), header=T, as.is=T) %>% rename(eid=IID) 
-abo <- read.table('D:/data/ukb/phe/hes/covid19_misc.txt', header=T) %>% 
-	mutate(
-	abo=recode_factor(blood_group, "AA"="A", "BB"="B", "OO"="O", "AO"="A", "BO"="B"),
-	o_type=ifelse(blood_group=="OO", "O", "non-O")
-	) 
+abo <- read.table('D:/data/ukb/phe/hes/covid19_misc.txt', header=T)
 apoe <- read.table("D:/data/ukb/gen/hap/apoe.hap", header=T, as.is=T) %>% rename(eid=IID) 
 sqc <- read.table("D:/data/ukb/phe/common/ukb_sqc_v2.txt", header=T, as.is=T) %>%
 	rename(garray=genotyping.array, batch=Batch, in.british=in.white.British.ancestry.subset, in.pca=used.in.pca.calculation, aneuploidy=putative.sex.chromosome.aneuploidy)
@@ -21,7 +14,9 @@ sqc <- subset(sqc, select=grepl("eid|garray|batch|in\\.|aneuploidy|kinship|exces
 rel <- read.table("D:/data/ukb/phe/common/ukb.related", header=T, as.is=T)
 dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(imp, abo, apoe, sqc, rel))
 dat <- dat0 %>%
-	mutate( 
+	mutate(
+	abo=recode_factor(blood_group, "AA"="A", "BB"="B", "OO"="O", "AO"="A", "BO"="B"),
+		o_type=ifelse(blood_group=="OO", "O", "non-O"),	
 	apoe = factor(apoe, levels=c("e3e3", "e2e2", "e2e3", "e2e4", "e3e4", "e4e4")),
 		e4 = ifelse(apoe=="e4e4", 2, ifelse(grepl("e4", apoe), 1, 0)),
 		e4_f= factor(e4, levels=0:2, labels=c("zero", "one", "two")),
