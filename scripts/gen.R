@@ -4,7 +4,7 @@ pacman::p_load(data.table, dplyr)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # main GEN
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-imp <- read.table(gzfile('D:/data/ukb/gen/imp/vip.raw.gz','r'), header=T, as.is=T) %>% rename(eid=IID) 
+imp <- read.table('D:/data/ukb/gen/imp/vip.raw.gz', header=T, as.is=T) %>% rename(eid=IID) 
 abo <- read.table('D:/data/ukb/phe/hes/covid19_misc.txt', header=T)
 apoe <- read.table("D:/data/ukb/gen/hap/apoe.hap", header=T, as.is=T) %>% rename(eid=IID) 
 sqc <- read.table("D:/data/ukb/phe/common/ukb_sqc_v2.txt", header=T, as.is=T) %>%
