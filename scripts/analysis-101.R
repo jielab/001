@@ -7,13 +7,16 @@ inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 # Read and check data 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata")
-naniar::gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=T)), facet=sex)
+	naniar::gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=T)), facet=sex)
+	prop.table(table(dat0$abo, dat0$fut2.rs601338_A),1)
+	table(dat0$sp1)
+	hist(dat0$lac.rs4988235_A)
+	hist(dat0$age_mn)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 万有引力快速分析
+# 万有引力之生存分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-table(dat0$sp1); hist(dat0$age_mn)
 dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
 	mutate (
 		sp1.M = ifelse(sp1=="MM", 2, ifelse(grepl("M", sp1), 1, 0)),
@@ -22,8 +25,8 @@ dat <- dat0 %>% filter(ethnicity_gen==1) %>%
 		age_mn_3p = ifelse(age_mn %in% 12:14, "normal", ifelse(age_mn>14, "late", "early")),
 		age_mn_3p = factor(age_mn_3p, levels=c("normal", "early", "late"))
 	)
-varXs <- c("sp1.M", "sp1.S", "sp1.Z", "lac.rs4988235_G", "age_mn_3p")
-for (varY in c("icd_copd_date", "icd_covid_date", "fod_t1dm", "fod_t2dm", "fod_dm")) {
+varXs <- c("o_type", "fut2.rs601338_A", "lac.rs4988235_A", "sp1.Z", "age_mn_3p")
+for (varY in c("icdDate_copd", "icdDate_covid", "fod_t1dm", "fod_t2dm", "fod_dm")) {
 	print(paste("Y变量:", varY))
 	dat1 <- dat %>% 
 	mutate(
@@ -40,6 +43,7 @@ for (varY in c("icd_copd_date", "icd_covid_date", "fod_t1dm", "fod_t2dm", "fod_d
 		fit.suv <- survival::survfit(surv.obj ~ varX + sex, data=dat1)
 			#print(ggsurvplot(fit.suv, ylim=c(0.95,1), data=dat1)); dev.off() 
 		fit.cox <- coxph(surv.obj ~ varX + age+sex, data=dat1)
+			#fit.cox <- coxph(surv.obj ~ varX + varX * fut2.rs601338_A + age+sex, data=dat1)
 			print(summary(fit.cox))
 			png(file=paste(varX,varY,"frt.png",sep="."), w=600, h=800)
 			print(ggforest(fit.cox, data=dat1)); dev.off()
@@ -58,7 +62,7 @@ for (varY in grep("^bb_|^bc_", names(dat), value=T)) {
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ABO - ALP - COVID Mediation 
+# Mediation 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 table(dat0$blood_group)
 dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
@@ -79,21 +83,23 @@ fit.med = lm(varM ~ varX, data=dat1); summary(fit.med)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Mendelian Randomization for ALP -> COVID
+# Mendelian Randomization
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-exp_dat0 <- read.table("D:/files/microbiome.txt", header=T, as.is=T)[2,]
+exp_dat0 <- read.table("D:/files/posCtrls/bmi.EUR77.top.txt", header=T, as.is=T)
 	exp_iv <- subset(exp_dat0, select="SNP")
 	exp_dat <- format_data(exp_dat0, type ="exposure", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P")
 exp_dat0 <- read.table("D:/Downloads/GCST90019494_buildGRCh37.tsv.gz", header=T, as.is=T) 
 	exp_iv <- read.table("D:/data/gwas/bb/bb_ALP.top.snps", header=T, as.is=T)
 	exp_dat <- merge(exp_dat0, exp_iv, by.x="variant_id", by.y="SNP")
 	exp_dat <- format_data(exp_dat, type ="exposure", snp_col="variant_id", effect_allele_col="effect_allele", other_allele_col="other_allele", beta_col="beta", se_col="standard_error", pval_col="p_value") 
-out_dat0 <- read.table("D:/data/gwas/bb/covid_severe.gz", header=T, as.is=T) 
-	out_dat <- merge(out_dat0, exp_iv, by.x="rsid", by.y="SNP")
+out_dat0 <- read.table("D:/data/gwas/bb/cad.2017.gwas.gz", header=T, as.is=T)
+	out_dat <- merge(out_dat0, exp_iv, by.x="SNP", by.y="SNP")
+	out_dat <- format_data(out_dat, type ="outcome", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P") 
+	out_dat <- format_data(out_dat, type ="outcome", snp_col="rsid", effect_allele_col="Allele1", other_allele_col="Allele2", beta_col="Effect", se_col="StdErr", pval_col="P.value") 
 	out_dat <- format_data(out_dat, type ="outcome", snp_col="rsid", effect_allele_col="ALT", other_allele_col="REF", beta_col="all_inv_var_meta_beta", se_col="all_inv_var_meta_sebeta", pval_col="all_inv_var_meta_p") 
 tsmr_dat <- harmonise_data(exp_dat, out_dat)
 	mr(tsmr_dat)
-bsmr_dat0 <- dat_to_MRInput(tsmr_dat); head(bsmr_dat0)
+bsmr_dat0 <- dat_to_MRInput(tsmr_dat)
 	bsmr_dat <- bsmr_dat0[[1]]
 	mr_ivw(bsmr_dat)
 	plt <- mr_plot(bsmr_dat, interactive=F)
