@@ -120,7 +120,11 @@ done
 <br/><br/>
 
 
-## #3.3 GWAS的显示和注释，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业，日本人就用这个弄出了 [pheweb.jp](pheweb.jp)。密西根大学还开发了 [LocusZOOM](http://locuszoom.org), 具有类似和互补的功能。
+## #3.3 GWAS的显示和注释，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。中国版本的是本人建立的 [pheweb.cn](pheweb.cn)，日本版本的链接是[pheweb.jp](pheweb.jp)。
+## Pheweb有一个强大的add_rsid.py 的功能，但是存在[先天缺陷](https://github.com/statgen/pheweb/issues/173#issuecomment-1581798702)。用户可从scripts目录下载修订版的 add_rsid.py，用下面的命令执行。具体的参数根据input文件，修改。
+```
+python3 add_rsid.py -i PATH/test.tsv -d PATH/rsids-v154-hg38.tsv.gz --sep "\t" --chr chrom --ref ref --alt alt --pos pos -o PATH/test_out.tsv
+```
 
 > ### 如果不用上述的系统，也可以用 [PLINK](https://www.cog-genomics.org/plink/1.9/) 人工操作。点击左边菜单中的 Report postprocess 中的 3个命令（--annotate, --clump, --gene-report）
 
