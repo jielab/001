@@ -109,8 +109,22 @@ bsmr_dat0 <- dat_to_MRInput(tsmr_dat)
 	plt <- mr_funnel(bsmr_dat)
 		plt + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=14), axis.text=element_text(size=12, face="bold"))	
 	ggsave(plt, file=paste0(exp,".exp.png"), w=10, h=10)
+#下面几个 exp_dat，需要先：remotes::install_github("MRCIEU/MRInstruments", force=T); library(MRInstruments)
+exp_dat0 <-subset(gwas_catalog, grepl("Speliotes", Author) & Phenotype == "Body mass index") # GWAS catalog
+	exp_dat <- format_data(exp_dat0)
+exp_dat0 <- available_outcomes(); head(exp_dat0) # IEU GWAS database
+	exp_dat <- extract_instruments(outcomes = 'ieu-a-2')
+	exp_dat <- clump_data(exp_dat)
+data(metab_qtls); ?metab_qtls
+	exp_dat <- format_metab_qtls(subset(metab_qtls, phenotype == "Ala"))
+data(proteomic_qtls); ?proteomic_qtls
+	exp_dat <- format_proteomic_qtls(subset(proteomic_qtls, analyte == "ApoH"))
+data(gtex_eqtl); ?gtex_eqtl
+	exp_dat <- format_gtex_eqtl(subset(gtex_eqtl, gene_name == "IRAK1BP1" & tissue == "Adipose Subcutaneous"))
+data(aries_mqtl); ?aries_mqtl
+	exp_dat <- format_aries_mqtl(subset(aries_mqtl, cpg == "cg25212131" & age == "Birth"))
 #Sum Many MR results: 
-#	pdftk */*.cB.pdf cat output 001.cB.pdf; cat */*.mr.res.txt | awk 'NF ==10' > 001.mr.txt
+#pdftk */*.cB.pdf cat output 001.cB.pdf; cat */*.mr.res.txt | awk 'NF ==10' > 001.mr.txt
 pacman::p_load(corrplot, reshape2)
 dat <- read.table('001.mr.txt', header=F, as.is=T)
 	names(dat) <- c('ex_name', 'ou_name', 'cnt', 'p.ivw', 'p.median', 'p.maxlik', 'p.mbe', 'p.conmix', 'pleio.egger', 'p.egger')
