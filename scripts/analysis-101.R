@@ -1,4 +1,4 @@
-setwd("C:/Users/jiehu/Desktop/tmp")
+setwd("C:/Users/jiehu/Desktop")
 pacman::p_load(data.table, lubridate, tidyverse, dplyr, ggplot2, CMplot, TwoSampleMR, MendelianRandomization, survival, survminer, mediation)
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 
@@ -21,11 +21,9 @@ dat <- dat0 %>% filter(ethnicity_gen==1) %>%
 	mutate (
 		sp1.M = ifelse(sp1=="MM", 2, ifelse(grepl("M", sp1), 1, 0)),
 		sp1.S = ifelse(grepl("SS", sp1), 2,  ifelse(grepl("S", sp1), 1, 0)),
-		sp1.Z = ifelse(grepl("ZZ", sp1), 2,  ifelse(grepl("Z", sp1), 1, 0)),
-		age_mn_3p = ifelse(age_mn %in% 12:14, "normal", ifelse(age_mn>14, "late", "early")),
-		age_mn_3p = factor(age_mn_3p, levels=c("normal", "early", "late"))
+		sp1.Z = ifelse(grepl("ZZ", sp1), 2,  ifelse(grepl("Z", sp1), 1, 0))
 	)
-varXs <- c("o_type", "fut2.rs601338_A", "lac.rs4988235_A", "sp1.Z", "age_mn_3p")
+varXs <- c("o_type", "fut2.rs601338_A", "lac.rs4988235_A", "sp1.Z")
 for (varY in c("icdDate_copd", "icdDate_covid", "fod_t1dm", "fod_t2dm", "fod_dm")) {
 	print(paste("Y变量:", varY))
 	dat1 <- dat %>% 
@@ -64,22 +62,24 @@ for (varY in grep("^bb_|^bc_", names(dat), value=T)) {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Mediation 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-table(dat0$blood_group)
 dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
 	mutate (
-	exposure = ifelse(blood_group !="OO", 1,0),
-	outcome = ifelse(!is.na(icd_covid_date), 1, ifelse(covid_inf==1,0, NA))
+	age_mn_3p = ifelse(age_mn %in% 12:14, "normal", ifelse(age_mn>14, "late", "early")),
+	age_mn_3p = factor(age_mn_3p, levels=c("normal", "early", "late")),
+	outcome = ifelse(!is.na(icdDate_covid), 1, ifelse(covid_inf==1,0, NA))
 	)
-	round(prop.table(table(dat$exposure, dat$outcome), 1), 5) 
-	tab <- dat %>% group_by(abo1) %>% summarise_at(vars(grep("bb_", names(dat), value=T)), list(mean=mean), na.rm=T) %>% as.data.frame() %>% na.omit()
-varX="exposure"; varY="outcome"; varM="bb_ALP"
-dat1 <- subset(dat, select=c(varX, varY, varM, "age", "sex", "bmi")) %>% na.omit()
+varX="age_mn_3p"; varY="outcome"
+for (varM in grep("^bb_|^bc_", names(dat), value=T)) {
+	print(paste("M变量:", varM))
+	dat1 <- subset(dat, select=c(varX, varY, varM, "age", "sex", "bmi")) %>% na.omit()
+	dat1[[varM]] <- inormal(dat1[[varM]]) # normal transformation
 	names(dat1) <- c("varX", "varY", "varM", "age","sex", "bmi")
 	dat1$varX <- as.factor(dat1$varX)
-fit.med = lm(varM ~ varX, data=dat1); summary(fit.med)	
-	fit.out = glm(varY ~ varX + varM, data=dat1, family=binomial("probit")); summary(fit.out) 
-	med.out = mediation::mediate(fit.med, fit.out, treat="varX", mediator="varM", control.value="O", treat.value="A", sims=200, boot=T)
-	print(summary(med.out)); plot(med.out)
+	fit.med = lm(varM ~ varX, data=dat1)
+	fit.out = glm(varY ~ varX + varM, data=dat1, family=binomial("probit"))
+	med.out = mediation::mediate(fit.med, fit.out, treat="varX", mediator="varM", sims=100, boot=T)
+	print(summary(med.out))
+}
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
