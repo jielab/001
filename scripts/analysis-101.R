@@ -62,13 +62,16 @@ for (varY in grep("^bb_|^bc_", names(dat), value=T)) {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Mediation 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
+dat <- dat0 %>% filter(ethnicity_gen==1) %>% dplyr::select(grep("age|sex|bmi|covid|^bb_|^bc|age_mn",names(dat0),value=T)) %>% 
 	mutate (
 	age_mn_3p = ifelse(age_mn %in% 12:14, "normal", ifelse(age_mn>14, "late", "early")),
 	age_mn_3p = factor(age_mn_3p, levels=c("normal", "early", "late")),
 	outcome = ifelse(!is.na(icdDate_covid), 1, ifelse(covid_inf==1,0, NA))
 	)
 varX="age_mn_3p"; varY="outcome"
+form <- formula(paste(varY, "~", varX, "+age+sex+bmi"))
+form <- formula(paste(varY, "~", varX, "+age+sex+bmi+", paste(grep("^bb_", names(dat), value=T), sep="", collapse="+")))
+summary(glm(form, data=dat))
 for (varM in grep("^bb_|^bc_", names(dat), value=T)) {
 	print(paste("M变量:", varM))
 	dat1 <- subset(dat, select=c(varX, varY, varM, "age", "sex", "bmi")) %>% na.omit()
