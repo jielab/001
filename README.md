@@ -126,7 +126,7 @@ done
 修改前：rsid = ... ...
 修改后：rsid = ... ... or (cpra['ref'] == rsid['alt'] and are_match(cpra['alt'], rsid['ref']))
 ```
-## 用户也可从 scripts文件夹下载本课题组修订版的 add_rsid.py，用下面的命令执行。具体的参数根据input文件，修改。
+> ### 用户也可从 scripts文件夹下载本课题组修订版的 add_rsid.py，用下面的命令执行。具体的参数根据input文件，修改。
 ```
 python3 add_rsid.py -i PATH/test.tsv -d PATH/rsids-v154-hg38.tsv.gz --sep "\t" --chr chrom --ref ref --alt alt --pos pos -o PATH/test_out.tsv
 ```
@@ -140,17 +140,17 @@ for chr in {1..22}; do
    awk '$1 !="" {print $3,$1, $4,$5}' $trait.chr$chr.clumped > $trait.chr$chr.top
 done
 ```
-# 通过LD的计算来找到GWAS数据里面的independent top hits，也有一些问题。比如，g1k的LD不是金标准，r2也不是最合理的筛选办法，并且计算量很大。 
+> ### 通过LD的计算来找到GWAS数据里面的independent top hits，也有一些问题。比如，g1k的LD不是金标准，r2也不是最合理的筛选办法，并且计算量很大。 
 # 如果不考虑 SNP之间的LD，只考虑距离，假设GWAS的第1，2，3 列分别是 SNP, CHR, POS，最后一列是P，可以用下面这个简单的代码来寻找GWAS数据里面每1MB区间的top SNP。
 ```
 zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2,$3,$NF,b}' | \
 	sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $0; arr[$NF] ="Y"}' 
 ```
-# 要把上述得到的显著区域跟别人已经发表的 SNP进行比较，看是不是有重叠（1MB范围之内的重叠都算），可以用 bedtools 命令。
+> ### 要把上述得到的显著区域跟别人已经发表的 SNP进行比较，看是不是有重叠（1MB范围之内的重叠都算），可以用 bedtools 命令。
 <br/>
 
 
-## #3.5 GWAS 文件功能（functional）分析 
+## #3.4 GWAS 文件功能（functional）分析 
 
 > ### 可阅读2020年的文章[From GWAS to Function: Using Functional Genomics to Identify the Mechanisms Underlying Complex Diseases](https://www.frontiersin.org/articles/10.3389/fgene.2020.00424/full)
 > ### 可先尝试傻瓜相机式的[FUMA](https://fuma.ctglab.nl/) 网上解读系统
@@ -159,7 +159,7 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 
 <br/>
 
-## #3.6 多基因风险评分PRS
+## #3.5 多基因风险评分PRS
 
 > ### 相关的方法学，请参考经典版的 [PLINK0.9](http://zzz.bwh.harvard.edu/plink/profile.shtml) 和新版的 [PLINK1.9](https://www.cog-genomics.org/plink/1.9/score) 
 
@@ -167,7 +167,7 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 <br/>
 
 
-## #3.7. 因果分析 Mendelian Randomization
+## #3.6. 因果分析 Mendelian Randomization
 > 如果有个体数据数据，可以采用 [GSMR](https://cnsgenomics.com/software/gcta/#GSMR)，参考[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 。
 > 如果没有个体数据，只有别人报道的 exposure 和 outcome 的 BETA 和 SE，就可以使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)，或 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)。
 
