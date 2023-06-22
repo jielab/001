@@ -61,7 +61,7 @@ awk '{print $1}' MY.fields.txt > MY.fields.id; sort MY.fields.id | uniq -d
 ukbconv ukb42156.enc_ukb r -s42170 -oicd
 sed -i 's/"//g icd.tab
 ```
-> 将 icd.tab 文件整合为两列，便于读入R。
+> 用下面的代码将 icd.tab 文件整合为两列，便于读入R。也可 参考 scripts 文件夹里的 phe.R 代码，对 ICD 数据特别是 ICD date数据进行更加精细化的处理。
 ```
 cat icd.tab | sed -e 's/\tNA//g' -e 's/\t/,/2g' | \
 awk '{ if(NR==1) print "IID icd"; else if (NF==1) print $1 " NA"; else print $0"," }' > icd.2cols
