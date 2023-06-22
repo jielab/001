@@ -121,7 +121,12 @@ done
 
 
 ## #3.3 GWAS的显示和注释，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。中国版本的是本人建立的 [pheweb.cn](pheweb.cn)，日本版本的链接是[pheweb.jp](pheweb.jp)。
-## Pheweb有一个强大的add_rsid.py 的功能，但是存在[先天缺陷](https://github.com/statgen/pheweb/issues/173#issuecomment-1581798702)。用户可从scripts目录下载修订版的 add_rsid.py，用下面的命令执行。具体的参数根据input文件，修改。
+## Pheweb有一个强大的add_rsid.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/173#issuecomment-1581798702)，用户可以在安装pheweb 后找到 add_rsids.py 文件，修改第140行
+```
+修改前：rsid = ... ...
+修改后：rsid = ... ... or (cpra['ref'] == rsid['alt'] and are_match(cpra['alt'], rsid['ref']))
+```
+## 用户也可从 scripts文件夹下载本课题组修订版的 add_rsid.py，用下面的命令执行。具体的参数根据input文件，修改。
 ```
 python3 add_rsid.py -i PATH/test.tsv -d PATH/rsids-v154-hg38.tsv.gz --sep "\t" --chr chrom --ref ref --alt alt --pos pos -o PATH/test_out.tsv
 ```
