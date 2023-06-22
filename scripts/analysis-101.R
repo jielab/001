@@ -67,22 +67,25 @@ dat <- dat0 %>% filter(ethnicity_gen==1) %>% dplyr::select(grep("age|sex|bmi|cov
 	age_mn_3p = ifelse(age_mn %in% 12:14, "normal", ifelse(age_mn>14, "late", "early")),
 	age_mn_3p = factor(age_mn_3p, levels=c("normal", "early", "late")),
 	outcome = ifelse(!is.na(icdDate_covid), 1, ifelse(covid_inf==1,0, NA))
-	)
+	) %>% rename(CYS=bb_CYS)
 varX="age_mn_3p"; varY="outcome"
-form <- formula(paste(varY, "~", varX, "+age+sex+bmi"))
-form <- formula(paste(varY, "~", varX, "+age+sex+bmi+", paste(grep("^bb_", names(dat), value=T), sep="", collapse="+")))
+form <- formula(paste(varY, "~", varX, "+age+sex+bmi+CYS"))
+form <- formula(paste(varY, "~", varX, "+age+sex+bmi+CYS+", paste(grep("^bb_", names(dat), value=T), sep="", collapse="+")))
 summary(glm(form, data=dat))
-for (varM in grep("^bb_|^bc_", names(dat), value=T)) {
+for (varM in grep("CYS|^bb_|^bc_", names(dat), value=T)) {
 	print(paste("M变量:", varM))
 	dat1 <- subset(dat, select=c(varX, varY, varM, "age", "sex", "bmi")) %>% na.omit()
 	dat1[[varM]] <- inormal(dat1[[varM]]) # normal transformation
 	names(dat1) <- c("varX", "varY", "varM", "age","sex", "bmi")
 	dat1$varX <- as.factor(dat1$varX)
-	fit.med = lm(varM ~ varX, data=dat1)
-	fit.out = glm(varY ~ varX + varM, data=dat1, family=binomial("probit"))
+	fit.med = lm(varM ~ varX + age+sex, data=dat1)
+	fit.out = glm(varY ~ varX + varM +age+sex, data=dat1, family=binomial("probit"))
 	med.out = mediation::mediate(fit.med, fit.out, treat="varX", mediator="varM", sims=100, boot=T)
 	print(summary(med.out))
 }
+fit.med = lm(varM ~ varX, data=dat1)
+fit.out = glm(varY ~ varX + varM, data=dat1, family=binomial("probit"))
+med.out = mediation::mediate(fit.med, fit.out, treat="varX", mediator="varM", sims=100, boot=T)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -161,3 +164,34 @@ CMplot(dat, type="p", plot.type="c", r=0.4, col=matrix(c("gold","orange", "gray"
 	threshold=5e-8, cir.chr.h=1, amplify=F, threshold.col="red", signal.line=1, signal.col="black",
 	bin.size=1e6, outward=T, file='jpg', memo='', dpi=600, file.output=T, verbose=T, width=12, height=12
 )
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 分析案例 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+library(readxl)
+wang <- read_excel("D:/data/ukb/phe/ukb_analysis_lungcancer.xlsx") %>% rename(eid=n_eid)
+gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds")
+fod <- readRDS("D:/data/ukb/Rdata/ukb.fod.rds")
+dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
+	merge(wang, by="eid") %>%
+	merge(fod, by="eid")
+table(dat$sport.ACTN3.rs1815739_C, dat$rs1815739_T)
+summary(lm(icd_covid ~ covid.ACE2.rs2285666_C, data=dat))
+varY="fod_chd"
+dat1 <- dat %>% 
+	mutate(
+		outcome_date = dat[[varY]],
+		outcome_yes = ifelse( is.na(dat[[varY]]), 0,1),
+		follow_end_day = ifelse(!is.na(outcome_date), outcome_date, ifelse(!is.na(death_date), death_date, as.Date("2022-01-01"))),
+		follow_years = (as.numeric(follow_end_day) - as.numeric(attend_date)) / 365.25
+	) %>% filter( follow_years >0 )
+	print(table(dat1$outcome_yes))
+surv.obj <- Surv(time=dat1$follow_years, event=dat1$outcome_yes)
+surv.obj <- Surv(time=dat1$lung_cancer_time, event=dat1$lung_cancer_inc)
+for (varI in grep("ACE|\\.9p21", names(dat1), value=T)){
+	dat1$snp <- dat1[[varI]]
+	fit.cox <- coxph(surv.obj ~ walkingpace + snp + walkingpace*snp +age.x +sex.x +centre +race +Townsend_i +alcohol +Smoking +BMI_i +genePC1 +genePC2, data=dat1)
+	print(varI)
+	print(summary(fit.cox))
+}

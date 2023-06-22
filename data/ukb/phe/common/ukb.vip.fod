@@ -1,24 +1,27 @@
-infection data-field 130000 130345
-blood data-field 130622 130689
-endocrine data-field 130690 130835
-mental data-field 130836 130991
-nervous data-field 130992 131127
-eye data-field 131128 131221
-ear data-field 131222 131269
-circulatory data-field 131270 131423
-respiratory data-field 131424 131551
-digestive data-field 131552 131695
-skin data-field 131696 131839
-musculo data-field 131840 131997
-genito data-field 131998 132161
-pregnancy data-field 132162 132313
-perinatal data-field 132314 132431
-congenital data-field 132432 132605
-t1dm	icd-10	E10	E10	#
-t2dm	icd-10	E11	E11	#
-dm	icd-10	E10	E14	#
-infection.Intestinal	icd-10	A00	A09	#
-infection.skin	icd-10	B00	B09	#
-infection.hepatitis	icd-10	B15	B19 #	
-infection.bacterial	icd-10	B95	B98	#
-
+t1dm	E10
+t2dm	E11
+dm	E10-E14
+chd	I20-I25
+mi	I21-I23
+af	I48
+arrhy	I49
+hf	I50
+stroke	I60-I69
+copd	J44
+asthma	J45
+infection 130000-130345
+blood 130622-130689
+endocrine 130690-130835
+mental 130836-130991
+nervous 130992-131127
+eye 131128-131221
+ear 131222-131269
+circulatory 131270-131423
+respiratory 131424-131551
+digestive 131552-131695
+skin 131696-131839
+musculo 131840-131997
+genito 131998-132161
+pregnancy 132162-132313
+perinatal 132314-132431
+congenital 132432-132605

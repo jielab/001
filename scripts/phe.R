@@ -41,7 +41,7 @@ saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
 # ICD 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source(paste0(indir,"raw-670287/icd.r")); icd <- bd
-source(paste0(indir,"raw-670287/icdDate.r")); icdDate <- bd
+source(paste0(indir,"raw-670287/icdDate.r")); icdDate <- bd; bd <- NULL
 #icd <- icd[1:10, 1:15]; icdDate <- icdDate[1:10, 1:15]
 dates <- names(icdDate)[sapply(icdDate, is.Date)]; summary(icdDate[,-1])
 for (date1 in dates) { icdDate[[date1]][icdDate[[date1]] %in% as.Date(c("1900-01-01", "1999-01-01"))] <- NA }
@@ -51,10 +51,10 @@ dat <- subset(icd, select=f.eid) %>% rename(eid=f.eid)
 for (i in 1:nrow(vip)) {
 	dat1 <- icd[,-1]
 	dat2 <- icdDate[,-1]
-	exclude <- as.matrix(apply(dat1, 1:2, function(x){!grepl(vip$code[i],x)}))
+	exclude <- apply(dat1, 2, function(x){!grepl(vip$code[i],x)}) # 2 或者 1:2 得到 same dimension
 	dat1[exclude] <- NA
 	dat2[exclude] <- NA
-	dat[[paste0("icd_",vip$trait[i])]] <- apply(dat1, 1, function(x){sum(!is.na(x))})
+	dat[[paste0("icd_",vip$trait[i])]] <- apply(dat1, 1, function(x){sum(!is.na(x))}) # apply 1
 	dat[[paste0("icdDate_",vip$trait[i])]] <- as.Date(apply(dat2, 1, FUN=min, na.rm=T)) 
 }
 saveRDS(dat, file="D:/data/ukb/Rdata/ukb.icd.rds")
@@ -66,17 +66,19 @@ saveRDS(dat, file="D:/data/ukb/Rdata/ukb.icd.rds")
 source(paste0(indir,"raw-50136/fod.r")) 
 dates <- names(bd)[sapply(bd, is.Date)]; summary(bd[,dates])
 for (date1 in dates) { bd[[date1]][bd[[date1]] %in% dates_bad] <- NA }
-code12 <- read.table(paste0(indir,"common/ukb.fod.code12"), header=F) %>%
+icdField <- read.table(paste0(indir,"common/ukb.icd-dataField.txt"), header=F) %>%
 	rename(icd=V1, field=V2)
 vip <- read.table(paste0(indir,"common/ukb.vip.fod"), header=F, flush=T) %>% 
-	rename(trait=V1, type=V2, first=V3, last=V4) %>%
-	merge(code12, by.x="first", by.y="icd", all.x=T) %>%
-	merge(code12, by.x="last", by.y="icd", all.x=T) %>%
+	rename(trait=V1, code=V2) %>% 
+	mutate(
+		first=gsub("-.*", "", code), last=gsub(".*-", "", code)
+	) %>%
+	merge(icdField, by.x="first", by.y="icd", all.x=T) %>%
+	merge(icdField, by.x="last", by.y="icd", all.x=T) %>%
 	mutate(
 		first=ifelse(!is.na(field.x), field.x, first),
 		last =ifelse(!is.na(field.y), field.y, last)
 	)
-	subset(vip, is.na(field.x) & type=="icd-10") #check
 fields_all <- read.table(paste0(indir,"raw-50136/fields.ukb"), header=F)
 for (i in 1:nrow(vip)) {
 	fields <- paste0("f.", subset(fields_all, V1 >=vip[i,"first"] & V1 <=vip[i,"last"] & V1%%2==0)$V1, ".0.0")
