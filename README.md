@@ -120,8 +120,7 @@ done
 <br/><br/>
 
 
-## #3.3 GWAS的显示和注释，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。中国版本的是本人建立的 [pheweb.cn](pheweb.cn)，日本版本的链接是[pheweb.jp](pheweb.jp)。
-## Pheweb有一个强大的add_rsid.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/173#issuecomment-1581798702)，用户可以在安装pheweb 后找到 add_rsids.py 文件，修改第140行
+## #3.3 GWAS的显示和注释，使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。Pheweb有一个强大的add_rsid.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/173#issuecomment-1581798702)，用户可以在安装pheweb 后找到 add_rsids.py 文件，修改第140行
 ```
 修改前：rsid = ... ...
 修改后：rsid = ... ... or (cpra['ref'] == rsid['alt'] and are_match(cpra['alt'], rsid['ref']))
@@ -140,8 +139,7 @@ for chr in {1..22}; do
    awk '$1 !="" {print $3,$1, $4,$5}' $trait.chr$chr.clumped > $trait.chr$chr.top
 done
 ```
-> ### 通过LD的计算来找到GWAS数据里面的independent top hits，也有一些问题。比如，g1k的LD不是金标准，r2也不是最合理的筛选办法，并且计算量很大。 
-# 如果不考虑 SNP之间的LD，只考虑距离，假设GWAS的第1，2，3 列分别是 SNP, CHR, POS，最后一列是P，可以用下面这个简单的代码来寻找GWAS数据里面每1MB区间的top SNP。
+> ### 通过LD的计算来找到GWAS数据里面的independent top hits，也有一些问题。比如，g1k的LD不是金标准，r2也不是最合理的筛选办法，并且计算量很大。如果不考虑 SNP之间的LD，只考虑距离，假设GWAS的第1，2，3 列分别是 SNP, CHR, POS，最后一列是P，可以用下面这个简单的代码来寻找GWAS数据里面每1MB区间的top SNP。
 ```
 zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2,$3,$NF,b}' | \
 	sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $0; arr[$NF] ="Y"}' 
