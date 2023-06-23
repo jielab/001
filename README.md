@@ -121,14 +121,14 @@ done
 
 
 ## #3.3 GWAS的显示和注释
-> 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。Pheweb有一个强大的add_rsid.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/173#issuecomment-1581798702)，用户可以在安装pheweb 后找到 add_rsids.py 文件，修改第140行
+> 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/173#issuecomment-1581798702)，用户可以在安装pheweb 后找到 add_rsids.py 文件，修改第140行
 ```
 修改前：rsid = ... ...
 修改后：rsid = ... ... or (cpra['ref'] == rsid['alt'] and are_match(cpra['alt'], rsid['ref']))
 ```
-> 用户也可从 scripts文件夹下载本课题组修订版的 add_rsid.py，用下面的命令执行。具体的参数根据input文件，修改。
+> 用户也可从 scripts文件夹下载本课题组修订版的 add_rsids.py，用下面的命令执行。具体的参数根据input文件，修改。
 ```
-python3 add_rsid.py -i PATH/test.tsv -d PATH/rsids-v154-hg38.tsv.gz --sep "\t" --chr chrom --ref ref --alt alt --pos pos -o PATH/test_out.tsv
+python3 add_rsids.py -i PATH/test.tsv -d PATH/rsids-v154-hg38.tsv.gz --sep "\t" --chr chrom --ref ref --alt alt --pos pos -o PATH/test_out.tsv
 ```
 
 > 如果不用上述的系统，也可以用 [PLINK](https://www.cog-genomics.org/plink/1.9/) 人工操作。点击左边菜单中的 Report postprocess 中的 3个命令（--annotate, --clump, --gene-report）。plink clump 的结果，不包括那些 --bfile 里面没有的SNP，所以得要把那些SNP再添加到 clump 的结果里，详情见[聊天记录](https://groups.google.com/g/plink2-users/c/DacWWAPvGE0/m/uH8NVYq_CQAJ)。
