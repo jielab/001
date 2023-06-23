@@ -126,12 +126,14 @@ done
 修改前：rsid = ... ...
 修改后：rsid = ... ... or (cpra['ref'] == rsid['alt'] and are_match(cpra['alt'], rsid['ref']))
 ```
-> 用户也可从 scripts文件夹下载本课题组修订版的 add_rsid2.py，用下面的命令执行。具体的参数根据input文件，修改。
+> 
+ 
+用户也可以在得到pheweb网站上的[rsids-v154-hg38.tsv.gz](https://resources.pheweb.org)文件后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid2.py。示例命令如下，具体的参数根据input文件调整。
 ```
 python3 add_rsid2.py -i PATH/test.tsv -d PATH/rsids-v154-hg38.tsv.gz --sep "\t" --chr chrom --ref ref --alt alt --pos pos -o PATH/test_out.tsv
 ```
 
-> 如果不用上述的系统，也可以用 [PLINK](https://www.cog-genomics.org/plink/1.9/) 人工操作。点击左边菜单中的 Report postprocess 中的 3个命令（--annotate, --clump, --gene-report）。plink clump 的结果，不包括那些 --bfile 里面没有的SNP，所以得要把那些SNP再添加到 clump 的结果里，详情见[聊天记录](https://groups.google.com/g/plink2-users/c/DacWWAPvGE0/m/uH8NVYq_CQAJ)。
+> [PLINK](https://www.cog-genomics.org/plink/1.9/) 也有一些基本注释的功能。点击左边菜单中的 Report postprocess 中的 3个命令（--annotate, --clump, --gene-report）。plink clump 的结果，不包括那些 --bfile 里面没有的SNP，所以得要把那些SNP再添加到 clump 的结果里，详情见[聊天记录](https://groups.google.com/g/plink2-users/c/DacWWAPvGE0/m/uH8NVYq_CQAJ)。
 ```
 plink --annotate $trait.gwas.txt NA ranges=glist-hg19 --border 10 --pfilter 5e-8 --out $trait.top
 
@@ -145,7 +147,7 @@ done
 zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2,$3,$NF,b}' | \
 	sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $0; arr[$NF] ="Y"}' 
 ```
-> 要把上述得到的显著区域跟别人已经发表的 SNP进行比较，看是不是有重叠（1MB范围之内的重叠都算），可以用 bedtools 命令。
+> 要把上述得到的显著区域跟已发表的文章中的SNP进行比较，看是不是有重叠（1MB范围之内的重叠都算），可以用 bedtools。
 <br/>
 
 
