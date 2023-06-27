@@ -121,16 +121,17 @@ done
 
 
 ## #3.3 GWAS的显示和注释
-> 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/173#issuecomment-1581798702)，用户可以在安装pheweb 后找到 add_rsids.py 文件，修改第140行
+> 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
+> Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/173#issuecomment-1581798702)，用户可以在安装pheweb 后找到 add_rsids.py 文件，修改一行代码。如果用 which python 得到的python 路径是 XYZ/bin/python，那么 add_rsids.py 就位于 XYZ/lib/python3.8/site-packages/pheweb/load。将该代码的140行做如下修改即可。
 ```
-修改前：rsid = ... ...
-修改后：rsid = ... ... or (cpra['ref'] == rsid['alt'] and are_match(cpra['alt'], rsid['ref']))
+修改前：rsids = [rsid['rsid'] for rsid in rsid_group if cpra['ref'] == rsid['ref'] and are_match(cpra['alt'], rsid['alt'])]
+修改后：rsids = [rsid['rsid'] for rsid in rsid_group if (cpra['ref'] == rsid['ref'] and are_match(cpra['alt'], rsid['alt'])) or (cpra['ref'] == rsid['alt'] and are_match(cpra['alt'], rsid['ref']))]
 ```
 > 
  
-用户也可以在得到[pheweb网站](https://resources.pheweb.org)上的 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid2.py。示例命令如下，具体的参数根据input文件调整。注意，--sep 后面有双引号。
+用户也可以在得到[pheweb网站](https://resources.pheweb.org)上的 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid2.py。根据需要，可先运行 dos2unix add_rsid2.py，然后运行如下示例命令，具体的参数根据input文件调整。注意，--sep 后面有双引号，默许的版本是 python3。
 ```
-python3 add_rsid2.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d files/rsids-v154-hg38.tsv.gz -o out.tsv
+add_rsid2.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d files/rsids-v154-hg38.tsv.gz -o out.tsv
 ```
 
 > [PLINK](https://www.cog-genomics.org/plink/1.9/) 也有一些基本注释的功能。点击左边菜单中的 Report postprocess 中的 3个命令（--annotate, --clump, --gene-report）。plink clump 的结果，不包括那些 --bfile 里面没有的SNP，所以得要把那些SNP再添加到 clump 的结果里，详情见[聊天记录](https://groups.google.com/g/plink2-users/c/DacWWAPvGE0/m/uH8NVYq_CQAJ)。
