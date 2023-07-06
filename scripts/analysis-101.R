@@ -15,6 +15,30 @@ dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 北医合作研究案例：8 + happy 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# happy_general 20458; happy_health 20459; happy_life 20460; satisfy_bowel 21040
+library(readxl)
+wang <- read_excel("D:/data/ukb/phe/le8_data.xlsx") %>% rename(eid=n_eid, sex.y=sex)
+dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
+	merge(wang, by="eid")
+varY="fod_chd"
+dat1 <- dat %>% 
+	mutate( 
+		outcome_date = dat[[varY]],
+		outcome_yes = ifelse( is.na(outcome_date), 0,1),
+		follow_end_day = ifelse(!is.na(outcome_date), outcome_date, ifelse(!is.na(death_date), death_date, as.Date("2022-01-01"))),
+		follow_years = (as.numeric(follow_end_day) - as.numeric(attend_date)) / 365.25
+	) %>% filter( follow_years >0 )
+	print(table(dat1$outcome_yes))
+dat1$happy = ifelse(dat1$happy_health>=4,0, ifelse(dat1$happy_general>=1,1,NA))
+#dat1$happy = ifelse(dat1$satisfy_bowel<=4,1, ifelse(dat1$satisfy_bowel>=6,0,NA))
+surv.obj <- Surv(time=dat1$follow_years, event=dat1$outcome_yes)
+fit.cox <- coxph(surv.obj ~ happy + cad.score_sum + dashpts+PA_pts+smoke_pts+sleep_pts+bmi_pts+nonhdl_pts+hba1c_pts+BP_pts +age+sex+PC1+PC2, data=dat1); summary(fit.cox)
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 万有引力之生存分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
@@ -89,58 +113,16 @@ med.out = mediation::mediate(fit.med, fit.out, treat="varX", mediator="varM", si
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Mendelian Randomization
+# meta-analysis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-exp_dat0 <- read.table("D:/files/posCtrls/bmi.EUR77.top.txt", header=T, as.is=T)
-	exp_iv <- subset(exp_dat0, select="SNP")
-	exp_dat <- format_data(exp_dat0, type ="exposure", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P")
-exp_dat0 <- read.table("D:/Downloads/GCST90019494_buildGRCh37.tsv.gz", header=T, as.is=T) 
-	exp_iv <- read.table("D:/data/gwas/bb/bb_ALP.top.snps", header=T, as.is=T)
-	exp_dat <- merge(exp_dat0, exp_iv, by.x="variant_id", by.y="SNP")
-	exp_dat <- format_data(exp_dat, type ="exposure", snp_col="variant_id", effect_allele_col="effect_allele", other_allele_col="other_allele", beta_col="beta", se_col="standard_error", pval_col="p_value") 
-out_dat0 <- read.table("D:/data/gwas/bb/cad.2017.gwas.gz", header=T, as.is=T)
-	out_dat <- merge(out_dat0, exp_iv, by.x="SNP", by.y="SNP")
-	out_dat <- format_data(out_dat, type ="outcome", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P") 
-	out_dat <- format_data(out_dat, type ="outcome", snp_col="rsid", effect_allele_col="Allele1", other_allele_col="Allele2", beta_col="Effect", se_col="StdErr", pval_col="P.value") 
-	out_dat <- format_data(out_dat, type ="outcome", snp_col="rsid", effect_allele_col="ALT", other_allele_col="REF", beta_col="all_inv_var_meta_beta", se_col="all_inv_var_meta_sebeta", pval_col="all_inv_var_meta_p") 
-tsmr_dat <- harmonise_data(exp_dat, out_dat)
-	mr(tsmr_dat)
-bsmr_dat0 <- dat_to_MRInput(tsmr_dat)
-	bsmr_dat <- bsmr_dat0[[1]]
-	mr_ivw(bsmr_dat)
-	plt <- mr_plot(bsmr_dat, interactive=F)
-		plt + theme(axis.title=element_text(size=15, face="bold"), axis.text=element_text(size=12, face="bold"))
-	plt <- mr_forest(bsmr_dat, snp_estimates=F, methods=c("ivw", "median", "wmedian", "egger", "maxlik", "conmix")) 
-		plt + scale_colour_manual(values = c("IVW estimate"="red")) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=10, face="bold"), axis.text.x=element_text(size=10, face="bold"), axis.text.y=element_text(size=15, face="bold"))
-	plt <- mr_funnel(bsmr_dat)
-		plt + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=14), axis.text=element_text(size=12, face="bold"))	
-	ggsave(plt, file=paste0(exp,".exp.png"), w=10, h=10)
-#下面几个 exp_dat，需要先：remotes::install_github("MRCIEU/MRInstruments", force=T); library(MRInstruments)
-exp_dat0 <-subset(gwas_catalog, grepl("Speliotes", Author) & Phenotype == "Body mass index") # GWAS catalog
-	exp_dat <- format_data(exp_dat0)
-exp_dat0 <- available_outcomes(); head(exp_dat0) # IEU GWAS database
-	exp_dat <- extract_instruments(outcomes = 'ieu-a-2')
-	exp_dat <- clump_data(exp_dat)
-data(metab_qtls); ?metab_qtls
-	exp_dat <- format_metab_qtls(subset(metab_qtls, phenotype == "Ala"))
-data(proteomic_qtls); ?proteomic_qtls
-	exp_dat <- format_proteomic_qtls(subset(proteomic_qtls, analyte == "ApoH"))
-data(gtex_eqtl); ?gtex_eqtl
-	exp_dat <- format_gtex_eqtl(subset(gtex_eqtl, gene_name == "IRAK1BP1" & tissue == "Adipose Subcutaneous"))
-data(aries_mqtl); ?aries_mqtl
-	exp_dat <- format_aries_mqtl(subset(aries_mqtl, cpg == "cg25212131" & age == "Birth"))
-#Sum Many MR results: 
-#pdftk */*.cB.pdf cat output 001.cB.pdf; cat */*.mr.res.txt | awk 'NF ==10' > 001.mr.txt
-pacman::p_load(corrplot, reshape2)
-dat <- read.table('001.mr.txt', header=F, as.is=T)
-	names(dat) <- c('ex_name', 'ou_name', 'cnt', 'p.ivw', 'p.median', 'p.maxlik', 'p.mbe', 'p.conmix', 'pleio.egger', 'p.egger')
-dat1 <- dat %>% group_by(ex_name, ou_name) %>% summarize(Pmin=min(p)) %>% mutate(p= -log10(Pmin))
-	dat1 <- dat %>% select(ex_name, ou_name, p.ivw) %>% mutate (p=-log10(p.ivw))
-	pmat <- acast(dat1, ou_name ~ ex_name, value.var='p')
-	pmat[is.na(pmat)] =0;  pmat=round(pmat,1); pmat[pmat >7] =7; 
-pdf('mr.pval.pdf', w=20, h=20)
-	corrplot(pmat, is.corr=F, method='shade', bg='black', col=colorRampPalette(c("white","green","gold"))(100), tl.col='black', tl.cex=1.3, addCoef.col='black', number.cex=0.9, insig="pch", pch.cex=2, tl.srt=45, outline=T)
-	dev.off()
+library(meta)
+data("Fleiss1993cont"); head(Fleiss1993cont)
+res <- metacont(n.psyc, mean.psyc, sd.psyc, n.cont, mean.cont, sd.cont,
+	comb.fixed=T, comb.random=T, studlab=study, sm="SMD", data=Fleiss1993cont) 
+res
+forest(res, leftcols = c('studlab'))
+funnel(res)
+metabias(res, method.bias = 'linreg', k.min = 5, plotit = T)# Egger
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -164,34 +146,3 @@ CMplot(dat, type="p", plot.type="c", r=0.4, col=matrix(c("gold","orange", "gray"
 	threshold=5e-8, cir.chr.h=1, amplify=F, threshold.col="red", signal.line=1, signal.col="black",
 	bin.size=1e6, outward=T, file='jpg', memo='', dpi=600, file.output=T, verbose=T, width=12, height=12
 )
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 分析案例 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-library(readxl)
-wang <- read_excel("D:/data/ukb/phe/ukb_analysis_lungcancer.xlsx") %>% rename(eid=n_eid)
-gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds")
-fod <- readRDS("D:/data/ukb/Rdata/ukb.fod.rds")
-dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
-	merge(wang, by="eid") %>%
-	merge(fod, by="eid")
-table(dat$sport.ACTN3.rs1815739_C, dat$rs1815739_T)
-summary(lm(icd_covid ~ covid.ACE2.rs2285666_C, data=dat))
-varY="fod_chd"
-dat1 <- dat %>% 
-	mutate(
-		outcome_date = dat[[varY]],
-		outcome_yes = ifelse( is.na(dat[[varY]]), 0,1),
-		follow_end_day = ifelse(!is.na(outcome_date), outcome_date, ifelse(!is.na(death_date), death_date, as.Date("2022-01-01"))),
-		follow_years = (as.numeric(follow_end_day) - as.numeric(attend_date)) / 365.25
-	) %>% filter( follow_years >0 )
-	print(table(dat1$outcome_yes))
-surv.obj <- Surv(time=dat1$follow_years, event=dat1$outcome_yes)
-surv.obj <- Surv(time=dat1$lung_cancer_time, event=dat1$lung_cancer_inc)
-for (varI in grep("ACE|\\.9p21", names(dat1), value=T)){
-	dat1$snp <- dat1[[varI]]
-	fit.cox <- coxph(surv.obj ~ walkingpace + snp + walkingpace*snp +age.x +sex.x +centre +race +Townsend_i +alcohol +Smoking +BMI_i +genePC1 +genePC2, data=dat1)
-	print(varI)
-	print(summary(fit.cox))
-}
