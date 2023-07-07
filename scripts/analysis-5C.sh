@@ -165,7 +165,7 @@ beta <- dat %>% select(exp_name, out_name, beta)
 pval <- dat %>% select(exp_name, out_name, p)
 	pval <- acast(pval, exp_name ~ out_name, value.var='p'); pval[is.na(pval)] =1
 plt <- ggcorrplot(beta, lab=T, p.mat=pval, sig.level=.25e-4, insig ='blank') 
-	plt + theme(axis.title=element_text(size=15, face='bold'), axis.text=element_text(size=12, face='bold'))
+	plt + theme(axis.text=element_text(size=12, face='bold', color=c("black","blue")))
 #corrplot(beta, is.corr=F, method='shade', bg='black', col=colorRampPalette(c('white','green','gold'))(100), tl.col='black', tl.cex=1.3, addCoef.col='black', number.cex=0.9, insig='pch', pch.cex=2, tl.srt=45, outline=T)
 
 
