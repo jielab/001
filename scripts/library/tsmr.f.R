@@ -23,25 +23,31 @@ tsmr_fn <-function( exp_iv_file,
 	if (file.exists(out_file)) {
 		out_dat0 <- read.table(out_file, header=T, as.is=T)
 		out_dat <- merge(out_dat0, exp_iv, by.x=out_snp, by.y=names(exp_iv))
-		out_dat <- format_data(out_dat, type="outcome", phenotype_col=out_pheno, snp_col=out_snp, effect_allele_col=out_ea, other_allele_col=out_nea, beta_col=out_beta, se_col=out_se, pval_col=out_p) # %>% filter (pval.exposure <1e-3)
+		if (nrow(out_dat) >0) {
+			out_dat <- format_data(out_dat, type="outcome", phenotype_col=out_pheno, snp_col=out_snp, effect_allele_col=out_ea, other_allele_col=out_nea, beta_col=out_beta, se_col=out_se, pval_col=out_p) # %>% filter (pval.exposure <1e-3)
+		}
 	} else if (out_ieu != 'NA') {
 		out_dat <- extract_outcome_data(snps=exp_iv[[exp_snp]], outcomes=out_ieu)	
 	} else {	
 		next
 	}
-	tsmr_dat <- harmonise_data(exp_dat, out_dat)
-	mr.res <- mr(tsmr_dat) 
-	mr.res.str <- paste(exp_name, nrow(exp_dat), out_name, nrow(out_dat), mr.res$nsnp, mr.res$method, mr.res$b, mr.res$se, mr.res$pval, sep='|')
-	write.table(mr.res.str, paste0(exp_name,'.',out_name,'.tsmr.out'), append=F, quote=F, row.names=F, col.names=F)
-#	bsmr_dat <- dat_to_MRInput(tsmr_dat); bsmr_dat <- bsmr_dat[[1]]
-#	mr_ivw(bsmr_dat)
-#	png(paste0(exp_name,'.',out_name,'.beta.png'), w=800, h=800)
-#		plt <- mr_plot(bsmr_dat, interactive=F) + theme(axis.title=element_text(size=15, face="bold"), axis.text=element_text(size=12, face="bold"))
-#		print(plt); dev.off()
-#	png(paste0(exp_name,'.',out_name,'.forest.png'), w=800, h=800)
-#		plt <- mr_forest(bsmr_dat, snp_estimates=F, methods=c("ivw", "median", "wmedian", "egger", "maxlik", "conmix")) + scale_colour_manual(values = c("IVW estimate"="red")) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=10, face="bold"), axis.text.x=element_text(size=10, face="bold"), axis.text.y=element_text(size=15, face="bold"))
-#		print(plt); dev.off()
-#	png(paste0(exp_name,'.',out_name,'.funnel.png'), w=800, h=800)	
-#		plt <- mr_funnel(bsmr_dat) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=14), axis.text=element_text(size=12, face="bold"))	
-#		print(plt); dev.off()
+	if (nrow(out_dat) >0) {
+		tsmr_dat <- harmonise_data(exp_dat, out_dat, action=1) # accept palindromic SNPs
+		if (nrow(tsmr_dat) >0) {
+		mr.res <- mr(tsmr_dat) 
+		mr.res.str <- paste(exp_name, nrow(exp_dat), out_name, nrow(out_dat), mr.res$nsnp, mr.res$method, mr.res$b, mr.res$se, mr.res$pval, sep='|')
+		write.table(mr.res.str, paste0(exp_name,'.',out_name,'.tsmr.out'), append=F, quote=F, row.names=F, col.names=F)
+	#	bsmr_dat <- dat_to_MRInput(tsmr_dat); bsmr_dat <- bsmr_dat[[1]]
+	#	mr_ivw(bsmr_dat)
+	#	png(paste0(exp_name,'.',out_name,'.beta.png'), w=800, h=800)
+	#		plt <- mr_plot(bsmr_dat, interactive=F) + theme(axis.title=element_text(size=15, face="bold"), axis.text=element_text(size=12, face="bold"))
+	#		print(plt); dev.off()
+	#	png(paste0(exp_name,'.',out_name,'.forest.png'), w=800, h=800)
+	#		plt <- mr_forest(bsmr_dat, snp_estimates=F, methods=c("ivw", "median", "wmedian", "egger", "maxlik", "conmix")) + scale_colour_manual(values = c("IVW estimate"="red")) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=10, face="bold"), axis.text.x=element_text(size=10, face="bold"), axis.text.y=element_text(size=15, face="bold"))
+	#		print(plt); dev.off()
+	#	png(paste0(exp_name,'.',out_name,'.funnel.png'), w=800, h=800)	
+	#		plt <- mr_funnel(bsmr_dat) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=14), axis.text=element_text(size=12, face="bold"))	
+	#		print(plt); dev.off()
+	}
+	}
 }

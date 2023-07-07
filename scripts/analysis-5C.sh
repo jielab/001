@@ -64,7 +64,6 @@ for dat in `ls *array.gz | sed 's/\.array.gz//g'`; do
 done
 
 
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C1: genetic correlation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -99,7 +98,6 @@ pval <- dat %>% select(p1, p2, p)
 	pval <- acast(pval, p1 ~ p2, value.var='p')
 plt <- ggcorrplot(rg, lab=T, p.mat=pval, sig.level=5e-4, insig ='blank') 
 	plt + theme(axis.title=element_text(size=15, face='bold'), axis.text=element_text(size=12, face='bold'))
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -155,20 +153,20 @@ for exp in $dats_x; do
 		R CMD BATCH $exp.$out.R
 	done
 done
-awk -F '|' '{if (FNR==1) print $1,$3,$7,$9}' *.tsmr.out | awk 'NF==4' > ../all.mr.res
+cat *.tsmr.out | sed 's/|/\t/g' > ../all.mr.res
 #下面是R代码
 setwd('C:/Users/jiehu/Desktop')
 pacman::p_load(tidyverse, reshape2, ggplot2, corrplot, ggcorrplot)
-dat <- read.table('D:/analysis/all.mr.res', header=F, as.is=T)
-	names(dat) <- c('exp_name', 'out_name', 'b', 'p')
-beta <- dat %>% select(exp_name, out_name, b)
-	beta <- acast(beta, exp_name ~ out_name, value.var='b'); beta[is.na(beta)] =0; beta=round(beta,1)
+dat <- read.table('D:/analysis/all.mr.res', sep='\t', header=F, as.is=T) 
+	names(dat) <- c('exp_name', 'exp_cnt', 'out_name', 'out_cnt', 'dat_cnt', 'method', 'beta', 'se', 'p')
+	dat <- dat %>% subset(method %in% c("Wald ratio", "Inverse variance weighted"))
+beta <- dat %>% select(exp_name, out_name, beta)
+	beta <- acast(beta, exp_name ~ out_name, value.var='beta'); beta[is.na(beta)] =0; beta=round(beta,1)
 pval <- dat %>% select(exp_name, out_name, p)
 	pval <- acast(pval, exp_name ~ out_name, value.var='p'); pval[is.na(pval)] =1
 plt <- ggcorrplot(beta, lab=T, p.mat=pval, sig.level=.25e-4, insig ='blank') 
 	plt + theme(axis.title=element_text(size=15, face='bold'), axis.text=element_text(size=12, face='bold'))
 #corrplot(beta, is.corr=F, method='shade', bg='black', col=colorRampPalette(c('white','green','gold'))(100), tl.col='black', tl.cex=1.3, addCoef.col='black', number.cex=0.9, insig='pch', pch.cex=2, tl.srt=45, outline=T)
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
