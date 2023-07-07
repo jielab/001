@@ -30,8 +30,7 @@ tsmr_fn <-function( exp_iv_file,
 		next
 	}
 	tsmr_dat <- harmonise_data(exp_dat, out_dat)
-#	write.table(tsmr_dat, paste0(exp_name,'.',out_name,'.mr.txt'), sep='\t', append=F, quote=F, row.names=F, col.names=T)
-	mr.res <- mr(tsmr_dat, method_list=c('mr_ivw', 'mr_egger_regression')) 
+	mr.res <- mr(tsmr_dat) 
 	mr.res.str <- paste(exp_name, nrow(exp_dat), out_name, nrow(out_dat), mr.res$nsnp, mr.res$method, mr.res$b, mr.res$se, mr.res$pval, sep='|')
 	write.table(mr.res.str, paste0(exp_name,'.',out_name,'.tsmr.out'), append=F, quote=F, row.names=F, col.names=F)
 #	bsmr_dat <- dat_to_MRInput(tsmr_dat); bsmr_dat <- bsmr_dat[[1]]

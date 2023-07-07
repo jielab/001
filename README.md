@@ -171,9 +171,8 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 
 ## #3.6. 因果分析 Mendelian Randomization
 > 如果有个体数据数据，可以采用 [GSMR](https://cnsgenomics.com/software/gcta/#GSMR)，参考[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 。
-> 如果没有个体数据，只有别人报道的 exposure 和 outcome 的 BETA 和 SE，就可以使用 [MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)，或 [TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)。
-
-
+> 如果没有个体数据，只有别人报道的 exposure 和 outcome 的 BETA 和 SE，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)。
+前者有非常强大的数据调取和数据管理功能，而后者比较简单直观。
 <br/>
 <br/>
 

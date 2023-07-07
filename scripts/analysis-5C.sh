@@ -64,6 +64,7 @@ for dat in `ls *array.gz | sed 's/\.array.gz//g'`; do
 done
 
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C1: genetic correlation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,6 +101,7 @@ plt <- ggcorrplot(rg, lab=T, p.mat=pval, sig.level=5e-4, insig ='blank')
 	plt + theme(axis.title=element_text(size=15, face='bold'), axis.text=element_text(size=12, face='bold'))
 
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C2: Mendelian Randomization
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -116,11 +118,11 @@ for exp in $dats_x; do
 	exp_ieu=NA; exp_file0=$exp_dir/$exp.gz; exp_pheno=$exp
 	exp_iv_file=$exp_dir/$exp.top.snp
 	if [ ! -e $exp_iv_file ]; then
-		exp_iv_file=$exp.top.snp; zcat $exp_file0 | awk 'NR==1 || $10<=5e-8 {b=sprintf("%.0f",$3/1e6); print $4,$2,$3,$10,b}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1; arr[$NF] ="Y"}' > $exp.top.snp
+		exp_iv_file=$exp.top.snp; zcat $exp_file0 | awk 'NR==1 || $10<=5e-8 {b=sprintf("%.0f",$3/1e5); print $4,$2,$3,$10,b}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1; arr[$NF] ="Y"}' > $exp.top.snp
 	fi
 	exp_iv_line=`wc -l $exp_iv_file | awk '{printf $1}'`
 	if [ "$exp_iv_line" -le 1 ]; then
-		echo $exp has no IV SNPs
+		echo $exp has no IV SNP
 		continue 
 	fi
 	head_row=`zcat $exp_file0 | head -1 | sed 's/\t/ /g'`
@@ -153,24 +155,6 @@ for exp in $dats_x; do
 		R CMD BATCH $exp.$out.R
 	done
 done
-#可用下面的代码检查上面的程序是否全部跑完
-for exp in $dats_x; do
-	echo check $exp
-	exp_iv_file=$exp.top.snp
-	exp_iv_line=`wc -l $exp_iv_file | awk '{printf $1}'`
-	if [ "$exp_iv_line" -le 1 ]; then
-		continue 
-	fi
-	for out in $dats_y; do
-		if [ "$exp" = "$out" ]; then continue; fi
-		if [ -e $exp.$out.Rout ]; then
-			continue
-		else 
-			echo $exp not Done!
-		fi
-	done
-done
-fgrep halted *.Rout
 awk -F '|' '{if (FNR==1) print $1,$3,$7,$9}' *.tsmr.out | awk 'NF==4' > ../all.mr.res
 #下面是R代码
 setwd('C:/Users/jiehu/Desktop')
@@ -184,7 +168,8 @@ pval <- dat %>% select(exp_name, out_name, p)
 plt <- ggcorrplot(beta, lab=T, p.mat=pval, sig.level=.25e-4, insig ='blank') 
 	plt + theme(axis.title=element_text(size=15, face='bold'), axis.text=element_text(size=12, face='bold'))
 #corrplot(beta, is.corr=F, method='shade', bg='black', col=colorRampPalette(c('white','green','gold'))(100), tl.col='black', tl.cex=1.3, addCoef.col='black', number.cex=0.9, insig='pch', pch.cex=2, tl.srt=45, outline=T)
-	
+
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C3: Colocalization
