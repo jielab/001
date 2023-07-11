@@ -1,8 +1,10 @@
+Arr1=("snp" "chr" "pos" "ea" "nea" "eaf" "n" "beta" "se" "p")
+Arr2=("snp|rsid|variant_id" "chr|chrom|chromosome" "pos|bp|base_pair" "ea|alt|a1" "nea|ref|a2" "eaf" "n" "beta" "se|standard_error" "^p|pval")
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C0: GWAS download and format
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 用类似这样的命令，生成统一格式的 GWAS 文件：awk '{print $1,$2,$3, toupper($4),toupper($5),$6,$7, $6,$7,$8}' | sed 's/ /\t/g' | gzip -f >
 dir=/mnt/d
 outdir=$dir/data/gwas/pheweb2
 mrlist=$dir/files/mr.list.txt
@@ -30,35 +32,12 @@ conda activate ldsc
 ldscdir=/mnt/d/data/ldsc
 for dat in `ls *gz | sed 's/\.gz$//g'`; do
 	head_row=`zcat $dat.gz | head -1 | sed 's/\t/ /g'`;
-	snp_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'snp|variant_id|markername'`; snp_col=`echo "$"$snp_str | sed 's/:.*//'`
-	chr_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'chr|chrom|chromosome'`; chr_col=`echo "$"$chr_str | sed 's/:.*//'`
-	pos_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'pos|bp|base_pair_location'`; pos_col=`echo "$"$pos_str | sed 's/:.*//'`
-	ea_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'ea|alt|effect_allele|allele1'`; ea_col=`echo "$"$ea_str | sed 's/:.*//'`
-	nea_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'nea|ref|noneffect_allele|other_allele|allele0'`; nea_col=`echo "$"$nea_str | sed 's/:.*//'`
-	eaf_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'eaf|af|effect_allele_frequency|a1freq'`; eaf_col=`echo "$"$eaf_str | sed 's/:.*//'`
-	n_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'n'`; n_col=`echo "$"$n_str | sed 's/:.*//'`
-	beta_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'beta'`; beta_col=`echo "$"$beta_str | sed 's/:.*//'`
-	se_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'se|standard_error'`; se_col=`echo "$"$se_str | sed 's/:.*//'`
-	p_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'p|pval|p.value|p_value|p_linreg'`; p_col=`echo "$"$p_str | sed 's/:.*//'`
-	echo $snp_str $chr_str $pos_str $ea_str $nea_str $eaf_str $n_str $beta_str $se_str $p_str
-	echo columns $snp_col $chr_col $pos_col $ea_col $nea_col $eaf_col $n_col $beta_col $se_col $p_col 
-	if [[ $chr_str == "" ]]; then chr_col="\"NA\""; fi
-	if [[ $pos_str == "" ]]; then pos_col="\"NA\""; fi
-	if [[ $eaf_str == "" ]]; then eaf_col=0.5; fi
-	if [[ $n_str == "" ]]; then n_col=100000; fi
+	for i in ${!Arr1[@]}; do
+		eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
+	done
+	echo $snp $chr $pos $ea $nea $eaf $n $beta $se $p
 	echo "#!/bin/bash
-	zcat $dat.gz | awk '{if ($p_col<1e-300) $p_col=1e-300; if (NR==1) print \"SNP CHR POS EA NEA EAF N BETA SE Z P\"; else print $snp_col,$chr_col,$pos_col, toupper($ea_col), toupper($nea_col),$eaf_col,$n_col, $beta_col,$se_col,$p_col}' | sort -k 2,2V -k 3,3n | gzip -f > $dat.gwas.gz
-	zcat $dat.gwas.gz | awk 'NR==1 || \$NF <=1e-03' > $dat.gwas.p3
-	zcat $dat.gwas.gz | awk 'NR==1 || \$NF<5e-8 {b=sprintf(\"%.0f\",\$4/1e6); print \$1,\$3,\$4,\$NF,b}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{chunk=\$2\".\"\$5; if (arr[chunk] !=\"Y\") print \$1; arr[chunk] =\"Y\"}' > $dat.top1.snps
-	" > $dat.cmd
-	chmod 777 $dat.cmd; ./$dat.cmd 
-done
-# ukb 35 bioamkers
-for dat in `ls *array.gz | sed 's/\.array.gz//g'`; do
-	echo "#!/bin/bash
-	zcat $dat.array.gz | awk '{if (\$8<1e-300) \$8=1e-300; if (NR==1) print \"SNP CHRPOS CHR POS EA NEA EAF N BETA SE Z P\"; else print \$3, \$1\":\"\$2,\$1,\$2, toupper(\$4),toupper(\$5),\"NA\",500000, \$6,\$7,\$6/\$7,\$8}' > $dat.gwas
-	zcat $dat.rsid.gz | awk 'NR >1 && $15>=0.4 {if ($8<1e-300) $8=1e-300; print \$NF,\$1\":\"\$2,\$1,\$2, \$5,\$4,$14,500000, \$6,\$7,\$6/\$7,\$8}' >> $dat.gwas
-	gzip -f $dat.gwas
+	zcat $dat.gz | awk '{if ($p_col<1e-300) $p_col=1e-300; if (NR==1) print \"SNP CHR POS EA NEA EAF N BETA SE P\"; else print $snp,$chr,$pos, toupper($ea), toupper($nea),$eaf,$n, $beta,$se,$p}' | sort -k 2,2V -k 3,3n | gzip -f > $dat.gz
 	" > $dat.cmd
 	chmod 777 $dat.cmd; ./$dat.cmd 
 done
@@ -75,15 +54,10 @@ for dat in $dats; do
 	echo $dat
 	datf=$dir/$dat.gz
 	head_row=`zcat $datf | head -1 | sed 's/\t/ /g'`;
-	chr_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'chr|chrom|chromosome'`; chr_col=`echo $chr_str | sed 's/:.*//'`
-	pos_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'pos|bp|base_pair_location'`; pos_col=`echo $pos_str | sed 's/:.*//'`
-	p_str=`echo $head_row | sed 's/\t/ /g' | tr ' ' '\n' | grep -Einw 'P|pval'`; p_col=`echo $p_str | sed 's/:.*//'`
-	#zcat $datf | sort -k $chr_col,${chr_col}n -k $pos_col,${pos_col}n | gzip -f > $dat.sorted.gz # Only need to run once ! 
-	zcat $datf | awk -v p=$p_col 'NR ==1 || $p >=1e-300' | gzip -f > $dat.tmp.gz 
 	munge_sumstats.py --chunksize 10000 --sumstats $dat.tmp.gz --merge-alleles $ldscdir/w_hm3.snplist --out $dat --snp SNP --a1 EA --a2 NEA --ignore SNPID,OR --signed-sumstats BETA,0 --p P --N 100000 
 done
 for dat in $dats; do
-	echo $dat $dats | sed -e 's/ /.sumstats.gz,/g' -e 's/$/.sumstats.gz/' | xargs -n1 -I % ldsc.py --rg % --out $dat.rg --ref-ld-chr $ldscdir/ --w-ld-chr $ldscdir/
+	echo $dat $dats | sed -e 's/ /.sumstats.gz,/g' -e 's/$/.sumstats.gz/' | xargs -n1 -I % ldsc.py --rg % --out $dat.rg --ref-ld-chr $ldscdir --w-ld-chr $ldscdir
 	beginl=`awk '$1=="Summary" {printf NR}' $dat.rg.log` 
 	awk -v s=$beginl 'FNR >s' $dat.rg.log | head -n -3 | sed 's/.sumstats.gz//g'  > $dat.rg.txt
 done
@@ -103,12 +77,7 @@ plt <- ggcorrplot(rg, lab=T, p.mat=pval, sig.level=5e-4, insig ='blank')
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C2: Mendelian Randomization
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# exp_dat <- read_exposure_data(filename="D:/analysis/stoolf.txt", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", eaf_col="EAF", beta_col="BETA", se_col="SE", pval_col="P")
-# out_dat <- read_outcome_data(filename="D:/analysis/hdl.txt", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", eaf_col="EAF", beta_col="BETA", se_col="SE", pval_col="P")
-# dat <- harmonise_data(exposure_dat=exp_dat, outcome_dat=out_dat)
-# mr(dat)
-# run_mr_presso(dat)
-exp_dir=/mnt/d/data/gwas/mb
+exp_dir=/mnt/d/data/gwas/penguin
 out_dir=/mnt/d/data/gwas/penguin
 dats_x=`cd $exp_dir; ls *.gz | sed 's/\.gz//g'`
 dats_y=`cd $out_dir; ls *.gz | sed 's/\.gz//g'`
@@ -124,24 +93,18 @@ for exp in $dats_x; do
 		continue 
 	fi
 	head_row=`zcat $exp_file0 | head -1 | sed 's/\t/ /g'`
-	snp=`echo $head_row | tr ' ' '\n' | grep -Einw 'snp|rsid|variant_id' | sed 's/:.*//'`
-	ea=`echo $head_row | tr ' ' '\n' | grep -Einw 'ea|alt|allele1|effect_allele|eff.allele' | sed 's/:.*//'`
-	nea=`echo $head_row | tr ' ' '\n' | grep -Einw 'nea|ref|ref.allele|other_allele|allele0' | sed 's/:.*//'`
-	beta=`echo $head_row | tr ' ' '\n' | grep -Einw 'beta' | sed 's/:.*//'`
-	se=`echo $head_row | tr ' ' '\n' | grep -Einw 'se|standard_error' | sed 's/:.*//'`
-	p=`echo $head_row | tr ' ' '\n' | grep -Einw '^p' | sed 's/:.*//'`
+	for i in ${!Arr1[@]}; do
+		eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
+	done	
 	exp_file=$exp.txt; zcat $exp_file0 | fgrep -wf $exp_iv_file | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $exp.txt	
 	for out in $dats_y; do
 		if [ "$exp" = "$out" ]; then continue; fi
 		echo Running: $exp $out 
 		out_ieu=NA; out_file0=$out_dir/$out.gz; out_pheno=$out
 		head_row=`zcat $out_file0 | head -1 | sed 's/\t/ /g'`
-		snp=`echo $head_row | tr ' ' '\n' | grep -Einw 'snp|rsid|variant_id' | sed 's/:.*//'`
-		ea=`echo $head_row | tr ' ' '\n' | grep -Einw 'ea|alt|allele1|effect_allele|eff.allele' | sed 's/:.*//'`
-		nea=`echo $head_row | tr ' ' '\n' | grep -Einw 'nea|ref|ref.allele|other_allele|allele0' | sed 's/:.*//'`
-		beta=`echo $head_row | tr ' ' '\n' | grep -Einw 'beta' | sed 's/:.*//'`
-		se=`echo $head_row | tr ' ' '\n' | grep -Einw 'se|standard_error' | sed 's/:.*//'`
-		p=`echo $head_row | tr ' ' '\n' | grep -Einw '^p' | sed 's/:.*//'`
+		for i in ${!Arr1[@]}; do
+			eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
+		done	
 		out_file=$exp.list.$out.txt; zcat $out_file0 | fgrep -wf $exp_iv_file | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $exp.list.$out.txt
 		echo "
 		source('/mnt/d/scripts/library/tsmr.f.R')
@@ -155,16 +118,20 @@ for exp in $dats_x; do
 done
 cat *.tsmr.out | sed 's/|/\t/g' > ../all.mr.res
 #下面是R代码
-setwd('C:/Users/jiehu/Desktop')
 pacman::p_load(tidyverse, reshape2, ggplot2, corrplot, ggcorrplot)
-dat <- read.table('D:/analysis/all.mr.res', sep='\t', header=F, as.is=T) 
+exp_dat <- read_exposure_data(filename="D:/analysis/stoolf.txt", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", eaf_col="EAF", beta_col="BETA", se_col="SE", pval_col="P")
+out_dat <- read_outcome_data(filename="D:/analysis/hdl.txt", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", eaf_col="EAF", beta_col="BETA", se_col="SE", pval_col="P")
+dat <- harmonise_data(exposure_dat=exp_dat, outcome_dat=out_dat)
+mr(dat)
+run_mr_presso(dat)
+dat <- read.table('D:/analysis/all.mr.res2', sep='\t', header=F, as.is=T) 
 	names(dat) <- c('exp_name', 'exp_cnt', 'out_name', 'out_cnt', 'dat_cnt', 'method', 'beta', 'se', 'p')
 	dat <- dat %>% subset(method %in% c("Wald ratio", "Inverse variance weighted"))
 beta <- dat %>% select(exp_name, out_name, beta)
 	beta <- acast(beta, exp_name ~ out_name, value.var='beta'); beta[is.na(beta)] =0; beta=round(beta,1)
 pval <- dat %>% select(exp_name, out_name, p)
 	pval <- acast(pval, exp_name ~ out_name, value.var='p'); pval[is.na(pval)] =1
-plt <- ggcorrplot(beta, lab=T, p.mat=pval, sig.level=.25e-4, insig ='blank') 
+plt <- ggcorrplot(beta[,151:211], lab=T, p.mat=pval[,151:211], sig.level=.25e-4, insig ='blank') 
 	plt + theme(axis.text=element_text(size=12, face='bold', color=c("black","blue")))
 #corrplot(beta, is.corr=F, method='shade', bg='black', col=colorRampPalette(c('white','green','gold'))(100), tl.col='black', tl.cex=1.3, addCoef.col='black', number.cex=0.9, insig='pch', pch.cex=2, tl.srt=45, outline=T)
 
