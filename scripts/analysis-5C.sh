@@ -1,3 +1,4 @@
+
 Arr1=("snp" "chr" "pos" "ea" "nea" "eaf" "n" "beta" "se" "p")
 Arr2=("snp|rsid|variant_id" "chr|chrom|chromosome" "pos|bp|base_pair" "ea|alt|a1|eff.allele" "nea|ref|a2|ref.allele" "eaf" "n" "beta" "se|standard_error" "^p|pval")
 
@@ -61,7 +62,7 @@ for dat in $dats; do
 done
 awk 'NR==1 || FNR>1' *.rg.txt > all.rg.res
 #下面是R代码
-pacman::p_load(tidyverse, reshape2, ggplot2, ggcorrplot)
+pacman::p_load(tidyverse, reshape2, ggplot2, corrplot, ggcorrplot)
 dat <- read.table('D:/analysis/ldsc/all.rg.res', header=T)
 rg <- dat %>% select(p1, p2, rg) %>% acast(p1 ~ p2, value.var='rg'); rg[is.na(rg)] =0;  rg=round(rg,1)
 pval <- dat %>% select(p1, p2, p) %>% acast(pval, p1 ~ p2, value.var='p')
@@ -115,13 +116,14 @@ for exp in $dats_x; do
 done
 cat *.tsmr.out | sed 's/|/\t/g' > ../all.mr.res
 #下面是R代码
-# pacman::p_load(tidyverse, reshape2, ggplot2, corrplot, ggcorrplot)
 # exp_dat <- read_exposure_data(filename="D:/analysis/stoolf.txt", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", eaf_col="EAF", beta_col="BETA", se_col="SE", pval_col="P")
 # out_dat <- read_outcome_data(filename="D:/analysis/hdl.txt", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", eaf_col="EAF", beta_col="BETA", se_col="SE", pval_col="P")
 # dat <- harmonise_data(exposure_dat=exp_dat, outcome_dat=out_dat)
 # mr(dat); run_mr_presso(dat)
-dat <- read.table('D:/analysis/all.mr.res2', sep='\t', header=F, as.is=T) %>% subset(method %in% c("Wald ratio", "Inverse variance weighted"))
+pacman::p_load(data.table, tidyverse, reshape2, ggplot2, corrplot, ggcorrplot)
+dat <- read.table('D:/analysis/all.mr.res', sep='\t', header=F, as.is=T) %>% subset(V6 %in% c("Wald ratio", "Inverse variance weighted"))
 	names(dat) <- c('exp_name', 'exp_cnt', 'out_name', 'out_cnt', 'dat_cnt', 'method', 'beta', 'se', 'p')
+	dat %>% subset(exp_name %like% "Bifido" & out_name =="t2d") 
 beta <- dat %>% select(exp_name, out_name, beta) %>% acast(beta, exp_name ~ out_name, value.var='beta'); beta[is.na(beta)] =0; beta=round(beta,1)
 pval <- dat %>% select(exp_name, out_name, p) %>% acast(pval, exp_name ~ out_name, value.var='p'); pval[is.na(pval)] =1
 plt <- ggcorrplot(beta[,151:211], lab=T, p.mat=pval[,151:211], sig.level=.25e-4, insig ='blank') 
