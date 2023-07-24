@@ -15,26 +15,37 @@ dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 北医合作研究案例：8 + happy 
+# Circular Manhattan Plot 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# happy_general 20458; happy_health 20459; happy_life 20460; satisfy_bowel 21040
-library(readxl)
-wang <- read_excel("D:/data/ukb/phe/le8_data.xlsx") %>% rename(eid=n_eid, sex.y=sex)
-dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
-	merge(wang, by="eid")
-varY="fod_chd"
-dat1 <- dat %>% 
-	mutate( 
-		outcome_date = dat[[varY]],
-		outcome_yes = ifelse( is.na(outcome_date), 0,1),
-		follow_end_day = ifelse(!is.na(outcome_date), outcome_date, ifelse(!is.na(death_date), death_date, as.Date("2022-01-01"))),
-		follow_years = (as.numeric(follow_end_day) - as.numeric(attend_date)) / 365.25
-	) %>% filter( follow_years >0 )
-	print(table(dat1$outcome_yes))
-dat1$happy = ifelse(dat1$happy_health>=4,0, ifelse(dat1$happy_general>=1,1,NA))
-#dat1$happy = ifelse(dat1$satisfy_bowel<=4,1, ifelse(dat1$satisfy_bowel>=6,0,NA))
-surv.obj <- Surv(time=dat1$follow_years, event=dat1$outcome_yes)
-fit.cox <- coxph(surv.obj ~ happy + cad.score_sum + dashpts+PA_pts+smoke_pts+sleep_pts+bmi_pts+nonhdl_pts+hba1c_pts+BP_pts +age+sex+PC1+PC2, data=dat1); summary(fit.cox)
+dat1 <- read.table('D:/data/gwas/bb/bb_ALP.p03', header=T) %>% dplyr::select(SNP, CHR, POS, P) %>% filter(!is.na(SNP)) %>% mutate(P=ifelse(P<1e-20,1e-20,P)) %>% rename(ALP=P)
+	dat2 <- read.table('D:/data/gwas/bb/covid_severe.p03', header=T) %>% 
+	dplyr::select(rsid, CHR, POS, all_inv_var_meta_p) %>% filter(!is.na(rsid)) %>% mutate(all_inv_var_meta_p=ifelse(all_inv_var_meta_p<1e-20,1e-20,all_inv_var_meta_p)) %>% rename(SNP=rsid, CHR.2=CHR, POS.2=POS, COVID_severe=all_inv_var_meta_p)
+	dat3 <- read.table('D:/data/gwas/bb/covid_inpatient.p03', header=T) %>% 
+	dplyr::select(rsid, CHR, POS, all_inv_var_meta_p) %>% filter(!is.na(rsid)) %>% mutate(all_inv_var_meta_p=ifelse(all_inv_var_meta_p<1e-20,1e-20,all_inv_var_meta_p)) %>% rename(SNP=rsid, CHR.3=CHR, POS.3=POS, COVID_inpatient=all_inv_var_meta_p)
+	dat4 <- read.table('D:/data/gwas/bb/covid_infected.p03', header=T) %>% 
+	dplyr::select(rsid, CHR, POS, all_inv_var_meta_p) %>% filter(!is.na(rsid)) %>% mutate(all_inv_var_meta_p=ifelse(all_inv_var_meta_p<1e-20,1e-20,all_inv_var_meta_p)) %>% rename(SNP=rsid, CHR.4=CHR, POS.4=POS, COVID_infected=all_inv_var_meta_p)
+dat0 <- Reduce(function(x,y) merge(x,y,by='SNP',all=T, no.dups=T), list(dat1, dat2, dat3, dat4)) # !! Must Remove NA SNPs before merging
+dat <- dat0 %>%
+	mutate (chrom=apply( dat0[,grepl('CHR',names(dat0))], 1, FUN=min, na.rm=T ), position=apply( dat0[,grepl('POS',names(dat0))], 1, FUN=min, na.rm=T )) %>% 
+	dplyr::select(SNP, chrom, position, COVID_severe, COVID_inpatient, COVID_infected, ALP)
+	write.table(dat, "plot.dat.txt", quote=F, row.names=F, append=F)
+SNPs <- subset(dat, (chrom==1 & position >=21835857 & position <=21904905) | (chrom==9 & position >=136130562 & position<=136150630))$SNP
+CMplot(dat, type="p", plot.type="c", r=0.4, col=matrix(c("gold","orange", "gray","lightblue", "olivedrab3", "orange", "grey30","grey60"), nrow=4, byrow=T),
+	highlight=SNPs, highlight.col="red",highlight.cex=1, highlight.pch=10,
+	threshold=5e-8, cir.chr.h=1, amplify=F, threshold.col="red", signal.line=1, signal.col="black",
+	bin.size=1e6, outward=T, file='jpg', memo='', dpi=600, file.output=T, verbose=T, width=12, height=12
+)
+source("D:/scripts/mhplot.f.R")
+dir="D:/projects/001students/bbc/"
+# traits=c("sca", "arrhythmias", "cvd", "MI", "STEMI", "NSTEMI", "ischaemic", "pulmonary", "cerebro", "artery", "vein", "hypertensive", "asthma", "copd")
+traits=c("bb_Dbilirubin", "bb_HDL", "bb_HbA1c", "bb_IGF1", "bb_LDL", "bb_SHBG", "bb_TC", "bb_TG", "bb_albumin", "bb_alkaline", "bb_apoa", "bb_apob", "bb_aspartate", "bb_bilirubin", "bb_calcium", "bb_creatinine", "bb_crp", "bb_cystatin", "bb_glucose", "bb_lipoA", "bb_oestradiol", "bb_phosphate", "bb_protein", "bb_rheumatoid", "bb_testosterone", "bb_urate", "bb_urea", "bb_vitaminD", "bc_HLS_reticulocyte_ct", "bc_HLS_reticulocyte_pt", "bc_eosinophill_ct", "bc_eosinophill_pt", "bc_haematocrit_pt", "bc_haemoglobin", "bc_lymphocyte_ct", "bc_lymphocyte_pt", "bc_mch", "bc_mchc", "bc_mcv", "bc_monocyte_ct", "bc_monocyte_pt", "bc_mpv", "bc_mrv", "bc_mscv", "bc_neutrophill_ct", "bc_neutrophill_pt", "bc_nuc_rbc_ct", "bc_nuc_rbc_pt", "bc_plt_crit", "bc_plt_ct", "bc_plt_dw", "bc_rbc_ct", "bc_rbc_dw", "bc_reticulocyte_ct", "bc_reticulocyte_fraction", "bc_reticulocyte_pt", "bc_wbc", "bmi", "height", "height_sitting", "height_r", "leg")
+
+for (t in traits) {
+	png(paste0(t,".png"), w=1200, h=1000)
+	par(mfrow=c(2,1), mai=c(0.6,1,0.6,0))
+	mhplot(trait=paste(t, 'additive'), gwas=paste0(dir,'additive/', t,'.gwas.gz'), maf='A1_FREQ', maf_t=1e-2, ylim_t=2, poscon_f='NA', dibiao="D:/files/ukb.chrom.pos.b37")
+	mhplot(trait=paste(t, 'recessive'), gwas=paste0(dir,'recessive/', t,'.gwas.gz'), maf='A1_FREQ', maf_t=1e-2, ylim_t=2, poscon_f='NA', dibiao="D:/files/ukb.chrom.pos.b37")
+	dev.off()
 }
 
 
@@ -84,35 +95,6 @@ for (varY in grep("^bb_|^bc_", names(dat), value=T)) {
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Mediation 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- dat0 %>% filter(ethnicity_gen==1) %>% dplyr::select(grep("age|sex|bmi|covid|^bb_|^bc|age_mn",names(dat0),value=T)) %>% 
-	mutate (
-	age_mn_3p = ifelse(age_mn %in% 12:14, "normal", ifelse(age_mn>14, "late", "early")),
-	age_mn_3p = factor(age_mn_3p, levels=c("normal", "early", "late")),
-	outcome = ifelse(!is.na(icdDate_covid), 1, ifelse(covid_inf==1,0, NA))
-	) %>% rename(CYS=bb_CYS)
-varX="age_mn_3p"; varY="outcome"
-form <- formula(paste(varY, "~", varX, "+age+sex+bmi+CYS"))
-form <- formula(paste(varY, "~", varX, "+age+sex+bmi+CYS+", paste(grep("^bb_", names(dat), value=T), sep="", collapse="+")))
-summary(glm(form, data=dat))
-for (varM in grep("CYS|^bb_|^bc_", names(dat), value=T)) {
-	print(paste("M变量:", varM))
-	dat1 <- subset(dat, select=c(varX, varY, varM, "age", "sex", "bmi")) %>% na.omit()
-	dat1[[varM]] <- inormal(dat1[[varM]]) # normal transformation
-	names(dat1) <- c("varX", "varY", "varM", "age","sex", "bmi")
-	dat1$varX <- as.factor(dat1$varX)
-	fit.med = lm(varM ~ varX + age+sex, data=dat1)
-	fit.out = glm(varY ~ varX + varM +age+sex, data=dat1, family=binomial("probit"))
-	med.out = mediation::mediate(fit.med, fit.out, treat="varX", mediator="varM", sims=100, boot=T)
-	print(summary(med.out))
-}
-fit.med = lm(varM ~ varX, data=dat1)
-fit.out = glm(varY ~ varX + varM, data=dat1, family=binomial("probit"))
-med.out = mediation::mediate(fit.med, fit.out, treat="varX", mediator="varM", sims=100, boot=T)
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # meta-analysis
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 library(meta)
@@ -126,23 +108,25 @@ metabias(res, method.bias = 'linreg', k.min = 5, plotit = T)# Egger
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Circular Manhattan Plot 
+# 北医合作研究案例：8 + happy 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat1 <- read.table('D:/data/gwas/bb/bb_ALP.p03', header=T) %>% dplyr::select(SNP, CHR, POS, P) %>% filter(!is.na(SNP)) %>% mutate(P=ifelse(P<1e-20,1e-20,P)) %>% rename(ALP=P)
-	dat2 <- read.table('D:/data/gwas/bb/covid_severe.p03', header=T) %>% 
-	dplyr::select(rsid, CHR, POS, all_inv_var_meta_p) %>% filter(!is.na(rsid)) %>% mutate(all_inv_var_meta_p=ifelse(all_inv_var_meta_p<1e-20,1e-20,all_inv_var_meta_p)) %>% rename(SNP=rsid, CHR.2=CHR, POS.2=POS, COVID_severe=all_inv_var_meta_p)
-	dat3 <- read.table('D:/data/gwas/bb/covid_inpatient.p03', header=T) %>% 
-	dplyr::select(rsid, CHR, POS, all_inv_var_meta_p) %>% filter(!is.na(rsid)) %>% mutate(all_inv_var_meta_p=ifelse(all_inv_var_meta_p<1e-20,1e-20,all_inv_var_meta_p)) %>% rename(SNP=rsid, CHR.3=CHR, POS.3=POS, COVID_inpatient=all_inv_var_meta_p)
-	dat4 <- read.table('D:/data/gwas/bb/covid_infected.p03', header=T) %>% 
-	dplyr::select(rsid, CHR, POS, all_inv_var_meta_p) %>% filter(!is.na(rsid)) %>% mutate(all_inv_var_meta_p=ifelse(all_inv_var_meta_p<1e-20,1e-20,all_inv_var_meta_p)) %>% rename(SNP=rsid, CHR.4=CHR, POS.4=POS, COVID_infected=all_inv_var_meta_p)
-dat0 <- Reduce(function(x,y) merge(x,y,by='SNP',all=T, no.dups=T), list(dat1, dat2, dat3, dat4)) # !! Must Remove NA SNPs before merging
-dat <- dat0 %>%
-	mutate (chrom=apply( dat0[,grepl('CHR',names(dat0))], 1, FUN=min, na.rm=T ), position=apply( dat0[,grepl('POS',names(dat0))], 1, FUN=min, na.rm=T )) %>% 
-	dplyr::select(SNP, chrom, position, COVID_severe, COVID_inpatient, COVID_infected, ALP)
-	write.table(dat, "plot.dat.txt", quote=F, row.names=F, append=F)
-SNPs <- subset(dat, (chrom==1 & position >=21835857 & position <=21904905) | (chrom==9 & position >=136130562 & position<=136150630))$SNP
-CMplot(dat, type="p", plot.type="c", r=0.4, col=matrix(c("gold","orange", "gray","lightblue", "olivedrab3", "orange", "grey30","grey60"), nrow=4, byrow=T),
-	highlight=SNPs, highlight.col="red",highlight.cex=1, highlight.pch=10,
-	threshold=5e-8, cir.chr.h=1, amplify=F, threshold.col="red", signal.line=1, signal.col="black",
-	bin.size=1e6, outward=T, file='jpg', memo='', dpi=600, file.output=T, verbose=T, width=12, height=12
-)
+# happy_general 20458; happy_health 20459; happy_life 20460; satisfy_bowel 21040
+library(readxl)
+wang <- read_excel("D:/data/ukb/phe/le8_data.xlsx") %>% rename(eid=n_eid, sex.y=sex)
+dat <- dat0 %>% filter(ethnicity_gen==1) %>% 
+	merge(wang, by="eid")
+varY="fod_chd"
+dat1 <- dat %>% 
+	mutate( 
+		outcome_date = dat[[varY]],
+		outcome_yes = ifelse( is.na(outcome_date), 0,1),
+		follow_end_day = ifelse(!is.na(outcome_date), outcome_date, ifelse(!is.na(death_date), death_date, as.Date("2022-01-01"))),
+		follow_years = (as.numeric(follow_end_day) - as.numeric(attend_date)) / 365.25
+	) %>% filter( follow_years >0 )
+	print(table(dat1$outcome_yes))
+dat1$happy = ifelse(dat1$happy_health>=4,0, ifelse(dat1$happy_general>=1,1,NA))
+#dat1$happy = ifelse(dat1$satisfy_bowel<=4,1, ifelse(dat1$satisfy_bowel>=6,0,NA))
+surv.obj <- Surv(time=dat1$follow_years, event=dat1$outcome_yes)
+fit.cox <- coxph(surv.obj ~ happy + cad.score_sum + dashpts+PA_pts+smoke_pts+sleep_pts+bmi_pts+nonhdl_pts+hba1c_pts+BP_pts +age+sex+PC1+PC2, data=dat1); summary(fit.cox)
+}
+

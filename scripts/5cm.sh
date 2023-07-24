@@ -61,14 +61,7 @@ for dat in $dats; do
 	awk -v s=$beginl 'FNR >s' $dat.rg.log | head -n -3 | sed 's/.sumstats.gz//g'  > $dat.rg.txt
 done
 awk 'NR==1 || FNR>1' *.rg.txt > all.rg.res
-#下面是R代码
-pacman::p_load(tidyverse, reshape2, ggplot2, corrplot, ggcorrplot)
-dat <- read.table('D:/analysis/ldsc/all.rg.res', header=T)
-rg <- dat %>% select(p1, p2, rg) %>% acast(p1 ~ p2, value.var='rg'); rg[is.na(rg)] =0;  rg=round(rg,1)
-pval <- dat %>% select(p1, p2, p) %>% acast(pval, p1 ~ p2, value.var='p')
-plt <- ggcorrplot(rg, lab=T, p.mat=pval, sig.level=5e-4, insig ='blank') 
-	plt + theme(axis.title=element_text(size=15, face='bold'), axis.text=element_text(size=12, face='bold'))
-	
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C2: Mendelian Randomization
@@ -115,41 +108,24 @@ for exp in $dats_x; do
 	done
 done
 cat *.tsmr.out | sed 's/|/\t/g' > ../all.mr.res
-#下面是R代码
-# exp_dat <- read_exposure_data(filename="D:/analysis/stoolf.txt", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", eaf_col="EAF", beta_col="BETA", se_col="SE", pval_col="P")
-# out_dat <- read_outcome_data(filename="D:/analysis/hdl.txt", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", eaf_col="EAF", beta_col="BETA", se_col="SE", pval_col="P")
-# dat <- harmonise_data(exposure_dat=exp_dat, outcome_dat=out_dat)
-# mr(dat); run_mr_presso(dat)
-pacman::p_load(data.table, tidyverse, reshape2, ggplot2, corrplot, ggcorrplot)
-dat <- read.table('D:/analysis/all.mr.res', sep='\t', header=F, as.is=T) %>% subset(V6 %in% c("Wald ratio", "Inverse variance weighted"))
-	names(dat) <- c('exp_name', 'exp_cnt', 'out_name', 'out_cnt', 'dat_cnt', 'method', 'beta', 'se', 'p')
-	dat %>% subset(exp_name %like% "Bifido" & out_name =="t2d") 
-beta <- dat %>% select(exp_name, out_name, beta) %>% acast(beta, exp_name ~ out_name, value.var='beta'); beta[is.na(beta)] =0; beta=round(beta,1)
-pval <- dat %>% select(exp_name, out_name, p) %>% acast(pval, exp_name ~ out_name, value.var='p'); pval[is.na(pval)] =1
-plt <- ggcorrplot(beta[,151:211], lab=T, p.mat=pval[,151:211], sig.level=.25e-4, insig ='blank') 
-	plt + theme(axis.text=element_text(size=12, face='bold', color=c("black","blue")))
-#corrplot(beta, is.corr=F, method='shade', bg='black', col=colorRampPalette(c('white','green','gold'))(100), tl.col='black', tl.cex=1.3, addCoef.col='black', number.cex=0.9, insig='pch', pch.cex=2, tl.srt=45, outline=T)
 
 	
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C3: Colocalization
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-cut -f 1-3 x.education > ref.chrpos; cut -f 1 x.education > ref.snp
-for dat in `ls *.joined | sed 's/\.joined//g'`; do
+cut -f 1-3,10 x.education | awk '{if (NR==1) print $0,"ChrPos-m"; else {b=sprintf("%.0f",$3/1e6); print $0,"chr"$2":"b"m"}}' > exp.chrpos
+cut -f 1-3,10 x.education | awk 'NR==1 || $4<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2,$3,$4,b}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1,"chr"$2":"$5"m"; arr[$NF] ="Y"}' > exp.top.loci
+python /mnt/d/scripts/library/join_file.py -i "exp.chrpos,TAB,0 exp.top.loci,SPACE,0" -o exp.tmp
+sort -k 2,2n -k 5,5V -k 4,4g exp.tmp | awk '{if ($7 !="NA") seg[$7]="Y"; if (NR==1 || seg[$5]=="Y") print $0}' | sort -k 2,2n -k 3,3n | sed 's/ /\t/g' | cut -f 1-6 > exp.txt
+cut -f 1 exp.txt > exp.snp
+python /mnt/d/scripts/library/join_file.py -i "exp.snp,TAB,0 x.education,TAB,0" -o exp.tmp2
+paste exp.txt exp.tmp2 | sed '1 s/BETA/BETA.exp/; 1 s/SE/SE.exp/; s/ /\t/g' | cut -f 1,5,9-12,15-17 > exp.txt2 
+for dat in `cd /mnt/d/data/gwas/penguin; ls y.*.gz | sed 's/\.gz//g'`; do
 	echo $dat
-	#python /mnt/d/scripts/library/join_file.py -i "ref.snp,TAB,0 $dat,TAB,0" -o $dat.joined
-	cut -d " " -f 1,5,6,9,10 $dat.joined | sed "1 s/ /\.$dat /g; 1 s/$/\.$dat/" > $dat.5col
+	python /mnt/d/scripts/library/join_file.py -i "exp.snp,TAB,0 $dat,TAB,0" -o $dat.tmp
+	cut -d " " -f 1,5,6,9,10 $dat.tmp | sed "1 s/ /\.$dat /g; 1 s/$/\.$dat/" > $dat.joined
 done
-paste ref.chrpos *.5col > all.coloc.tmp
+paste exp.txt2 y.*.joined > all.coloc.tmp
 awk '{print NF}' all.coloc.tmp | sort -nu
-num=`ls -l *.5col | wc -l | awk '{printf $1}'`
-awk -v num=$num '{for (i=2;i<=num;i++) {if (NR>1 && $(i*5-1) !=$1) print $1, $i, "ERR"; else if (NR>1 && $(i*5) !=$5 && $(i*5+2) !="NA") $(i*5+2) =-$(i*5+2); $(i*5)=""; $(i*5+1)="" }; print $0}' all.coloc.tmp > all.coloc.tmp2; fgrep ERR all.coloc.tmp2
-cat all.coloc.tmp2 | awk 'NR==1 || $10<=1e-6 {b=sprintf("%.0f",$3/1e5); print $4,$2,$3,$10,b}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1; arr[$NF] ="Y"}' > all.coloc.txt
-#下面是R代码
-library(hyprcoloc)
-dat <- read.table("D:/analysis/coloc/all.coloc.txt", header=T, as.is=T) %>% na.omit()
-betas <- subset(dat, select=grepl("BETA", names(dat))); betas <- as.matrix(betas)
-ses <- subset(dat, select=grepl("^SE", names(dat))); ses <- as.matrix(ses)
-traits <- grep("x\\.|y\\.", names(dat), value=T)
-rsid <- as.matrix(dat[,1])
-hyprcoloc(betas, ses, trait.names=traits, trait.subset=c("x.education", "y.dementia", "y.depress"), snp.id=rsid)
+num=`ls -l y.*.joined | wc -l | awk '{printf $1}'`
+awk -v num=$num '{for (i=1;i<=num;i++) {if (NR>1 && $(i*5+5) !=$1) print $1, $i, "ERR"; else if (NR>1 && $(i*5+6) !=$5 && $(i*5+6) !="NA") $(i*5+6) =-$(i*5+6); $(i*5+5)=""; $(i*5+6)=""; $(i*5+7)="" }; print $0}' all.coloc.tmp > all.coloc.txt; fgrep ERR all.coloc.txt
