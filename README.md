@@ -189,31 +189,28 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 
 GWAS-PRS-MR 入门：
 > GWAS:
-> > - Y 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
-> > - Y 2014. Nature Protocols. [Quality control and conduct of genome-wide association meta-analyses](https://www.nature.com/articles/nprot.2014.071)
 > > - Y 2006. Nature Review Genetics. [A tutorial on statistical methods for population association studies](https://pubmed.ncbi.nlm.nih.gov/16983374/)
+> > - Y 2014. Nature Protocols. [Quality control and conduct of genome-wide association meta-analyses](https://www.nature.com/articles/nprot.2014.071)
+> > - Y 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 > > - [芬兰赫尔辛基大学 GWAS 课程](https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/)
 
 > PRS:
-> > - Y 2020. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
 > > - Y 2019. Lancet Respiratory Medicine. [Identification of risk loci and a polygenic risk score for lung cancer: a large-scale prospective cohort study in Chinese populations](pubmed.ncbi.nlm.nih.gov/31326317/)
+> > - Y 2020. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
 > > - Y 2022. EHJ. [A polygenic risk score improves risk stratification of coronary artery disease: a large-scale prospective Chinese cohort study](pubmed.ncbi.nlm.nih.gov/35195259/)
 
 > MR：
-> > - Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
 > > - Y 2012. Lancet. [Plasma HDL cholesterol and risk of myocardial infarction: a mendelian randomisation study](https://pubmed.ncbi.nlm.nih.gov/22607825/)
+> > - Y 2022. Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
 > > - Y 2022. Communications Biology. [Deciphering how early life adiposity influences breast cancer risk using Mendelian randomization](https://www.nature.com/articles/s42003-022-03272-5)
 <br/>
 <br/>
 
 
 # # 高阶理论与方法：
-> - Y 2017. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
-> - Y 2019. [Meta-analysis and Mendelian randomization: A review](https://pubmed.ncbi.nlm.nih.gov/30861319/)
-> - Y 2019. [A global overview of pleiotropy and genetic architecture in complex traits](https://www.nature.com/articles/s41588-019-0481-0)
-> - Y 2021. [Genetic correlation and causal relationships between cardio-metabolic traits and lung function impairment](https://pubmed.ncbi.nlm.nih.gov/34154662/)
+> - Y 2017. Ele Zeggini. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
+> - Y 2019. [Meta-analysis and Mendelian randomization: A review](https://pubmed.ncbi.nlm.nih.gov/30861319/)> - Y 2021. [Genetic correlation and causal relationships between cardio-metabolic traits and lung function impairment](https://pubmed.ncbi.nlm.nih.gov/34154662/)
 > - Y 2021. [Mendelian randomisation for mediation analysis: current methods and challenges for implementation](https://pubmed.ncbi.nlm.nih.gov/33961203/)
-> - Y 2022. [Genetically predicted sex hormone levels and health outcomes: phenome-wide Mendelian randomization investigation](https://pubmed.ncbi.nlm.nih.gov/35218343/)
 <br/>
 <br/>
 
