@@ -209,7 +209,7 @@ GWAS-PRS-MR 入门：
 
 # # 高阶理论与方法：
 > - Y 2017. Ele Zeggini. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
-> - Y 2019. [Meta-analysis and Mendelian randomization: A review](https://pubmed.ncbi.nlm.nih.gov/30861319/)> - Y 2021. [Genetic correlation and causal relationships between cardio-metabolic traits and lung function impairment](https://pubmed.ncbi.nlm.nih.gov/34154662/)
+> - Y 2019. [Meta-analysis and Mendelian randomization: A review](https://pubmed.ncbi.nlm.nih.gov/30861319/)
 > - Y 2021. [Mendelian randomisation for mediation analysis: current methods and challenges for implementation](https://pubmed.ncbi.nlm.nih.gov/33961203/)
 <br/>
 <br/>
