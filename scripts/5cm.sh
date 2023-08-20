@@ -67,14 +67,17 @@ awk 'NR==1 || FNR>1' *.rg.txt > all.rg.res
 # C2: Mendelian Randomization
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 exp_dir=/mnt/d/data/gwas/mb
-out_dir=/mnt/d/data/gwas/penguin
+out_dir=/mnt/d/data/gwas/psy
 dats_x=`cd $exp_dir; ls *.gz | sed 's/\.gz//g'`
 dats_y=`cd $out_dir; ls *.gz | sed 's/\.gz//g'`
 for exp in $dats_x; do
 	exp_ieu=NA; exp_file0=$exp_dir/$exp.gz; exp_pheno=$exp
 	exp_iv_file=$exp_dir/$exp.top.snp
 	if [ ! -e $exp_iv_file ]; then
-		exp_iv_file=$exp.top.snp; zcat $exp_file0 | awk 'NR==1 || $10<=1e-6 {b=sprintf("%.0f",$3/1e5); print $4,$2,$3,$10,b}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1; arr[$NF] ="Y"}' > $exp.top.snp
+		exp_iv_file=$exp.top.snp; 
+		if [ ! -e $exp_iv_file ]; then # only run when the file is not already generated
+			zcat $exp_file0 | awk 'NR==1 || $10<=1e-6 {b=sprintf("%.0f",$3/1e5); print $4,$2,$3,$10,b}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1; arr[$NF] ="Y"}' > $exp.top.snp
+		fi
 	fi
 	exp_iv_line=`wc -l $exp_iv_file | awk '{printf $1}'`
 	if [ "$exp_iv_line" -le 1 ]; then
@@ -107,7 +110,7 @@ for exp in $dats_x; do
 		R CMD BATCH $exp.$out.R
 	done
 done
-cat *.tsmr.out | sed 's/|/\t/g' > ../all.mr.res
+cat *.tsmr.out | sed 's/|/\t/g' > ../psy.mr.res
 
 	
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
