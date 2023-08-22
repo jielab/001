@@ -75,7 +75,7 @@ for exp in $dats_x; do
 	exp_iv_file=$exp_dir/$exp.top.snp
 	if [ ! -e $exp_iv_file ]; then
 		exp_iv_file=$exp.top.snp; 
-		if [ ! -e $exp_iv_file ]; then # only run when the file is not already generated
+		if [ ! -e $exp_iv_file ]; then # only run when the file was not already generated
 			zcat $exp_file0 | awk 'NR==1 || $10<=1e-6 {b=sprintf("%.0f",$3/1e5); print $4,$2,$3,$10,b}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1; arr[$NF] ="Y"}' > $exp.top.snp
 		fi
 	fi
@@ -92,6 +92,10 @@ for exp in $dats_x; do
 	exp_file=$exp.txt; zcat $exp_file0 | fgrep -wf $exp_iv_file | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $exp.txt	
 	for out in $dats_y; do
 		if [ "$exp" = "$out" ]; then continue; fi
+		if [ -e $exp.$out.Rout ]; then
+			echo $exp $out already run;
+			continue
+		fi
 		echo Running: $exp $out 
 		out_ieu=NA; out_file0=$out_dir/$out.gz; out_pheno=$out
 		head_row=`zcat $out_file0 | head -1 | sed 's/\t/ /g'`
