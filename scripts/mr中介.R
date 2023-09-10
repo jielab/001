@@ -6,27 +6,19 @@ ieu_mediator <- 'ieu-b-25' # 吸烟
 dat_exposure <- extract_instruments(outcomes = ieu_exposure)
 dat_outcome <- extract_outcome_data(snps=dat_exposure$SNP, outcomes = ieu_outcome)
 
-# !!! 将来，下面这些代码，不需要改动
 # 计算方法
-difference_method_PoE <- function(total_beta, total_se, direct_beta, direct_se){
-	indirect_beta = total_beta -  direct_beta
-	indirect_se = round(sqrt(total_se^2 + direct_se^2), 4)
-	df <- data.frame(b= indirect_beta, se = indirect_se)
-	df$lo_ci <- df$b - 1.96 * df$se; df$up_ci <- df$b + 1.96 * df$se; df$or <- exp(df$b); df$or_lci95 <- exp(df$lo_ci); df$or_uci95 <- exp(df$up_ci); df<-round(df,3)
+difference_method <- function(total_beta, total_se, direct_beta, direct_se){
+	indirect_beta = total_beta - direct_beta # 差异法
+	indirect_se = sqrt(total_se^2 + direct_se^2)
+	df <- data.frame(beta=indirect_beta, se=indirect_se); df$p=2*pnorm(abs(df$beta/df$se), lower.tail=F)
+	# lo_ci <- beta-1.96*se, up_ci <- beta+1.96*se, or <- exp(beta), or_lci95 <- exp(lo_ci), or_uci95 <- exp(up_ci); 
 	return(df)
 }
-product_method_Delta <- function(EM_beta, EM_se, MO_beta, MO_se){
-	EO <- EM_beta * MO_beta
-	CIs = medci(EM_beta, MO_beta, EM_se, MO_se, type="dop")
-	df <- data.frame(b = EO, se = CIs$SE, lo_ci = CIs[["95% CI"]][1], up_ci= CIs[["95% CI"]][2])
-	df$or <- exp(df$b); df$or_lci95 <- exp(df$lo_ci); df$or_uci95 <- exp(df$up_ci); df<-round(df,3)
-	return(df)
-}
-product_method_PoE <- function(EM_beta, EM_se, MO_beta, MO_se, verbose=F){
-	EO_beta <- EM_beta * MO_beta
-	EO_se = round(sqrt(EM_se^2 + MO_se^2), 4)
-	df <- data.frame(b= EO_beta, se = EO_se)
-	df$lo_ci <- df$b - 1.96 * df$se; df$up_ci <- df$b + 1.96 * df$se; df$or <- exp(df$b); df$or_lci95 <- exp(df$lo_ci); df$or_uci95 <- exp(df$up_ci); df <- round(df,3)
+product_method <- function(EM_beta, EM_se, MO_beta, MO_se){
+	EO_beta <- EM_beta * MO_beta # 乘积法
+#	EO_se = sqrt(EM_se^2 + MO_se^2) # 这是一种简单的算法，建议用下一行的算法
+	CIs = medci(EM_beta, MO_beta, EM_se, MO_se, type="dop"); EO_se = CIs$SE # lo_ci = CIs[["95% CI"]][1], up_ci= CIs[["95% CI"]][2]
+	df <- data.frame(beta=EO_beta, se=EO_se); df$p=2*pnorm(abs(df$beta/df$se), lower.tail=F)
 	return(df)
 }
 # 合并数据并计算总的 effect
@@ -41,7 +33,7 @@ mvmr_dat <- mv_harmonise_data(mvmr_exposure_dat, mvmr_outcome_dat, harmonise_str
 	mvmr_res <- mv_multiple(mvmr_dat)
 	direct_beta <- mvmr_res[["result"]][["b"]][2]
 	direct_se <- mvmr_res[["result"]][["se"]][2]
-	indirect_effect <- difference_method_PoE(exposure_total_beta,exposure_total_se,direct_beta,direct_se); indirect_effect 
+	indirect_effect <- difference_method(exposure_total_beta, exposure_total_se, direct_beta, direct_se); indirect_effect 
 	indirect_effect[,1]/exposure_total_beta
 # 乘积法
 dat_outcome <- extract_outcome_data(snps = dat_exposure$SNP, outcomes = ieu_mediator) # mediator 作为 outcome
@@ -55,9 +47,6 @@ dat <- harmonise_data(dat_exposure, dat_outcome)
 	res <- mr(dat)
 	MO_beta_total <- res %>% filter(method == "Inverse variance weighted") %>% pull(b)
 	MO_se_total <- res %>% filter(method == "Inverse variance weighted") %>% pull(se)
-	MO_beta <- mvmr_res[["result"]][["b"]][1] #?
-	MO_se <- mvmr_res[["result"]][["se"]][1] #?
-product_method_Delta(EM_beta, EM_se, MO_beta_total, MO_se_total)
-product_method_Delta(EM_beta, EM_se, MO_beta, MO_se)
-product_method_PoE(EM_beta, EM_se, MO_beta_total, MO_se_total)
-product_method_PoE(EM_beta, EM_se, MO_beta, MO_se)
+	MO_beta <- mvmr_res[["result"]][["b"]][1]
+	MO_se <- mvmr_res[["result"]][["se"]][1]
+product_method(EM_beta, EM_se, MO_beta, MO_se) # 或者 (EM_beta, EM_se, MO_beta_total, MO_se_total)
