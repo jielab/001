@@ -67,11 +67,11 @@ awk 'NR==1 || FNR>1' *.rg.txt > all.rg.res
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C2: Causation 主要是通过MR分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-exp_dir=/mnt/d/data/gwas/pheno
+exp_dir=/mnt/d/data/gwas/microbe
 out_dir=/mnt/d/data/gwas/pheno
-dats_x=`cd $exp_dir; ls bb_*.gz x.*.gz | sed 's/\.gz//g'`
-dats_y=`cd $out_dir; ls y.*.gz | sed 's/\.gz//g'`
-for exp in $dats_x; do
+exp_files=`cd $exp_dir; ls bb_*.gz x.*.gz | sed 's/\.gz//g'`
+out_files=`cd $out_dir; ls y.*.gz | sed 's/\.gz//g'`
+for exp in $exp_files; do
 	exp_file0=$exp_dir/$exp.gz; exp_pheno=$exp
 	head_row=`zcat $exp_file0 | head -1 | sed 's/\t/ /g'`
 	for i in ${!Arr1[@]}; do
@@ -91,7 +91,7 @@ for exp in $dats_x; do
 		continue 
 	fi
 	exp_file=$exp.txt; zcat $exp_file0 | fgrep -wf $exp_iv_file | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $exp.txt	
-	for out in $dats_y; do
+	for out in $out_files; do
 		if [ "$exp" = "$out" ]; then continue; fi
 		if [ -e $exp.$out.Rout ]; then
 			echo $exp $out already run;
