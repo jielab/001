@@ -1,10 +1,10 @@
 
 Arr1=("snp" "chr" "pos" "ea" "nea" "eaf" "n" "beta" "se" "p")
-Arr2=("snp|rsid|variant_id" "chr|chrom|chromosome" "pos|bp|base_pair" "ea|alt|a1|eff.allele" "nea|ref|a2|ref.allele" "eaf" "n" "beta" "se|standard_error" "^p|pval")
+Arr2=("snp|rsid|variant_id" "chr|chrom|chromosome" "pos|bp|base_pair" "ea|eff.allele|alt|a1|allele1" "nea|ref.allele|ref|a2|allele0" "eaf|a1freq" "n" "beta" "se|standard_error" "^p|pval|p_bolt_lmm")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# C0: GWAS download and format
+# 数据准备：GWAS download and format
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dir=/mnt/d
 outdir=$dir/data/gwas/pheweb2
@@ -43,7 +43,7 @@ done
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# C1: genetic correlation
+# C1: Correlation 主要指在基因水平上
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 conda activate ldsc # 采用 python2，而不是 python3
 dir=/mnt/d/data/gwas/penguin
@@ -64,19 +64,24 @@ awk 'NR==1 || FNR>1' *.rg.txt > all.rg.res
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# C2: Mendelian Randomization
+# C2: Causation 主要是通过MR分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-exp_dir=/mnt/d/data/gwas/mb
-out_dir=/mnt/d/data/gwas/psy
-dats_x=`cd $exp_dir; ls *.gz | sed 's/\.gz//g'`
-dats_y=`cd $out_dir; ls *.gz | sed 's/\.gz//g'`
+exp_dir=/mnt/d/data/gwas/pheno
+out_dir=/mnt/d/data/gwas/pheno
+dats_x=`cd $exp_dir; ls bb_*.gz x.*.gz | sed 's/\.gz//g'`
+dats_y=`cd $out_dir; ls y.*.gz | sed 's/\.gz//g'`
 for exp in $dats_x; do
-	exp_ieu=NA; exp_file0=$exp_dir/$exp.gz; exp_pheno=$exp
+	exp_file0=$exp_dir/$exp.gz; exp_pheno=$exp
+	head_row=`zcat $exp_file0 | head -1 | sed 's/\t/ /g'`
+	for i in ${!Arr1[@]}; do
+		eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
+	done
+	echo exp $exp, snp $snp, ea $ea, nea $nea, beta $beta, se $se, p $p
 	exp_iv_file=$exp_dir/$exp.top.snp
 	if [ ! -e $exp_iv_file ]; then
-		exp_iv_file=$exp.top.snp; 
-		if [ ! -e $exp_iv_file ]; then # only run when the file was not already generated
-			zcat $exp_file0 | awk 'NR==1 || $10<=1e-6 {b=sprintf("%.0f",$3/1e5); print $4,$2,$3,$10,b}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1; arr[$NF] ="Y"}' > $exp.top.snp
+		exp_iv_file=$exp.top.snp # 这是本地的 $exp.top.snp 文件，不是上面的 $exp_dir/$exp.top.snp
+		if [ ! -e $exp_iv_file ]; then
+			zcat $exp_file0 | awk -v snp=$snp -v chr=$chr -v pos=$pos p=$p 'NR==1 || $p<=5e-8 {posm=int($pos/1e6); print $snp, $chr, $pos, $p, posm}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1; arr[$NF] ="Y"}' > $exp.top.snp
 		fi
 	fi
 	exp_iv_line=`wc -l $exp_iv_file | awk '{printf $1}'`
@@ -84,11 +89,6 @@ for exp in $dats_x; do
 		echo $exp has no IV SNP
 		continue 
 	fi
-	head_row=`zcat $exp_file0 | head -1 | sed 's/\t/ /g'`
-	for i in ${!Arr1[@]}; do
-		eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
-	done
-	echo exp $exp, snp $snp, ea $ea, nea $nea, beta $beta, se $se, p $p
 	exp_file=$exp.txt; zcat $exp_file0 | fgrep -wf $exp_iv_file | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $exp.txt	
 	for out in $dats_y; do
 		if [ "$exp" = "$out" ]; then continue; fi
@@ -107,7 +107,7 @@ for exp in $dats_x; do
 		echo "
 		source('/mnt/d/scripts/library/tsmr.f.R')
 		tsmr_fn( exp_iv_file='$exp_iv_file',
-			exp_name='$exp', exp_pheno='$exp_pheno', exp_ieu='$exp_ieu', exp_file='$exp_file',  
+			exp_name='$exp', exp_pheno='$exp_pheno', exp_ieu='NA', exp_file='$exp_file',  
 			out_name='$out', out_pheno='$out_pheno', out_ieu='$out_ieu', out_file='$out_file'
 		)
 		" > $exp.$out.R
@@ -118,10 +118,10 @@ cat *.tsmr.out | sed 's/|/\t/g' > ../psy.mr.res
 
 	
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# C3: Colocalization
+# C3: Colocalization 从全局到局部local
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-cut -f 1-3,10 x.education | awk '{if (NR==1) print $0,"ChrPos-m"; else {b=sprintf("%.0f",$3/1e6); print $0,"chr"$2":"b"m"}}' > exp.chrpos
-cut -f 1-3,10 x.education | awk 'NR==1 || $4<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2,$3,$4,b}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1,"chr"$2":"$5"m"; arr[$NF] ="Y"}' > exp.top.loci
+cut -f 1-3,10 x.education | awk '{if (NR==1) print $0,"ChrPos-m"; else {b=int($3/1e6); print $0,"chr"$2":"b"m"}}' > exp.chrpos
+cut -f 1-3,10 x.education | awk 'NR==1 || $4<5e-8 {b=int($3/1e6); print $1,$2,$3,$4,b}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1,"chr"$2":"$5"m"; arr[$NF] ="Y"}' > exp.top.loci
 python /mnt/d/scripts/library/join_file.py -i "exp.chrpos,TAB,0 exp.top.loci,SPACE,0" -o exp.tmp
 sort -k 2,2n -k 5,5V -k 4,4g exp.tmp | awk '{if ($7 !="NA") seg[$7]="Y"; if (NR==1 || seg[$5]=="Y") print $0}' | sort -k 2,2n -k 3,3n | sed 's/ /\t/g' | cut -f 1-6 > exp.txt
 cut -f 1 exp.txt > exp.snp
@@ -136,3 +136,14 @@ paste exp.txt2 y.*.joined > all.coloc.tmp
 awk '{print NF}' all.coloc.tmp | sort -nu
 num=`ls -l y.*.joined | wc -l | awk '{printf $1}'`
 awk -v num=$num '{for (i=1;i<=num;i++) {if (NR>1 && $(i*5+5) !=$1) print $1, $i, "ERR"; else if (NR>1 && $(i*5+6) !=$5 && $(i*5+6) !="NA") $(i*5+6) =-$(i*5+6); $(i*5+5)=""; $(i*5+6)=""; $(i*5+7)="" }; print $0}' all.coloc.tmp > all.coloc.txt; fgrep ERR all.coloc.txt
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# C4: Coevolution 蛋白质互作
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# C4: Community 共同体
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# A community with a shared future for mankind

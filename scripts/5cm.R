@@ -1,7 +1,8 @@
+setwd("C:/Users/jiehu/Desktop")
 pacman::p_load(data.table, dplyr, tidyverse, reshape2, ggplot2, corrplot, ggcorrplot, hyprcoloc, mediation)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# C1: genetic correlation
+# C1: Correlation 主要指在基因水平上
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- read.table('D:/analysis/ldsc/all.rg.res', header=T)
 rg <- dat %>% select(p1, p2, rg) %>% acast(p1 ~ p2, value.var='rg'); rg[is.na(rg)] =0;  rg=round(rg,1)
@@ -11,7 +12,7 @@ plt <- ggcorrplot(rg, lab=T, p.mat=pval, sig.level=5e-4, insig ='blank')
 	
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# C2: Mendelian Randomization
+# C2: Causation 主要是通过MR分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 个人数据与“无人”数据
 set.seed(12345)
@@ -41,19 +42,21 @@ run_mr_presso(dat)
   outcome_dat <- extract_outcome_data(exposure_dat$SNP, "ieu-a-7") #提取结局数据
   mvdat <- mv_harmonise_data(exposure_dat, outcome_dat)  #合并暴露数据与结局数据
   res <- mv_multiple(mvdat)  #进行多变量MR分析
-# 多多个分析的结果合并、整理
-dat <- read.table('D:/analysis/psy.mr.res', sep='\t', header=F, as.is=T) %>% subset(V6 %in% c("Wald ratio", "Inverse variance weighted"))
+# 多个分析的结果合并、整理
+dat <- read.table('D:/analysis/mr/mr.res', sep='\t', header=F, as.is=T) %>% subset(V6 %in% c("Wald ratio", "Inverse variance weighted"))
 	names(dat) <- c('exp_name', 'exp_cnt', 'out_name', 'out_cnt', 'dat_cnt', 'method', 'beta', 'se', 'p')
-#	dat %>% subset(exp_name %like% "Bifido" & out_name =="t2d") 
-dat.beta <- dat %>% dplyr::select(exp_name, out_name, beta) %>% acast(exp_name ~ out_name, value.var='beta'); dat.beta[is.na(dat.beta)] =0; dat.beta=round(dat.beta,1)
-dat.p <- dat %>% dplyr::select(exp_name, out_name, p) %>% acast(exp_name ~ out_name, value.var='p'); dat.p[is.na(dat.p)] =1
+	dat$p=signif(dat$p,2)
+	# dat %>% subset(exp_name %like% "Bifido" & out_name =="t2d") 
+	dat.beta <- dat %>% dplyr::select(exp_name, out_name, beta) %>% acast(exp_name ~ out_name, value.var='beta'); dat.beta[is.na(dat.beta)] =0; dat.beta=round(dat.beta,1)
+	dat.p <- dat %>% dplyr::select(exp_name, out_name, p) %>% acast(exp_name ~ out_name, value.var='p'); dat.p[is.na(dat.p)] =1
+	write.table(dat.p, file="mr.p.txt", sep='\t', row.names=T, col.names=T, append=F, quote=F)
 plt <- ggcorrplot(dat.beta, lab=T, p.mat=dat.p, sig.level=.25e-4, insig ='blank') 
 	plt + theme(axis.text=element_text(size=12, face='bold', color=c("black","blue")))
 #corrplot(beta, is.corr=F, method='shade', bg='black', col=colorRampPalette(c('white','green','gold'))(100), tl.col='black', tl.cex=1.3, addCoef.col='black', number.cex=0.9, insig='pch', pch.cex=2, tl.srt=45, outline=T)
 
 	
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# C3: Colocalization
+# C3: Colocalization 从全局到局部local
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- read.table("D:/analysis/coloc/coloc.txt.gz", header=T, as.is=T) %>% rename(locus=ChrPos.m); names(dat)
 sink("output.txt")
@@ -68,6 +71,17 @@ for (loc in unique(dat$locus)) {
 	print(res)
 }
 sink()
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# C4: Coevolution 蛋白质互作
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# C4: Community 共同体
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# A community with a shared future for mankind
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
