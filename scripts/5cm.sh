@@ -6,6 +6,7 @@ Arr2=("snp|rsid|variant_id" "chr|chrom|chromosome" "pos|bp|base_pair" "ea|eff.al
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 数据准备：GWAS download and format
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Linux三剑客示例：cat download.list.txt | sed -r 's/^/wget /; s/(\w+)$/\1\/\1_buildGRCh38.tsv.gz/' | awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
 dir=/mnt/d
 outdir=$dir/data/gwas/pheweb2
 files=$dir/files/mr.list.txt
