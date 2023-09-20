@@ -77,12 +77,12 @@ for exp in $exp_files; do
 	for i in ${!Arr1[@]}; do
 		eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
 	done
-	echo exp $exp, snp $snp, ea $ea, nea $nea, beta $beta, se $se, p $p
+	echo exp $exp, snp $snp, chr $chr, pos $pos, p $p
 	exp_iv_file=$exp_dir/$exp.top.snp
 	if [ ! -e $exp_iv_file ]; then
 		exp_iv_file=$exp.top.snp # 这是本地的 $exp.top.snp 文件，不是上面的 $exp_dir/$exp.top.snp
 		if [ ! -e $exp_iv_file ]; then
-			zcat $exp_file0 | awk -v snp=$snp -v chr=$chr -v pos=$pos p=$p 'NR==1 || $p<=5e-8 {posm=int($pos/1e6); print $snp, $chr, $pos, $p, posm}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1; arr[$NF] ="Y"}' > $exp.top.snp
+			zcat $exp_file0 | awk -v snp=$snp -v chr=$chr -v pos=$pos -v p=$p 'NR==1 || $p<=5e-8 {posm=int($pos/1e6); print $snp, $chr, $pos, $p, posm}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1; arr[$NF] ="Y"}' > $exp.top.snp
 		fi
 	fi
 	exp_iv_line=`wc -l $exp_iv_file | awk '{printf $1}'`
@@ -98,7 +98,7 @@ for exp in $exp_files; do
 			continue
 		fi
 		echo Running: $exp $out 
-		out_ieu=NA; out_file0=$out_dir/$out.gz; out_pheno=$out
+		out_file0=$out_dir/$out.gz; out_pheno=$out
 		head_row=`zcat $out_file0 | head -1 | sed 's/\t/ /g'`
 		for i in ${!Arr1[@]}; do
 			eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
@@ -109,7 +109,7 @@ for exp in $exp_files; do
 		source('/mnt/d/scripts/library/tsmr.f.R')
 		tsmr_fn( exp_iv_file='$exp_iv_file',
 			exp_name='$exp', exp_pheno='$exp_pheno', exp_ieu='NA', exp_file='$exp_file',  
-			out_name='$out', out_pheno='$out_pheno', out_ieu='$out_ieu', out_file='$out_file'
+			out_name='$out', out_pheno='$out_pheno', out_ieu='NA', out_file='$out_file'
 		)
 		" > $exp.$out.R
 		R CMD BATCH $exp.$out.R
