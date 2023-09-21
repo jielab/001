@@ -28,48 +28,28 @@ awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim
 <br/>
 
 
-# #2.  提取 UKB 表型数据
-从 [ukbiobank](ukbiobank.ac.uk) 官网，点击 data showcase --> Essential information --> Accessing UK Biobank data，阅读 Data access guide 文件，里面会提到如何下载用来下载UKB数据的小软件（比如ukbunpack和unkconv）。
-可以通过 Search 或 Browse（截图如下）去熟悉 UKB 里面的数据结构。具体的数据，需要申请得到批准后，从最上面的 Researcher log in 登录后获取，见百度网盘上的 ukb50136.enc。
+# #2. UKB 基因型和表型数据
+阅读 Data access guide 文件，里面会提到如何下载用来下载UKB数据的小软件（比如ukbunpack和unkconv）。
 ![UKB](./images/ukb.png)
-
-
-## #2.1 提取简单的表型数据（比如 age, sex, race, bmi, etc.）
-
-> WINDOWS电脑建议安装系统自带的 Ubuntu Linux系统，然后用 cd /mnt/d/ （而不是 D:/）进入 D 盘。
-> 1. 执行 ukbmd5 ukb50136.enc, 确认得到 981b47f85c6b2fb849320c7a3559ba23，确保数据完整。
-> 2. 执行 ukbunpack 解压、解密数据，比如：
-```
-ukbunpack ukb50136.enc xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-ukbunpack ukb670287.enc xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-```
-> 3. 执行 ukbconv，提取需要的列，并生成想要的格式：ukbconv ukb50136.enc_ukb r -iMY.fields.id -oMY
-> 可以先写一个 MY.fields.txt 文件，列出想提取的变量和对应的 data-field，比如第一行是sex	31，第二行是 age 21022，等。
-> 然后手动或者用下面的命令，提取出该文件的第一列（需要提取的表型的ID），并确认没有重复的ID。
-```
-awk '{print $1}' MY.fields.txt > MY.fields.id; sort MY.fields.id | uniq -d
-```
-> 4. 参考 scripts/phe.R 代码，通过上面生成的 MY.r 读入上面生成的 MY.tab 数据，并且给每个变量赋予上述 MY.fields.txt给出的名字。需要注意 MY.r 第一行里面的路劲正确。
-> 注：> 对于表型数据的提取，有一个 [ukbtools R软件包](https://kenhanscombe.github.io/ukbtools/articles/explore-ukb-data.html)。 但不是太好用，并且很慢，可供参考。
-
-<br/>
-
-## #2.2 提取跨越很多列的数据，比如 ICD (data field 42170）
-
-> ICD 这样的指标，包含了很多不同时间的时间点，量很大，建议分开来处理。
-```
-ukbconv ukb42156.enc_ukb r -s42170 -oicd
-sed -i 's/"//g icd.tab
-```
-> 用下面的代码将 icd.tab 文件整合为两列，便于读入R。也可 参考 scripts 文件夹里的 phe.R 代码，对 ICD 数据特别是 ICD date数据进行更加精细化的处理。
+申请得到批准后，从最上面的 Researcher log in 登录后获取。基因型数据我已下载到南科大的HPC上，表型数据见百度网盘上的 ukb50136.enc。
+ [ukbiobank](ukbiobank.ac.uk) 官网，点击 data showcase --> Essential information --> Accessing UK Biobank data。具体的流程和代码，请见 scripts 文件夹下的 phe.sh, gen.sh 以及 phe.R 和 gen.R。
+> 通过 ukbconv 提取很多列的时候，可以先写一个 MY.fields.txt 文件，列出想提取的变量和对应的 data-field，比如第一行是sex	31，第二行是 age 21022，等。然后用 ukbconv ukb50136.enc_ukb r -iMY.fields.id -oMY
+> 对于表型数据的提取，有一个 [ukbtools R软件包](https://kenhanscombe.github.io/ukbtools/articles/explore-ukb-data.html)。 但不是太好用，并且很慢，可供参考。
+> 用下面的代码将 icd.tab 文件整合为两列，便于读入R。
 ```
 cat icd.tab | sed -e 's/\tNA//g' -e 's/\t/,/2g' | \
 awk '{ if(NR==1) print "IID icd"; else if (NF==1) print $1 " NA"; else print $0"," }' > icd.2cols
 ```
 <br/>
 
-## #2.3. 对表型数据进行 GWAS 运行之前的处理
 
+# #3. GWAS 运行和结果 “挖掘”
+
+![GWAS](./images/GWAS.jpg)
+
+<br/>
+
+## #3.1. 专人在服务器上运行
 > 提取需要研究的表型数据和相关的covariates，比如 age, sex, PCs。
 > 一般来说，quantitative的表型数据要 adjust for covariates 和转化成正态分布，这个可以在R里面用下面的命令来实现。
 ```
@@ -78,23 +58,6 @@ trait_inv = qnorm((rank(trait_res,na.last="keep")-0.5) / length(na.omit(trait_re
 ```
 > 对于疾病的binary 表型，只需要把需要 adjust 的covarites 和表型数据放在同一个表型数据文件里面，
 > 然后在 GWAS里面的plink命令指明哪个是表型，哪些是 covariates。
-> ![compareB](./images/T2D.Z.png) 
-<br/>
-
-## #2.4 关于UKB 基因数据
-> UKB的基因数据很大，所有申请者都能得到一样的数据（样本的ID不一样），一般下载到服务器上去储存和使用。
-
-<br/>
-
-
-# #3. GWAS 运行和 结果 “挖掘”
-
-![GWAS](./images/GWAS.jpg)
-
-<br/>
-
-## #3.1 专人在服务器上运行
-
 > 目前GWAS 由专人负责运行，一般来说就是通过下面这样的PLINK命令来跑
 ```
 for chr in {1..22}; do
@@ -106,7 +69,7 @@ done
 最终合并成的 XXX.gwas.gz 文件用 TAB 分割，CHR:POS 排好序，要不然 LocusZoom 那样的软件不能处理。也可以用 tabix -f -S 1 -s 1 -b 2 -e 2 XXX.gwas.gz 对数据进行索引，便于 LocalZoom 那样的软件去处理。
 <br/>
 
-## #3.2 公开的GWAS数据进行练手，或对比
+## #3.2. 公开的GWAS数据进行练手，或对比
 
 > 最经典的，起源于美国NIH 的 [GWAS Catalog](https://www.ebi.ac.uk/gwas). 这个页面也罗列了一些大型GWAS数据联盟。
 > 欧洲版本，不需要下载就能通过 TwoSampleMR 远程读入。他们提倡 使用 VCF 格式的GWAS文件。
@@ -120,7 +83,7 @@ done
 <br/><br/>
 
 
-## #3.3 GWAS的显示和注释
+## #3.3. GWAS的管理、QC、注释
 > 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
 > Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/173#issuecomment-1581798702)，用户可以在安装pheweb 后找到 add_rsids.py 文件，修改一行代码。如果用 which python 得到的python 路径是 XYZ/bin/python，那么 add_rsids.py 就位于 XYZ/lib/python3.8/site-packages/pheweb/load。将该代码的140行做如下修改即可。
 ```
@@ -128,20 +91,9 @@ done
 修改后：rsids = [rsid['rsid'] for rsid in rsid_group if (cpra['ref'] == rsid['ref'] and are_match(cpra['alt'], rsid['alt'])) or (cpra['ref'] == rsid['alt'] and are_match(cpra['alt'], rsid['ref']))]
 ```
 > 
- 
 用户也可以在得到[pheweb网站](https://resources.pheweb.org)上的 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid2.py。根据需要，可先运行 dos2unix add_rsid2.py，然后运行如下示例命令，具体的参数根据input文件调整。注意，--sep 后面有双引号，默许的版本是 python3。
 ```
 add_rsid2.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d files/rsids-v154-hg38.tsv.gz -o out.tsv
-```
-
-> [PLINK](https://www.cog-genomics.org/plink/1.9/) 也有一些基本注释的功能。点击左边菜单中的 Report postprocess 中的 3个命令（--annotate, --clump, --gene-report）。plink clump 的结果，不包括那些 --bfile 里面没有的SNP，所以得要把那些SNP再添加到 clump 的结果里，详情见[聊天记录](https://groups.google.com/g/plink2-users/c/DacWWAPvGE0/m/uH8NVYq_CQAJ)。
-```
-plink --annotate $trait.gwas.txt NA ranges=glist-hg19 --border 10 --pfilter 5e-8 --out $trait.top
-
-for chr in {1..22}; do
-   plink1.9 --vcf g1k.chr$chr.vcf.gz --clump $trait.gwas.txt --clump-p1 5e-08 --clump-p2 5e-08 --clump-kb 1000 --clump-r2 0.2 --out $trait.chr$chr
-   awk '$1 !="" {print $3,$1, $4,$5}' $trait.chr$chr.clumped > $trait.chr$chr.top
-done
 ```
 > 通过LD的计算来找到GWAS数据里面的independent top hits，也有一些问题。比如，g1k的LD不是金标准，r2也不是最合理的筛选办法，并且计算量很大。如果不考虑 SNP之间的LD，只考虑距离，假设GWAS的第1，2，3 列分别是 SNP, CHR, POS，最后一列是P，可以用下面这个简单的代码来寻找GWAS数据里面每1MB区间的top SNP。
 ```
@@ -149,10 +101,13 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 	sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $0; arr[$NF] ="Y"}' 
 ```
 > 要把上述得到的显著区域跟已发表的文章中的SNP进行比较，看是不是有重叠（1MB范围之内的重叠都算），可以用 bedtools。
+> ![compareB](./images/T2D.Z.png) 
 <br/>
 
 
-## #3.4 GWAS 文件功能（functional）分析 
+# #4. GWAS 及 post-GWAS分析
+
+## #4.1 GWAS 功能（function）分析 
 
 > 可先尝试傻瓜相机式的[FUMA](https://fuma.ctglab.nl/) 网上解读系统，见[参考文献](https://www.frontiersin.org/articles/10.3389/fgene.2020.00424/full)
 
@@ -160,8 +115,9 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 > ![FUMA](./images/fuma.png) 
 
 <br/>
+<br/>
 
-## #3.5 多基因风险评分PRS
+## #4.2 多基因风险评分PRS
 
 > 相关的方法学，请参考经典版的 [PLINK0.9](http://zzz.bwh.harvard.edu/plink/profile.shtml) 和新版的 [PLINK1.9](https://www.cog-genomics.org/plink/1.9/score) 
 
@@ -169,12 +125,13 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 <br/>
 
 
-## #3.6. 因果分析 Mendelian Randomization
+## #4.3. 因果分析 Mendelian Randomization
 > 如果有个体数据数据，可以采用 [GSMR](https://cnsgenomics.com/software/gcta/#GSMR)，参考[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 。
 > 如果没有个体数据，只有别人报道的 exposure 和 outcome 的 BETA 和 SE，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/5-252/v2)。
 前者有非常强大的数据调取和数据管理功能，而后者比较简单直观。
 <br/>
 <br/>
+
 
 # # 参考文献和网站
 
@@ -200,27 +157,18 @@ GWAS-PRS-MR 入门：
 > > - Y 2022. EHJ. [A polygenic risk score improves risk stratification of coronary artery disease: a large-scale prospective Chinese cohort study](pubmed.ncbi.nlm.nih.gov/35195259/)
 
 > MR：
-> > - Y 2012. Lancet. [Plasma HDL cholesterol and risk of myocardial infarction: a mendelian randomisation study](https://pubmed.ncbi.nlm.nih.gov/22607825/)
-> > - Y 2022. Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
-> > - Y 2022. Communications Biology. [Deciphering how early life adiposity influences breast cancer risk using Mendelian randomization](https://www.nature.com/articles/s42003-022-03272-5)
-<br/>
-<br/>
-
-
-# # 高阶理论与方法：
-> - Y 2017. Ele Zeggini. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
-> - Y 2019. [Meta-analysis and Mendelian randomization: A review](https://pubmed.ncbi.nlm.nih.gov/30861319/)
-> - Y 2021. [Mendelian randomisation for mediation analysis: current methods and challenges for implementation](https://pubmed.ncbi.nlm.nih.gov/33961203/)
-<br/>
+> > - Y 2012. 经典案例 Lancet. [Plasma HDL cholesterol and risk of myocardial infarction: a mendelian randomisation study](https://pubmed.ncbi.nlm.nih.gov/22607825/)
+> > - Y 2022. 入门必读 Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
+> > - Y 2021. 通过MR进行中介分析 [Mendelian randomisation for mediation analysis: current methods and challenges for implementation](https://pubmed.ncbi.nlm.nih.gov/33961203/)
+> > - Y 2022. 复杂分析案例 Communications Biology. [Deciphering how early life adiposity influences breast cancer risk using Mendelian randomization](https://www.nature.com/articles/s42003-022-03272-5)
+> > - Y 2017. 全面解读了我的PRIMe方法的文章 Ele Zeggini. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
 <br/>
 
-# # R分析和画图示例：
+
+一些有用、有趣的实用工具：
 > - [The R Graph Gallery](https://r-graph-gallery.com/index.html)
 > - [Doing and reporting your first mediation analysis in R](https://towardsdatascience.com/doing-and-reporting-your-first-mediation-analysis-in-r-2fe423b92171)
 > - [Add P-values and Significance Levels to ggplots](https://www.r-bloggers.com/2017/06/add-p-values-and-significance-levels-to-ggplots/)
-> - [Two-Way ANOVA Test in R](http://www.sthda.com/english/wiki/two-way-anova-test-in-r)
-> - [ggfortify : Extension to ggplot2 to handle some popular packages](http://www.sthda.com/english/wiki/ggfortify-extension-to-ggplot2-to-handle-some-popular-packages-r-software-and-data-visualization)
-> - [An Intro to Phylogenetic Tree Construction in R](https://fuzzyatelin.github.io/bioanth-stats/module-24/module-24.html)
 > - [Top 100 R resources on COVID-19 Coronavirus](https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/)
 > - 以及 modelSummary, forplo，sankey diagram, CellChat, ComplexHeatmap，等等
 <br/>
