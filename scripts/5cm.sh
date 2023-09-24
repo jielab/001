@@ -67,10 +67,10 @@ awk 'NR==1 || FNR>1' *.rg.txt > all.rg.res
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C2: Causation 主要是通过MR分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-exp_dir=/mnt/d/data/gwas/microbe
+exp_dir=/mnt/d/data/gwas/pheno
 out_dir=/mnt/d/data/gwas/pheno
-exp_files=`cd $exp_dir; ls bb_*.gz x.*.gz | sed 's/\.gz//g'`
-out_files=`cd $out_dir; ls y.*.gz | sed 's/\.gz//g'`
+exp_files=`cd $exp_dir; ls *.gz | sed 's/\.gz//g'`
+out_files=`cd $out_dir; ls *.gz | sed 's/\.gz//g'`
 for exp in $exp_files; do
 	exp_file0=$exp_dir/$exp.gz; exp_pheno=$exp
 	head_row=`zcat $exp_file0 | head -1 | sed 's/\t/ /g'`
@@ -86,15 +86,16 @@ for exp in $exp_files; do
 		fi
 	fi
 	exp_iv_line=`wc -l $exp_iv_file | awk '{printf $1}'`
-	if [ "$exp_iv_line" -le 1 ]; then
-		echo $exp has no IV SNP
+	if [ "$exp_iv_line" -le 1 ]; then # no IV SNP
 		continue 
 	fi
-	exp_file=$exp.txt; zcat $exp_file0 | fgrep -wf $exp_iv_file | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $exp.txt	
+	exp_file=$exp.txt
+	if [ ! -e $exp.txt ]; then
+		zcat $exp_file0 | fgrep -wf $exp_iv_file | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $exp.txt	
+	fi
 	for out in $out_files; do
 		if [ "$exp" = "$out" ]; then continue; fi
-		if [ -e $exp.$out.Rout ]; then
-			echo $exp $out already run;
+		if [ -e $exp.$out.Rout ]; then #already run
 			continue
 		fi
 		echo Running: $exp $out 
@@ -104,7 +105,10 @@ for exp in $exp_files; do
 			eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
 		done
 		echo out $out, snp $snp, ea $ea, nea $nea, beta $beta, se $se, p $p
-		out_file=$exp.list.$out.txt; zcat $out_file0 | fgrep -wf $exp_iv_file | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $exp.list.$out.txt
+		out_file=$exp.list.$out.txt
+		if [ ! -e $out_file ]; then
+			zcat $out_file0 | fgrep -wf $exp_iv_file | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $exp.list.$out.txt
+		fi
 		echo "
 		source('/mnt/d/scripts/library/tsmr.f.R')
 		tsmr_fn( exp_iv_file='$exp_iv_file',
@@ -115,7 +119,7 @@ for exp in $exp_files; do
 		R CMD BATCH $exp.$out.R
 	done
 done
-cat *.tsmr.out | sed 's/|/\t/g' > ../psy.mr.res
+cat *.tsmr.out | sed 's/|/\t/g' > ../mr.res
 
 	
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
