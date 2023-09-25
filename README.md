@@ -136,15 +136,18 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 # # 参考文献和网站
 
 基因注释信息浏览器：
-> - dbSNP: https://www.ncbi.nlm.nih.gov/snp/   
-> - UCSC genome browser: https://www.genome.ucsc.edu/ 
+> - 非常经典的 dbSNP: https://www.ncbi.nlm.nih.gov/snp/   
+> - 非常经典的 UCSC genome browser: https://www.genome.ucsc.edu/ 
 > - 美国精准医学All of Us：https://www.researchallofus.org/ 和 https://databrowser.researchallofus.org/   
-> - TopMed browser: https://bravo.sph.umich.edu/ 
-> - Gnomad browser: https://gnomad.broadinstitute.org/ 
-> - GlobalBiobankEngine：https://github.com/rivas-lab 
+> - 密西根大学公卫学院 TopMed browser: https://bravo.sph.umich.edu/ 
+> - 一天发了7篇 NATURE系列文章的Gnomad项目的 browser: https://gnomad.broadinstitute.org/ 
+> - 带”Global“的 GlobalBiobankEngine：https://github.com/rivas-lab 
 
+理论学习
+> 进化对人类疾病的影响：
+> > - Y 2021. Nature Review Genetics. [The influence of evolutionary history on human health and disease](https://www.nature.com/articles/s41576-020-00305-9)
 
-GWAS-PRS-MR 入门：
+GWAS-PRS-MR ”三驾马车“ 入门：
 > GWAS:
 > > - Y 2006. Nature Review Genetics. [A tutorial on statistical methods for population association studies](https://pubmed.ncbi.nlm.nih.gov/16983374/)
 > > - Y 2014. Nature Protocols. [Quality control and conduct of genome-wide association meta-analyses](https://www.nature.com/articles/nprot.2014.071)
@@ -155,6 +158,7 @@ GWAS-PRS-MR 入门：
 > > - Y 2019. Lancet Respiratory Medicine. [Identification of risk loci and a polygenic risk score for lung cancer: a large-scale prospective cohort study in Chinese populations](pubmed.ncbi.nlm.nih.gov/31326317/)
 > > - Y 2020. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
 > > - Y 2022. EHJ. [A polygenic risk score improves risk stratification of coronary artery disease: a large-scale prospective Chinese cohort study](pubmed.ncbi.nlm.nih.gov/35195259/)
+> > - Y 2023. Nature Medicine. [A multi-ancestry polygenic risk score improves risk prediction for coronary artery disease](https://www.nature.com/articles/s41591-023-02429-x)
 
 > MR：
 > > - Y 2012. 经典案例 Lancet. [Plasma HDL cholesterol and risk of myocardial infarction: a mendelian randomisation study](https://pubmed.ncbi.nlm.nih.gov/22607825/)
@@ -162,6 +166,7 @@ GWAS-PRS-MR 入门：
 > > - Y 2021. 通过MR进行中介分析 [Mendelian randomisation for mediation analysis: current methods and challenges for implementation](https://pubmed.ncbi.nlm.nih.gov/33961203/)
 > > - Y 2022. 复杂分析案例 Communications Biology. [Deciphering how early life adiposity influences breast cancer risk using Mendelian randomization](https://www.nature.com/articles/s42003-022-03272-5)
 > > - Y 2017. 全面解读了我的PRIMe方法的文章 Ele Zeggini. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
+
 <br/>
 
 
