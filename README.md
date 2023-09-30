@@ -146,6 +146,7 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2
 理论学习
 > 进化对人类疾病的影响：
 > > - Y 2021. Nature Review Genetics. [The influence of evolutionary history on human health and disease](https://www.nature.com/articles/s41576-020-00305-9)
+> > - Y 2023. Science Bulletin. [Recent positive selection signatures reveal phenotypic evolution in the Han Chinese population](https://www.sciencedirect.com/science/article/pii/S2095927323005558)
 
 GWAS-PRS-MR ”三驾马车“ 入门：
 > GWAS:
@@ -162,10 +163,10 @@ GWAS-PRS-MR ”三驾马车“ 入门：
 
 > MR：
 > > - Y 2012. 经典案例 Lancet. [Plasma HDL cholesterol and risk of myocardial infarction: a mendelian randomisation study](https://pubmed.ncbi.nlm.nih.gov/22607825/)
-> > - Y 2022. 入门必读 Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
+> > - Y 2017. 一篇解读我的PRIMe方法的文章 Ele Zeggini. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
 > > - Y 2021. 通过MR进行中介分析 [Mendelian randomisation for mediation analysis: current methods and challenges for implementation](https://pubmed.ncbi.nlm.nih.gov/33961203/)
-> > - Y 2022. 复杂分析案例 Communications Biology. [Deciphering how early life adiposity influences breast cancer risk using Mendelian randomization](https://www.nature.com/articles/s42003-022-03272-5)
-> > - Y 2017. 全面解读了我的PRIMe方法的文章 Ele Zeggini. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
+> > - Y 2022. 入门必读 Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
+> > - Y 2023. 一篇非常简单的JAMA子刊 JAMA Psychiatry. [Association of Genetically Predicted Insomnia With Risk of Sepsis](https://jamanetwork.com/journals/jamapsychiatry/fullarticle/2807954)
 
 <br/>
 
