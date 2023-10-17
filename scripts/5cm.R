@@ -14,23 +14,6 @@ plt <- ggcorrplot(rg, lab=T, p.mat=pval, sig.level=5e-4, insig ='blank')
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C2: Causation 主要是通过MR分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 个人数据与“无人”数据
-set.seed(12345)
-dat <- iris %>% rename(varX=Sepal.Length) 
-dat <- dat %>% mutate(
-	ran = runif(nrow(dat), min=min(varX), max=max(varX)),
-	varY = varX*0.35 + ran*0.65,
-	snp = ifelse(varX > quantile(varX, probs=0.90), 2, ifelse(varX < quantile(varX, probs=0.10), 0, 1))
-	)
-dat$varX.pred = predict.lm( lm( varX ~ snp, data=dat)) 
-summary(lm(varY ~ varX.pred, data=dat))
-beta.snp2varX <- summary(lm( varX ~ snp, data=dat))$coef[2,1]
-beta.snp2varY <- summary(lm( varY ~ snp, data=dat))$coef[2,1]
-se.snp2varX <- summary(lm( varX ~ snp, data=dat))$coef[2,2]
-se.snp2varY <- summary(lm( varY ~ snp, data=dat))$coef[2,2]
-beta.wald <- beta.snp2varY / beta.snp2varX; beta.wald
-se.wald <- se.snp2varY / beta.snp2varX
-p.wald <- 2*pnorm(abs(beta/se), lower.tail=F)
 # TwoSampleMR 标准流程
 out_dat <- read_outcome_data(filename="D:/data/gwas/penguin/y.t2d.sub.txt", sep="\t", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", eaf_col="EAF", beta_col="BETA", se_col="SE", pval_col="P")
 exp_dat0 <- read.table("D:/Downloads/ng2022.txt", sep="\t", header=T)
@@ -43,7 +26,7 @@ run_mr_presso(dat)
   mvdat <- mv_harmonise_data(exposure_dat, outcome_dat)  #合并暴露数据与结局数据
   res <- mv_multiple(mvdat)  #进行多变量MR分析
 # 多个分析的结果合并、整理
-dat <- read.table('D:/analysis/mr/mr.res', sep='\t', header=F, as.is=T) %>% subset(V6 %in% c("Wald ratio", "Inverse variance weighted"))
+dat <- read.table('D:/analysis/mr/pheno.res', sep='\t', header=F, as.is=T) %>% subset(V6 %in% c("Wald ratio", "Inverse variance weighted"))
 	names(dat) <- c('exp_name', 'exp_cnt', 'out_name', 'out_cnt', 'dat_cnt', 'method', 'beta', 'se', 'p')
 	dat$p=signif(dat$p,2)
 	# dat %>% subset(exp_name %like% "Bifido" & out_name =="t2d") 
