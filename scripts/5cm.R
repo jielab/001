@@ -41,53 +41,32 @@ plt <- ggcorrplot(dat.beta, lab=T, p.mat=dat.p, sig.level=.25e-4, insig ='blank'
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C3: Colocalization 从全局到局部local
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- read.table("D:/analysis/coloc/coloc.txt.gz", header=T, as.is=T) %>% rename(locus=ChrPos.m); names(dat)
-sink("output.txt")
-for (loc in unique(dat$locus)) {
-	print(loc)
-	dat1 <- dat %>% subset(locus==loc) %>% na.omit()
-	betas <- subset(dat1, select=grepl("BETA", names(dat))); betas <- as.matrix(betas)
-	ses <- subset(dat1, select=grepl("^SE", names(dat))); ses <- as.matrix(ses)
-	traits <- gsub("BETA.", "", grep("BETA", names(dat1), value=T))
-	rsid <- as.matrix(dat1[,1])
-	res <- hyprcoloc(betas, ses, trait.names=traits, trait.subset=c("x", "y.dementia", "y.depress"), snp.id=rsid)
-	print(res)
-}
-sink()
+# 参考 “详细解读！利用ieu数据库进行GWAS-GWAS共定位分析”
+pacman::p_load(gwasglue, dplyr, gassocplot, coloc)
+top <- ieugwasr::tophits('ieu-a-300') %>% arrange(p) #读取服务器上的数据
+	chrpos <- paste0(top$chr[1], ":", top$position[1] - 90000, "-", top$position[1] + 90000)
+	out <- ieugwasr_to_coloc(id1='ieu-a-300', id2='ieu-a-7', chrompos=chrpos)
+	res <- coloc::coloc.abf(out[[1]], out[[2]])
+chrpos <- "19:11112306-11292306" # 下载VCF文件到本地
+	out <- gwasvcf_to_coloc("ieu-a-300.vcf.gz", "ieu-a-7.vcf.gz", chrpos)
+	res <- coloc::coloc.abf(vout[[1]], vout[[2]])
+temp <- coloc_to_gassocplot(out)
+gassocplot::stack_assoc_plot(temp$markers, temp$z, temp$corr, traits=temp$traits)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# C4: Coevolution 蛋白质互作
+# C4: Coevolution mRNA及蛋白质互作
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C4: Community 共同体
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# A community with a shared future for mankind
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Mediation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-pacman::p_load(data.table, tidyverse, mediation)
-set.seed(12345)
-dat <- iris %>% rename(varX=Sepal.Length) 
-dat <- dat %>% 
-	mutate(
-	ran = runif(nrow(dat), min=min(varX), max=max(varX)),
-	varY = varX*0.35 + ran*0.65,
-	snp = ifelse(varX > quantile(varX, probs=0.90), 2, ifelse(varX < quantile(varX, probs=0.10), 0, 1))
-	)
-dat$varX.pred = predict.lm( lm( varX ~ snp, data=dat))
-summary(lm(varY ~ varX.pred, data=dat))
-beta.snp2varX <- summary(lm( varX ~ snp, data=dat))$coef[2,1]; beta.snp2varX
-beta.snp2varY <- summary(lm( varY ~ snp, data=dat))$coef[2,1]; beta.snp2varY
-se.snp2varX <- summary(lm( varX ~ snp, data=dat))$coef[2,2]; se.snp2varX
-se.snp2varY <- summary(lm( varY ~ snp, data=dat))$coef[2,2]; se.snp2varY
-beta.wald <- beta.snp2varY / beta.snp2varX; beta.wald
-se.wald <- se.snp2varY / beta.snp2varX; se.wald
-2*pnorm(abs(beta.wald / se.wald), lower.tail=FALSE); 2*pt(-abs(beta.wald / se.wald),df=150-1)
 #fit.totaleffect <- lm(varY ~ varX, dat); summary(fit.totaleffect) # coef=0.12984, about 35% *35%.
 fit.varM <- lm(varM ~ varX, dat); summary(fit.varM) # beta=0.30429
 fit.full <- lm(varY ~ varX+varM, dat); summary(fit.full) # varM beta=0.37194; varX beta=0.01667, but no more significant, i.e., "complete mediation"

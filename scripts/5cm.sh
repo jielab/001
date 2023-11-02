@@ -119,7 +119,8 @@ for exp in $exp_files; do
 		R CMD BATCH $exp.$out.R
 	done
 done
-cat *.tsmr.out | sed 's/|/\t/g' > ../mr.res
+cat *.tsmr.out | sed 's/|/\t/g' > ../pheno.res
+# touch jie.txt; for f in *.tsmr.out; do cat $f >> jie.txt; done
 
 	
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -144,8 +145,9 @@ awk -v num=$num '{for (i=1;i<=num;i++) {if (NR>1 && $(i*5+5) !=$1) print $1, $i,
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# C4: Coevolution 蛋白质互作
+# C4: Coevolution mRNA及蛋白质互作
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 参考 2023. On the Decoupling of Evolutionary Changes in mRNA and Protein Levels
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
