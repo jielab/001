@@ -26,7 +26,7 @@ dat_Y <- extract_outcome_data(dat_XM$SNP, ieu_Y, proxies=TRUE, rsq=0.8, align_al
 res_X2Y <- TwoSampleMR::mr(dat_XY) %>% filter(method=="Inverse variance weighted") # total 总的
 	beta_X2Y <- res_X2Y %>% pull(b); se_X2Y <- res_X2Y %>% pull(se); p_X2Y <- res_X2Y %>% pull(pval)
 res_X2M <- TwoSampleMR::mr(dat_XM) %>% filter(method=="Inverse variance weighted") # 1st step 三角形的上坡
-	beta_X2M <- res_X2M %>% pull(b); se_X2M <- res_X2M %>% pull(se); p_X2M <- res_X2M %>%>% pull(pval)
+	beta_X2M <- res_X2M %>% pull(b); se_X2M <- res_X2M %>% pull(se); p_X2M <- res_X2M %>% pull(pval)
 res_M2Y <- TwoSampleMR::mr(dat_MY) %>% filter(method=="Inverse variance weighted") # 1st step 三角形的下坡
 	beta_M2Y <- res_M2Y %>% pull(b); se_M2Y <- res_M2Y %>% pull(se); p_M2Y <- res_M2Y %>% pull(pval)
 beta_2step <- beta_X2M * beta_M2Y # *** 核心结果，乘法 ！！！
