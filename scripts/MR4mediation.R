@@ -1,5 +1,5 @@
 #install_github("WSpiller/MVMR", build_opts=c("--no-resave-data", "--no-manual"), build_vignettes=TRUE)
-pacman::p_load(dplyr, tidyverse, TwoSampleMR, MVMR, MendelianRandomization)
+pacman::p_load(data.table, dplyr, tidyverse, TwoSampleMR, MendelianRandomization, MVMR, RMediation)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,18 +30,19 @@ res_X2M <- TwoSampleMR::mr(dat_XM) %>% filter(method=="Inverse variance weighted
 res_M2Y <- TwoSampleMR::mr(dat_MY) %>% filter(method=="Inverse variance weighted") # 1st step 三角形的下坡
 	beta_M2Y <- res_M2Y %>% pull(b); se_M2Y <- res_M2Y %>% pull(se); p_M2Y <- res_M2Y %>% pull(pval)
 beta_2step <- beta_X2M * beta_M2Y # *** 核心结果，乘法 ！！！
-	se_2step <- (se_X2M^2 + se_M2Y^2)^0.5
+	CIs = RMediation::medci(beta_X2M, beta_M2Y, se_X2M, se_M2Y, type="dop")
+	se_2step = CIs$SE # 也可简单用 (se_X2Y^2 + se_M2Y^2)^0.5
 	p_2step <- 2*pnorm(abs(beta_2step/se_2step), lower.tail=F)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MVMR 方法 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat_X3c <- dat_X %>% select(SNP, beta.exposure, se.exposure) 
-dat_M3c <- dat_M %>% select(SNP, beta.outcome, se.outcome) %>% rename(beta.mediator=beta.outcome, se.mediator=se.outcome)  
-dat_Y3c <- dat_Y %>% select(SNP, beta.outcome, se.outcome)
+dat_X3c <- dat_X %>% dplyr::select(SNP, beta.exposure, se.exposure) 
+dat_M3c <- dat_M %>% dplyr::select(SNP, beta.outcome, se.outcome) %>% rename(beta.mediator=beta.outcome, se.mediator=se.outcome)  
+dat_Y3c <- dat_Y %>% dplyr::select(SNP, beta.outcome, se.outcome)
 dat0 <- merge(merge(dat_X3c, dat_M3c), dat_Y3c)
-dat <- format_mvmr(RSID=dat0$SNP, BXGs=dat0[,c("beta.exposure","beta.mediator")], BYG=dat0$beta.outcome, seBXGs=dat0[,c("se.exposure","se.mediator")], seBYG=dat0$se.outcome)
+dat <- MVMR::format_mvmr(RSID=dat0$SNP, BXGs=dat0[,c("beta.exposure","beta.mediator")], BYG=dat0$beta.outcome, seBXGs=dat0[,c("se.exposure","se.mediator")], seBYG=dat0$se.outcome)
 res_mvmr <- MVMR::ivw_mvmr(r_input=dat)
 	res_strength <- strength_mvmr(r_input=dat) 
 	res_pleiotropy <- MVMR::pleiotropy_mvmr(r_input=dat) 
