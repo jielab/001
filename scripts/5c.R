@@ -60,40 +60,5 @@ gassocplot::stack_assoc_plot(temp$markers, temp$z, temp$corr, traits=temp$traits
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# C4: Community 共同体
+# C5: Community 共同体
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Mediation
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#fit.totaleffect <- lm(varY ~ varX, dat); summary(fit.totaleffect) # coef=0.12984, about 35% *35%.
-fit.varM <- lm(varM ~ varX, dat); summary(fit.varM) # beta=0.30429
-fit.full <- lm(varY ~ varX+varM, dat); summary(fit.full) # varM beta=0.37194; varX beta=0.01667, but no more significant, i.e., "complete mediation"
-res <- mediate(fit.varM, fit.full, treat='varX', mediator='varM', boot=T); summary(res) #ACME=0.1132 (i.e., 0.30429 * 0.37194); ADE=0.01667
-fit.snp <- lm(varX ~ snp, dat); summary(fit.snp) 
-# ukb data
-dat <- dat0 %>% filter(ethnicity_gen==1) %>% dplyr::select(grep("age|sex|bmi|covid|^bb_|^bc|age_mn",names(dat0),value=T)) %>% 
-	mutate (
-	age_mn_3p = ifelse(age_mn %in% 12:14, "normal", ifelse(age_mn>14, "late", "early")),
-	age_mn_3p = factor(age_mn_3p, levels=c("normal", "early", "late")),
-	outcome = ifelse(!is.na(icdDate_covid), 1, ifelse(covid_inf==1,0, NA))
-	) %>% rename(CYS=bb_CYS)
-varX="age_mn_3p"; varY="outcome"
-form <- formula(paste(varY, "~", varX, "+age+sex+bmi+CYS"))
-form <- formula(paste(varY, "~", varX, "+age+sex+bmi+CYS+", paste(grep("^bb_", names(dat), value=T), sep="", collapse="+")))
-summary(glm(form, data=dat))
-for (varM in grep("CYS|^bb_|^bc_", names(dat), value=T)) {
-	print(paste("M变量:", varM))
-	dat1 <- subset(dat, select=c(varX, varY, varM, "age", "sex", "bmi")) %>% na.omit()
-	dat1[[varM]] <- inormal(dat1[[varM]]) # normal transformation
-	names(dat1) <- c("varX", "varY", "varM", "age","sex", "bmi")
-	dat1$varX <- as.factor(dat1$varX)
-	fit.med = lm(varM ~ varX + age+sex, data=dat1)
-	fit.out = glm(varY ~ varX + varM +age+sex, data=dat1, family=binomial("probit"))
-	med.out = mediation::mediate(fit.med, fit.out, treat="varX", mediator="varM", sims=100, boot=T)
-	print(summary(med.out))
-}
-fit.med = lm(varM ~ varX, data=dat1)
-fit.out = glm(varY ~ varX + varM, data=dat1, family=binomial("probit"))
-med.out = mediation::mediate(fit.med, fit.out, treat="varX", mediator="varM", sims=100, boot=T)
