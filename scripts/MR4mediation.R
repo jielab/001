@@ -12,7 +12,7 @@ dat_M0 <- extract_instruments(outcomes=ieu_M, clump=F)
 	dat_XM <-clump_data(dat_XM0) 
 dat_X <- extract_outcome_data(dat_XM$SNP, ieu_X, proxies=TRUE, rsq=0.8, align_alleles=1, palindromes=1, maf_threshold=0.3, access_token=ieugwasr::check_access_token(), splitsize=10000, proxy_splitsize=500)
 	dat_X <- convert_outcome_to_exposure(dat_X) # extract_instruments()不允许用户提供指定的SNP，所以用了两步
-dat_M <- extract_outcome_data(dat_XM$SNP, ieu_Y, proxies=TRUE, rsq=0.8, align_alleles=1, palindromes=1, maf_threshold=0.3, access_token=ieugwasr::check_access_token(), splitsize=10000, proxy_splitsize=500)
+dat_M <- extract_outcome_data(dat_XM$SNP, ieu_M, proxies=TRUE, rsq=0.8, align_alleles=1, palindromes=1, maf_threshold=0.3, access_token=ieugwasr::check_access_token(), splitsize=10000, proxy_splitsize=500)
 dat_Y <- extract_outcome_data(dat_XM$SNP, ieu_Y, proxies=TRUE, rsq=0.8, align_alleles=1, palindromes=1, maf_threshold=0.3, access_token=ieugwasr::check_access_token(),  splitsize=10000, proxy_splitsize=500)
 	dat_XY <- harmonise_data(dat_X, dat_Y, action=2) 
 	dat_XM <- harmonise_data(dat_X, dat_M, action=2) 
