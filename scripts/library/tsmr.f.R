@@ -34,9 +34,10 @@ tsmr_fn <-function( exp_iv_file,
 	if (nrow(out_dat) >0) {
 		tsmr_dat <- harmonise_data(exp_dat, out_dat, action=1) # accept palindromic SNPs
 		if (nrow(tsmr_dat) >0) {
-		mr.res <- mr(tsmr_dat) 
-		mr.res.str <- paste(exp_name, nrow(exp_dat), out_name, nrow(out_dat), mr.res$nsnp, mr.res$method, mr.res$b, mr.res$se, mr.res$pval, sep='|')
-		write.table(mr.res.str, paste0(exp_name,'.',out_name,'.tsmr.out'), append=F, quote=F, row.names=F, col.names=F)
+		res_mr <- mr(tsmr_dat) 
+		res_mr.str <- paste(exp_name, nrow(exp_dat), out_name, nrow(out_dat), res_mr$nsnp, res_mr$method, res_mr$b, res_mr$se, res_mr$pval, sep='|')
+		write.table(res_mr.str, paste0(exp_name,'.',out_name,'.tsmr.out'), append=F, quote=F, row.names=F, col.names=F)
+	#	#下面代码用 MendelianRandomizaiton 包，画图
 	#	bsmr_dat <- dat_to_MRInput(tsmr_dat); bsmr_dat <- bsmr_dat[[1]]
 	#	mr_ivw(bsmr_dat)
 	#	png(paste0(exp_name,'.',out_name,'.beta.png'), w=800, h=800)
@@ -48,6 +49,11 @@ tsmr_fn <-function( exp_iv_file,
 	#	png(paste0(exp_name,'.',out_name,'.funnel.png'), w=800, h=800)	
 	#		plt <- mr_funnel(bsmr_dat) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=14), axis.text=element_text(size=12, face="bold"))	
 	#		print(plt); dev.off()
+		if (res_mr$pval < 1e-6) {
+			for (m in c('bb_ALB.gz', 'bb_ALB.top.snps', 'bb_ALP.gz', 'bb_ALP.new.snps', 'bb_ALP.new.txt', 'bb_ALP.p03', 'bb_ALP.top.snps', 'bb_ALT.gz', 'bb_ALT.top.snps', 'bb_APOA.gz', 'bb_APOA.top.snps', 'bb_APOB.gz', 'bb_APOB.top.snps', 'bb_AST.gz', 'bb_AST.top.snps', 'bb_AST2ALT.gz', 'bb_AST2ALT.top.snps', 'bb_BILD.gz', 'bb_BILD.top.snps', 'bb_BUN.gz', 'bb_BUN.top.snps', 'bb_CA.gz', 'bb_CA.top.snps', 'bb_CHOL.gz', 'bb_CHOL.top.snps', 'bb_CRE.gz', 'bb_CRE.top.snps', 'bb_CRP.4.snps', 'bb_CRP.gz', 'bb_CRP.top.snps', 'bb_CYS.gz', 'bb_CYS.top.snps', 'bb_EGFR.gz', 'bb_EGFR.top.snps', 'bb_GGT.gz', 'bb_GGT.top.snps', 'bb_GLU.gz', 'bb_GLU.top.snps', 'bb_HBA1C.gz', 'bb_HBA1C.top.snps', 'bb_HDL.gz', 'bb_HDL.top.snps', 'bb_IGF1.gz', 'bb_IGF1.top.snps', 'bb_LDLD.gz', 'bb_LDLD.top.snps', 'bb_LPA.gz', 'bb_LPA.top.snps', 'bb_NAP.gz', 'bb_NAP.top.snps', 'bb_PHOS.gz', 'bb_PHOS.top.snps', 'bb_SHBG.gz', 'bb_SHBG.top.snps', 'bb_TBIL.gz', 'bb_TBIL.top.snps', 'bb_TES.gz', 'bb_TES.top.snps', 'bb_TP.gz', 'bb_TP.top.snps', 'bb_TRIG.gz', 'bb_TRIG.top.snps', 'bb_UA.gz', 'bb_UA.top.snps', 'bb_UCR.gz', 'bb_UCR.top.snps', 'bb_URK.gz', 'bb_URK.top.snps', 'bb_URMA.gz', 'bb_URMA.top.snps', 'bb_URNA.gz', 'bb_URNA.top.snps', 'bb_VITD.gz', 'bb_VITD.top.snps')) {
+				## 跑 mediation 分析
+			}
+		}
 	}
 	}
 }
