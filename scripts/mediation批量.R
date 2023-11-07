@@ -15,12 +15,12 @@ for (m in c('bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_AST', 'bb_AS
 		if (ivw_p <= 5e-8) {
 			dat_X <- read.table(paste0(dir_mr, x, "/", x, ".txt"), header=T) %>% format_data(type ="exposure", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P") 
 			dat_M4x <- dat_M0 %>% merge(subset(dat_X, select="SNP")) %>% format_data(type ="outcome", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P") 
-			dat_XM <- harmonise_data(dat_X, dat_M4x, action=2) 
+			dat_XM <- harmonise_data(dat_X, dat_M4x, action=1) 
 			dat_Y0 <- read.table(paste0(dir_gwas, y, ".gz"), header=T) 
 			dat_Y4x <- dat_Y0 %>% merge(subset(dat_X, select="SNP")) %>% format_data(type="outcome", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P")
 			dat_Y4m <- dat_Y0 %>% merge(subset(dat_M4y, select="SNP")) %>% format_data(type="outcome", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P") 
-			dat_MY <- harmonise_data(dat_M4y, dat_Y4m, action=2) 
-			#dat_XY <- harmonise_data(dat_X, dat_Y4x) 
+			dat_MY <- harmonise_data(dat_M4y, dat_Y4m, action=1) 
+			dat_XY <- harmonise_data(dat_X, dat_Y4x) 
 			res_X2M <- TwoSampleMR::mr(dat_XM) %>% filter(method=="Inverse variance weighted") # 1st step 三角形的上坡
 				beta_X2M <- res_X2M %>% pull(b); se_X2M <- res_X2M %>% pull(se); p_X2M <- res_X2M %>% pull(pval)
 			res_M2Y <- TwoSampleMR::mr(dat_MY) %>% filter(method=="Inverse variance weighted") # 1st step 三角形的下坡
@@ -28,7 +28,7 @@ for (m in c('bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_AST', 'bb_AS
 			beta_2step <- round(beta_X2M * beta_M2Y, 4); beta_2step
 			se_2step = round((se_X2Y^2 + se_M2Y^2)^0.5, 4)
 			p_2step <- signif(2*pnorm(abs(beta_2step/se_2step), lower.tail=F), 3); p_2step
-			res_str <- paste(x, m, y, nrow(dat_XM), nrow(dat_MY), beta_2step, se_2step, p_2step, sep='|')
+			res_str <- paste(x, m, y, nrow(dat_XM), nrow(dat_MY), nrow(dat_XY), beta_2step, se_2step, p_2step, sep='|')
 			write.table(res_str, paste0('jie.out'), append=T, quote=F, row.names=F, col.names=F)
 		}
 	}
