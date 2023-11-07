@@ -7,16 +7,17 @@ pacman::p_load(data.table, dplyr, tidyverse, TwoSampleMR, MendelianRandomization
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ieu_X='ukb-b-10787' # 站高; ukb-b-16881 坐高 
 ieu_M='ieu-b-25' # Cystain-C 胱抑素C，creatinine 肌酐 
-ieu_Y='XXX' # 
+ieu_Y='????' # 
 dat_X <- extract_instruments(outcomes=ieu_X, clump=T)
-dat_M.x <- extract_instruments(outcomes=ieu_M, clump=T)
-dat_M.y <- extract_outcome_data(dat_X$SNP, ieu_M, proxies=TRUE, rsq=0.8, align_alleles=1, palindromes=1, maf_threshold=0.3, access_token=ieugwasr::check_access_token(), splitsize=10000, proxy_splitsize=500)
+dat_M4x <- extract_outcome_data(dat_X$SNP, ieu_M, proxies=TRUE, rsq=0.8, align_alleles=1, palindromes=1, maf_threshold=0.3, access_token=ieugwasr::check_access_token(), splitsize=10000, proxy_splitsize=500)
+dat_M4y <- extract_instruments(outcomes=ieu_M, clump=T)
 dat_Y <- extract_outcome_data(dat_XM0$SNP, ieu_Y, proxies=TRUE, rsq=0.8, align_alleles=1, palindromes=1, maf_threshold=0.3, access_token=ieugwasr::check_access_token(),  splitsize=10000, proxy_splitsize=500)
 	# 如果 Y 不在 ieu，先下载GWAS到本地，然后用下一行代码生成
 	dat_Y <- read.table("D:/data/gwas/pheno/y.vte.gz", sep="\t", header=T) %>% merge(subset(dat_XM0, select="SNP")) %>% format_data(type ="outcome", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P") 
-dat_XM <- harmonise_data(dat_X, dat_M.y, action=2)
-dat_MY <- harmonise_data(dat_M.x, dat_Y, action=2) 
+dat_XM <- harmonise_data(dat_X, dat_M4x, action=2)
+dat_MY <- harmonise_data(dat_M4y, dat_Y, action=2) 
 dat_XY <- harmonise_data(dat_X, dat_Y, action=2) 
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # two-step MR 方法 
@@ -36,7 +37,7 @@ beta_2step <- beta_X2M * beta_M2Y; beta_2step  # *** 核心结果，乘法 ！�
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 下面的MVMR方法代码不用，仅供参考 ！！  
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat_XMsnps <- rbind(dat_X0, dat_M0) %>% clump_data() 
+dat_XM0 <- rbind(dat_X0, dat_M0) %>% clump_data() 
 dat_X <- dat_X %>% convert_outcome_to_exposure() # extract_instruments()不允许用户提供指定的SNP，所以用了两步
 dat_X3c <- dat_X %>% dplyr::select(SNP, beta.exposure, se.exposure) 
 dat_M3c <- dat_M %>% dplyr::select(SNP, beta.outcome, se.outcome) %>% rename(beta.mediator=beta.outcome, se.mediator=se.outcome)  
