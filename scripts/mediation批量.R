@@ -5,12 +5,12 @@ dir_gwas <- "D:/data/gwas/pheno/"
 dir_mr <- "D:/analysis/mr/pheno/"
 xys <- as.data.frame(read_excel("D:/analysis/mr/pheno.xlsx")); rownames(xys) <- xys$variable; xys$variable <- NULL
 for (m in c('bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_AST', 'bb_AST2ALT', 'bb_BILD', 'bb_BUN', 'bb_CA', 'bb_CHOL', 'bb_CRE', 'bb_CRP', 'bb_CYS', 'bb_EGFR', 'bb_GGT', 'bb_GLU', 'bb_HBA1C', 'bb_HDL', 'bb_IGF1', 'bb_LDLD', 'bb_LPA', 'bb_NAP', 'bb_PHOS', 'bb_SHBG', 'bb_TBIL', 'bb_TES', 'bb_TP', 'bb_TRIG', 'bb_UA', 'bb_UCR', 'bb_URK', 'bb_URMA', 'bb_URNA', 'bb_VITD')) {
-	print(paste('Run:', m))
+	writeLines(paste('\n\nRun:', m))
 	dat_M0 <- read.table(paste0(dir_gwas, m, ".gz"), header=T) # raw
 	snp_M <- read.table(paste0(dir_gwas, m, ".top.snps"), header=T)
 	dat_M4y <- merge(dat_M0, snp_M) %>% format_data(type="exposure", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P")
-	for (x in rownames(xys)) {
-	for (y in names(xys)) {
+	for (x in grep("^x.", rownames(xys), value=T)) {
+	for (y in grep("^y.", rownames(xys), value=T)) {
 		ivw_p <- xys[x,y]
 		if (ivw_p <= 5e-8) {
 			dat_X <- read.table(paste0(dir_mr, x, "/", x, ".txt"), header=T) %>% format_data(type ="exposure", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P") 
