@@ -20,7 +20,7 @@ for (m in c('bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_AST', 'bb_AS
 			dat_M4x <- dat_M0 %>% merge(subset(dat_X, select="SNP"))
 			dat_Y4x <- dat_Y0 %>% merge(subset(dat_X, select="SNP")) 
 			dat_Y4m <- dat_Y0 %>% merge(subset(dat_M4y, select="SNP")) 
-			if (nrow(dat_M4x) ==0 | nrow(dat_Y4x) ==0 | nrow(dat_Y4m) ==0) next
+			if (nrow(dat_M4x) * nrow(dat_Y4x) * nrow(dat_Y4m) ==0) next
 			dat_M4x <- format_data(dat_M4x, type ="outcome", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P") 
 			dat_Y4x <- format_data(dat_Y4x, type="outcome", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P")
 			dat_Y4m <- format_data(dat_Y4m, type="outcome", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P") 
@@ -36,8 +36,6 @@ for (m in c('bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_AST', 'bb_AS
 			p_2step <- signif(2*pnorm(abs(beta_2step/se_2step), lower.tail=F), 3); p_2step
 			res_str <- paste(x, m, y, nrow(dat_XM), nrow(dat_MY), nrow(dat_XY), beta_2step, se_2step, p_2step, sep='|')
 			write.table(res_str, paste0(analysis,".out"), append=T, quote=F, row.names=F, col.names=F)
-		} else {
-			next
 		}
 	}
 	}
