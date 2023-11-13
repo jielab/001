@@ -44,5 +44,3 @@ for (m in c('bb_ALB')){ #, 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_AST', '
 	}
 	}
 }
-
-

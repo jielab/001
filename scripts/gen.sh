@@ -53,14 +53,15 @@ plink --bfile ukb --keep /restricted/projectnb/ukbiobank/jiehuang/files/ukb.keep
 dir=/data/sph-huangj
 label=vip
 snps=/work/sph-huangj/data/ukb/phe/common/ukb.$label.snp
-outdir=/scratch/2023-06-06/sph-huangj/$label
+outdir=/work/sph-huangj/tmp/$label
 	if [ -d $outdir ]; then rm -r $outdir; fi; mkdir -p $outdir
 echo -e "#!/bin/bash -l
 for chr in {1..22} X; do
 	plink2 --pfile $dir/ukb/imp/chr\$chr --extract $snps --make-pgen --out chr\$chr
 done
 ls -1 chr*.pgen | awk '{print \$1}' | sort -k 1,1 -V | sed 's/\.pgen//' > merge-list.txt
-plink2 --pmerge-list merge-list.txt --delete-pmerge-result --update-name $snps 1 2 --maj-ref --export A --out $label
+plink2 --pmerge-list merge-list.txt -delete-pmerge-result --update-name $snps 1 2 --make-pgen --out vip
+	plink2 --pfile vip --maj-ref --export A --out $label
 	cut -f 2,7- $label.raw | sed 's/\t/ /g' | gzip -f > $label.raw.gz
 " > $outdir/$label.cmd
 cd $outdir

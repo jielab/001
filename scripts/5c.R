@@ -21,21 +21,6 @@ exp_dat <- format_data(exp_dat0[1,], type ="exposure", phenotype_col="PHENOTYPE"
 dat <- harmonise_data(exposure_dat=exp_dat, outcome_dat=out_dat)
 mr(dat)
 run_mr_presso(dat)
-  exposure_dat <- mv_extract_exposures(c("ieu-a-299", "ieu-a-300", "ieu-a-302")) #提取多个暴露数据
-  outcome_dat <- extract_outcome_data(exposure_dat$SNP, "ieu-a-7") #提取结局数据
-  mvdat <- mv_harmonise_data(exposure_dat, outcome_dat)  #合并暴露数据与结局数据
-  res <- mv_multiple(mvdat)  #进行多变量MR分析
-# 多个分析的结果合并、整理
-dat <- read.table('D:/analysis/mr/pheno.res', sep='\t', header=F, as.is=T) %>% subset(V6 %in% c("Wald ratio", "Inverse variance weighted"))
-	names(dat) <- c('exp_name', 'exp_cnt', 'out_name', 'out_cnt', 'dat_cnt', 'method', 'beta', 'se', 'p')
-	dat$p=signif(dat$p,2)
-	# dat %>% subset(exp_name %like% "Bifido" & out_name =="t2d") 
-	dat.beta <- dat %>% dplyr::select(exp_name, out_name, beta) %>% acast(exp_name ~ out_name, value.var='beta'); dat.beta[is.na(dat.beta)] =0; dat.beta=round(dat.beta,1)
-	dat.p <- dat %>% dplyr::select(exp_name, out_name, p) %>% acast(exp_name ~ out_name, value.var='p'); dat.p[is.na(dat.p)] =1
-	write.table(dat.p, file="mr.p.txt", sep='\t', row.names=T, col.names=T, append=F, quote=F)
-plt <- ggcorrplot(dat.beta, lab=T, p.mat=dat.p, sig.level=.25e-4, insig ='blank') 
-	plt + theme(axis.text=element_text(size=12, face='bold', color=c("black","blue")))
-#corrplot(beta, is.corr=F, method='shade', bg='black', col=colorRampPalette(c('white','green','gold'))(100), tl.col='black', tl.cex=1.3, addCoef.col='black', number.cex=0.9, insig='pch', pch.cex=2, tl.srt=45, outline=T)
 
 	
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
