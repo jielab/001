@@ -16,11 +16,8 @@ dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(imp, abo, apoe, sqc,
 dat <- dat0 %>%
 	mutate(
 	abo=recode_factor(blood_group, "AA"="A", "BB"="B", "OO"="O", "AO"="A", "BO"="B"),
-		o_type=ifelse(blood_group=="OO", "O", "non-O"),	
 	apoe = factor(apoe, levels=c("e3e3", "e2e2", "e2e3", "e2e4", "e3e4", "e4e4")),
-		e4 = ifelse(apoe=="e4e4", 2, ifelse(grepl("e4", apoe), 1, 0)),
-		e4_f= factor(e4, levels=0:2, labels=c("zero", "one", "two")),
-		e4_yes = ifelse(grepl("e4",apoe), 1, 0),
+		apoe.e4 = ifelse(apoe=="e4e4", 2, ifelse(grepl("e4", apoe), 1, 0)),
 	sp1 = ifelse(sp1.Z.rs28929474_C==0, "ZZ", 
 		ifelse (sp1.S.rs17580_T ==0, "SS", 
 		ifelse( (sp1.Z.rs28929474_C==1 & sp1.S.rs17580_T==1), "SZ", 
