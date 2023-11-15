@@ -66,7 +66,7 @@ dir <- "D:/data/ukb/phe/"
 pku <- read.csv(paste0(dir,"PKU_lungcancer.csv")); hist(pku$walkingpace); table(pku$lung_cancer_baseline)
 	surv.obj <- Surv(time=pku$lung_cancer_time, event=pku$lung_cancer_inc)
 	fit.cox <- coxph(surv.obj ~ walkingpace*rs7191721_G + walkingpace+rs7191721_G +age+sex+centre+Townsend_i+alcohol+Smoking+pa_3c+HDS2_i +BMI_i+grip_i+hpt_baseline+diabetes_baseline_first_report+cvd_baseline+famhis_lungcancer+genebatch+genePC1+genePC2+genePC3+genePC4+genePC5+genePC6+genePC7+genePC8+genePC9+genePC10, data=pku); summary(fit.cox)  
-dat <- dat0 %>% filter(ethnicity_gen==1 & sex==0) %>% merge(pku, by.x="eid", by.y="n_eid") %>% rename(age=age.x, sex=sex.x) 
+dat <- dat0 %>% filter(ethnicity_gen==1) %>% merge(pku, by.x="eid", by.y="n_eid") %>% rename(age=age.x, sex=sex.x) 
 	nrow(dat); grep("\\.y", names(dat), value=T)
 	plot(dat$age, dat$age.y); plot(dat$icdDate_lungcancer, dat$lung_cancer_time) #比较PKU和我们的数据
 dat1 <- dat %>% # 继续比较survival分析用到的变量
