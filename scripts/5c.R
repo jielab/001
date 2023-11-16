@@ -1,5 +1,5 @@
 setwd("C:/Users/jiehu/Desktop")
-pacman::p_load(data.table, dplyr, tidyverse, reshape2, ggplot2, corrplot, ggcorrplot, hyprcoloc, mediation)
+pacman::p_load(data.table, dplyr, tidyverse, reshape2, ggplot2, TwoSampleMR, MendelianRandomizaiton)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C1: Correlation 主要指在基因水平上
@@ -14,6 +14,16 @@ plt <- ggcorrplot(rg, lab=T, p.mat=pval, sig.level=5e-4, insig ='blank')
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # C2: Causation 主要是通过MR分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 可以用来比较两个GWAS的beta
+IV <- read.table("D:/data/gwas/pheno/bb_CRP.top.snps", header=T)
+dat_X <- read.table("D:/data/gwas/pheno/bb_CRP.gz", header=T) %>% merge(IV, by="SNP") %>% 
+	format_data(type ="exposure", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P") 
+dat_Y <- extract_outcome_data(dat_X$SNP, "ieu-b-35") # CRP
+dat <- harmonise_data(dat_X, dat_Y, action=2)
+plot(dat$beta.exposure, dat$beta.outcome)
+res <- mr(dat); p1 <- mr_scatter_plot(res, dat); p1[[1]]
+bsmr_dat <- TwoSampleMR::dat_to_MRInput(dat); bsmr_dat <- bsmr_dat[[1]]
+MendelianRandomization::mr_plot(bsmr_dat)
 # TwoSampleMR 标准流程
 out_dat <- read_outcome_data(filename="D:/data/gwas/penguin/y.t2d.sub.txt", sep="\t", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", eaf_col="EAF", beta_col="BETA", se_col="SE", pval_col="P")
 exp_dat0 <- read.table("D:/Downloads/ng2022.txt", sep="\t", header=T)
