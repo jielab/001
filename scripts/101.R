@@ -74,10 +74,10 @@ dat1 <- dat %>% # 继续比较survival分析用到的变量
 		Y_date = icdDate_lungcancer,
 		Y_yes = ifelse( is.na(icdDate_lungcancer), 0,1),
 		follow_end_day = ifelse(!is.na(Y_date), Y_date, ifelse(!is.na(death_date), death_date, as.Date("2022-01-01"))),
-		follow_years = (as.numeric(follow_end_day) - as.numeric(attend_date)) #/ 365.25
+		follow_years = (as.numeric(follow_end_day) - as.numeric(attend_date)) / 365.25
 	)
 	table(dat1$Y_yes, dat1$lung_cancer_inc)
-	plot(dat1$follow_years, dat1$lung_cancer_time) # 
+	plot(dat1$follow_years, dat1$lung_cancer_time) 
 	surv.obj <- Surv(time=dat1$lung_cancer_time, event=dat1$lung_cancer_inc)
 	fit.cox <- coxph(surv.obj ~ walkingpace+rs7191721_G + walkingpace*rs7191721_G + age+sex+genePC1+genePC2, data=dat1); summary(fit.cox)  # rs1815739_C, rs7191721_G
 Xs <- "walkingpace"
