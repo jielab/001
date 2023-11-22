@@ -68,11 +68,11 @@ dat1 <- pku %>% # 继续比较survival分析用到的变量
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # X-Y-Z绕圈圈分析示例
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- pku %>% filter(ethnic_cat=="White" & ethnicity_gen==1 & sex==1 & !is.na(o) & !is.na(se)) # ethnic_cat 见 phe.R
-Xs <- "bb_TES" # grep("^bb_|walkingpace", names(dat), value=T)
-Ys <- "icdDate_covid" # grep("^icdDate_", names(dat), value=T)
-Zs <- "se" #grep(".rs|^rs", names(dat), value=T)
-outfile="surv.res"; file.create(outfile)
+dat <- pku %>% filter(ethnic_cat=="White") # 要先运行上面的第47-52行，生成pku数据
+Xs <- "walkingpace" # grep("^bb_|walkingpace", names(dat), value=T)
+Ys <- grep("^icdDate_", names(dat), value=T)
+Zs <- grep(".rs|^rs", names(dat), value=T)
+outfile="surv.res"; sink(outfile)
 for (Y in Ys) {
 	print(paste("Y变量:", Y))
 	dat1 <- dat %>%
@@ -90,10 +90,10 @@ for (Y in Ys) {
 		for (Z in Zs) {
 			print(paste("Z变量:", Z))
 			dat1$Z <- dat1[[Z]]
-			fit.glm <- glm(Y_yes ~ X +Z +X*Z +age+sex +PC1+PC2+Townsend_i, data=dat1, family="binomial")
+			#fit.glm <- glm(Y_yes ~ X +Z +X*Z +age+sex +PC1+PC2+Townsend_i, data=dat1, family="binomial")
 			fit.cox <- coxph(surv.obj ~ X + Z + X*Z +age+sex +PC1+PC2+Townsend_i, data=dat1); summary(fit.cox)  
-			print(res.glm <- coef(summary(fit.glm)))
-			print(res.glm <- coef(summary(fit.glm)))
+			#print(res.glm <- coef(summary(fit.glm)))
+			print(res.cox <- coef(summary(fit.cox)))
 			#png(file=paste(X,Y,"frt.png",sep="."), w=1200, h=1600)
 			#print(ggforest(fit.cox, main=paste("X:", X, "| Y:", Y), fontsize=2.2, data=dat1)); dev.off()
 			#res_str <- paste(X, Y, Z, nrow(dat1), res[1], res[3], res[5], sep='|')
@@ -101,6 +101,7 @@ for (Y in Ys) {
 		}
 	}
 }
+sink()
 # 如果上面代码用了write.table，可用下面代码整合分析结果
 outfile2="surv.p.tsv"; file.create(outfile2)
 dat <- read.table(outfile, sep='|', header=F, as.is=T) 
