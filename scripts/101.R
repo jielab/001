@@ -88,7 +88,7 @@ for (Y in Ys) {
 		print(paste("X变量:", X))
 		dat1$X <- dat1[[X]]
 		for (Z in Zs) {
-			print(paste("Z变量:", Z))
+			print(paste("X, Y, Z 分别是:", X, Y, Z))
 			dat1$Z <- dat1[[Z]]
 			#fit.glm <- glm(Y_yes ~ X +Z +X*Z +age+sex +PC1+PC2+Townsend_i, data=dat1, family="binomial")
 			fit.cox <- coxph(surv.obj ~ X + Z + X*Z +age+sex +PC1+PC2+Townsend_i, data=dat1); summary(fit.cox)  
