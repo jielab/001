@@ -68,7 +68,7 @@ dat1 <- pku %>% # 继续比较survival分析用到的变量
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # X-Y-Z绕圈圈分析示例
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- pku %>% filter(ethnic_cat=="White") # 要先运行上面的第47-52行，生成pku数据
+dat <- pku %>% filter(ethnic_cat=="White" & ethnicity_gen==1) # 要先运行上面的第47-52行，生成pku数据
 Xs <- "walkingpace" # grep("^bb_|walkingpace", names(dat), value=T)
 Ys <- grep("^icdDate_", names(dat), value=T)
 Zs <- grep(".rs|^rs", names(dat), value=T)
