@@ -30,7 +30,8 @@ phe <- phe0 %>%
 	bmi_cat = cut(bmi, breaks=c(10,18.5,25,30,100), labels=c("lean","healthy","overweight","obese")),
 	bmi_cat = factor(bmi_cat, levels=c("healthy","lean","overweight","obese")),
 	smoke_status = factor(smoke_status, levels=0:2, labels=c("never","previous","current")), 
-	alcohol_status = factor(alcohol_status, levels=0:2, labels=c("never","previous","current"))
+	alcohol_status = factor(alcohol_status, levels=0:2, labels=c("never","previous","current")),
+	education = factor(ifelse(education<0, NA, education))
 	)
 saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
 	# covid0 <- read.table("D:/data/ukb/hes/covid19_result_england.txt", header=T)[,c(1,2,5,6)]

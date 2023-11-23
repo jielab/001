@@ -91,7 +91,7 @@ dat1 <- pku %>% # 继续比较survival分析用到的变量
 dat <- dat0 %>% filter(ethnic_cat=="White") # ethnicity_gen==1
 Xs <- grep("^bb_|walkingpace", names(dat), value=TRUE)
 Ys <- grep("^icdDate_", names(dat), value=TRUE)
-Zs <- grep("^o$|^se$|^rh", names(dat), value=TRUE) # \\.rs|
+Zs <- grep("^o$|^se$|^rh|\\.rs", names(dat), value=TRUE)
 outfile="surv.res"; sink(outfile)
 for (Y in Ys) {
 	dat1 <- dat %>%
@@ -107,10 +107,10 @@ for (Y in Ys) {
 		for (Z in Zs) {
 			dat1$Z <- dat1[[Z]]
 			#fit.glm <- glm(Y_yes ~ X +Z +X*Z +age+sex +PC1+PC2+Townsend_i, data=dat1, family="binomial")
-			fit.cox <- coxph(surv.obj ~ X + Z + X*Z +age+sex+deprivation +PC1+PC2, data=dat1)
+			fit.cox <- coxph(surv.obj ~ X + Z + X*Z +age+sex+education+deprivation +PC1+PC2, data=dat1)
 			#print(res.glm <- coef(summary(fit.glm)))
 			res.cox <- coef(summary(fit.cox))
-			p_int <- res.cox[8,5]
+			p_int <- signif(tail(res.cox,1)[,5] ,2)
 			if (p_int < 0.05) {
 				print(paste("X, Y, Z 分别是:", X, Y, Z, "; P_interaction=", p_int)) 
 			}
