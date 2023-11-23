@@ -18,7 +18,7 @@ source(paste0(indir,"raw-50136/vip.r")) # then add previous version
 	phe2 <- phe2 %>% subset(select=grep("f.eid|\\.0\\.0", names(phe2))) %>% rename(eid=f.eid)
 phe0 <- merge(phe1, phe2, by="eid") %>% 
 	crosswalkr::renamefrom(vip, V2, V1, drop_extra=F) %>% filter(eid>0)
-	phe0[phe0 <0] = NA # BE CAREFUL
+	#phe0[phe0 <0] = NA # 不能用于含有负值的变量，比如 Townsend deprivation index
 	dates <- names(phe0)[sapply(phe0, is.Date)]; summary(phe0[,dates]) # check invalid dates
 	for (date1 in dates) { phe0[[date1]][phe0[[date1]] %in% dates_bad] <- NA }
 phe <- phe0 %>% 
@@ -63,7 +63,7 @@ saveRDS(dat, file="D:/data/ukb/Rdata/ukb.icd.rds")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # FOD (first occurrence date)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source(paste0(indir,"raw-50136/fod.r")) 
+source(paste0(indir,"raw-670287/fod.r")) 
 dates <- names(bd)[sapply(bd, is.Date)]; summary(bd[,dates])
 for (date1 in dates) { bd[[date1]][bd[[date1]] %in% dates_bad] <- NA }
 icdField <- read.table(paste0(indir,"common/ukb.icd-dataField.txt"), header=F) %>%
@@ -98,7 +98,9 @@ fod <- readRDS("D:/data/ukb/Rdata/ukb.fod.rds")
 gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds") 
 hla <- readRDS("D:/data/ukb/Rdata/ukb.hla.rds") 
 #hla <- hla %>% select(which(colMeans(.,na.rm=T) >=0.02))
-prs <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T)
-prs <- prs %>% subset(select=!grepl("eid\\.", names(prs)))
-dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, icd, fod, gen, prs)) 
+prs1 <- read.table("D:/data/ukb/prs/all.prs.gz", header=T, as.is=T)
+	prs1 <- prs1 %>% subset(select=!grepl("eid\\.", names(prs1)))
+prs2 <- read.table("D:/data/ukb/prs/cad.prs.gz", header=T, as.is=T)
+	prs2 <- prs2 %>% subset(select=!grepl("eid\\.", names(prs2)))
+dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, icd, fod, gen, prs1, prs2)) 
 saveRDS(dat0, file="D:/data/ukb/Rdata/all.Rdata")
