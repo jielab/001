@@ -111,7 +111,7 @@ for (Y in Ys) {
 			#print(res.glm <- coef(summary(fit.glm)))
 			res.cox <- coef(summary(fit.cox))
 			p_int <- signif(tail(res.cox,1)[,5] ,2)
-			if (p_int < 0.05) {
+			if (!is.na(p_int) & p_int < 0.05) {
 				print(paste("X, Y, Z 分别是:", X, Y, Z, "; P_interaction=", p_int)) 
 			}
 			#png(file=paste(X,Y,"frt.png",sep="."), w=1200, h=1600)
