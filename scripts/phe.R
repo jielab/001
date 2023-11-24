@@ -18,11 +18,11 @@ source(paste0(indir,"raw-50136/vip.r")) # then add previous version
 	phe2 <- phe2 %>% subset(select=grep("f.eid|\\.0\\.0", names(phe2))) %>% rename(eid=f.eid)
 phe0 <- merge(phe1, phe2, by="eid") %>% 
 	crosswalkr::renamefrom(vip, V2, V1, drop_extra=F) %>% filter(eid>0)
-	#phe0[phe0 <0] = NA # 不能用于含有负值的变量，比如 Townsend deprivation index
 	dates <- names(phe0)[sapply(phe0, is.Date)]; summary(phe0[,dates]) # check invalid dates
 	for (date1 in dates) { phe0[[date1]][phe0[[date1]] %in% dates_bad] <- NA }
-phe <- phe0 %>% 
+phe <- phe0 %>%  
 	mutate(
+	across(grep("deprivation", names(phe0), invert=T, value=T), ~ifelse(.x<0, NA, .x)), #phe0[phe0 <0] = NA 适用于一次性处理所有变量！
 	ethnic_cat = ifelse(grepl("^1",ethnicity),1, ifelse(grepl("^2",ethnicity),2, ifelse(grepl("^3",ethnicity),3, ifelse(grepl("^4",ethnicity),4, ethnicity)))),
 	ethnic_cat = factor(ethnic_cat, levels=c(1,2,3,4,5,6), labels=c("White","Mixed","Asian","Black","Chinese","Other")),	
 	age_cat = cut(age, breaks=seq(35,75,5)),

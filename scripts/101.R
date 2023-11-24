@@ -89,11 +89,13 @@ dat1 <- pku %>% # 继续比较survival分析用到的变量
 # X-Y-Z 批量分析示例
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% filter(ethnic_cat=="White") # ethnicity_gen==1
-Xs <- grep("^bb_TES|walkingpace", names(dat), value=TRUE)
+dat$walking_pace = factor(ifelse(dat$walking_pace<0, NA, dat$walking_pace)) 
+Xs <- grep("walking_pace", names(dat), value=TRUE)
 Ys <- grep("^icdDate_", names(dat), value=TRUE)
 Zs <- grep("^o$|^se$|^rh|\\.rs", names(dat), value=TRUE)
-outfile="surv.res"; sink(outfile)
+#outfile="surv.res"; sink(outfile)
 for (Y in Ys) {
+	print(Y)
 	dat1 <- dat %>%
 	mutate(
 		Y_date = dat[[Y]],
@@ -111,9 +113,9 @@ for (Y in Ys) {
 			#print(res.glm <- coef(summary(fit.glm)))
 			res.cox <- coef(summary(fit.cox))
 			p_int <- signif(tail(res.cox,1)[,5] ,2)
-			if (!is.na(p_int) & p_int < 0.01) {
+			#if (!is.na(p_int) & p_int < 0.05) {
 				print(paste("X, Y, Z 分别是:", X, Y, Z, "; P_interaction=", p_int)) 
-			}
+			#}
 			#png(file=paste(X,Y,"frt.png",sep="."), w=1200, h=1600)
 			#print(ggforest(fit.cox, main=paste("X:", X, "| Y:", Y), fontsize=2.2, data=dat1)); dev.off()
 			#res_str <- paste(X, Y, Z, nrow(dat1), res[1], res[3], res[5], sep='|')
