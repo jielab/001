@@ -154,7 +154,7 @@ dat1 <- dat %>%
 		Y_date = dat[[Y]],
 		Y_yes = ifelse(is.na(dat[[Y]]), 0, 1),
 		Y_status = ifelse(!is.na(Y_date), "Disease", ifelse(!is.na(date_lost), "Lost", ifelse(!is.na(death_date), "Decease", "OK"))),
-		follow_end_day = data.table::fifelse(!is.na(Y_date), Y_date, data.table::fifelse(!is.na(death_date), death_date, as.Date("2021-10-01"))), # fifelse preserves the type and class of the inputs.
+		follow_end_day = data.table::fifelse(!is.na(Y_date), Y_date, data.table::fifelse(!is.na(death_date), death_date, as.Date("2021-12-31"))), # fifelse preserves the type and class of the inputs.
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 		follow_years_int = ceiling(follow_years),
 		Z = dat[[Z]]
