@@ -60,11 +60,13 @@ dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 北大公卫数据 Sanity check
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#PKU_le8.xlsx sex +dashpts +PA_pts +smoke_pts +sleep_pts +bmi_pts +nonhdl_pts +hba1c_pts +BP_pts +LE8score +CVH_cat
+# PKU_le8.xlsx sex +dashpts +PA_pts +smoke_pts +sleep_pts +bmi_pts +nonhdl_pts +hba1c_pts +BP_pts +LE8score +CVH_cat
+# rs1815739 in ACTN3, rs7191721 in RBFOX1
 dir <- "D:/data/ukb/phe/"
-pku <- read.csv(paste0(dir,"PKU_lungcancer.csv")); hist(pku$walkingpace); table(pku$lung_cancer_baseline)
+pku <- read.csv(paste0(dir,"PKU_lungcancer.csv"))
 	surv.obj <- Surv(time=pku$lung_cancer_time, event=pku$lung_cancer_inc)
-	fit.cox <- coxph(surv.obj ~ walkingpace*rs7191721_G + walkingpace+rs7191721_G +age+sex+centre+Townsend_i+alcohol+Smoking+pa_3c+HDS2_i +BMI_i+grip_i+hpt_baseline+diabetes_baseline_first_report+cvd_baseline+famhis_lungcancer+genebatch+genePC1+genePC2+genePC3+genePC4+genePC5+genePC6+genePC7+genePC8+genePC9+genePC10, data=pku); summary(fit.cox)  
+	fit.cox <- coxph(surv.obj ~ walkingpace + rs1815739_C + walkingpace*rs1815739_C +age+sex+centre+Townsend_i+alcohol+Smoking+pa_3c+HDS2_i +BMI_i+grip_i+hpt_baseline+diabetes_baseline_first_report+cvd_baseline+famhis_lungcancer+genebatch+genePC1+genePC2+genePC3+genePC4+genePC5+genePC6+genePC7+genePC8+genePC9+genePC10, data=pku)
+	summary(fit.cox)  
 pku <- dat0 %>% merge(pku, by.x="eid", by.y="n_eid") %>% rename(age=age.x, sex=sex.x) 
 	nrow(pku); grep("\\.y", names(pku), value=TRUE)
 	table(pku$walking_pace, pku$walkingpace) # walkingpace来自北大的数据
@@ -77,7 +79,7 @@ dat1 <- pku %>% # 继续比较survival分析用到的变量
 		Y_date = icdDate_lungcancer,
 		Y_yes = ifelse( is.na(icdDate_lungcancer), 0,1),
 		time2lungcancer = as.numeric(Y_date) - as.numeric(date_attend),
-		follow_end_day = ifelse(!is.na(Y_date), Y_date, ifelse(!is.na(death_date), death_date, as.Date("2021-04-07"))),
+		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(death_date), death_date, as.Date("2021-12-31")))),
 		follow_year = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_year >0)
 	table(dat1$Y_yes, dat1$lung_cancer_inc)
@@ -93,7 +95,7 @@ dat1 <- pku %>% # 继续比较survival分析用到的变量
 # X-Y-Z 批量分析示例
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% drop_na(abo, se, apoe) %>%
-	filter(ethnic_cat=="White" & date_attend > as.Date("2006-10-01") & sex==0) %>% # ethnicity_gen==1
+	filter(ethnic_cat=="White" & sex==1) %>% # ethnicity_gen==1
 	mutate(
 		walk = inormal(walking_time * walking_freq * walking_pace),
 		across(grep("walking", names(dat0), value=T), ~factor(.x))
@@ -108,7 +110,7 @@ for (Y in Ys) {
 	mutate(
 		Y_date = dat[[Y]],
 		Y_yes = ifelse( is.na(dat[[Y]]), 0,1),
-		follow_end_day = data.table::fifelse(!is.na(Y_date), Y_date, data.table::fifelse(!is.na(death_date), death_date, as.Date("2021-10-01"))), # fifelse preserves the type and class of the inputs.
+		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(death_date), death_date, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_years >0 )
 	surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
@@ -141,8 +143,8 @@ dat <- read.table(outfile, sep='|', header=FALSE, as.is=TRUE)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 针对某一*显著*结果的精细分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-X="bb_CYS"
-Y="icdDate_copd"
+X="bb_TES"
+Y="icdDate_t2dm"
 Z="se"
 dat1 <- dat %>% 
 	mutate(
@@ -150,8 +152,8 @@ dat1 <- dat %>%
 		X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
 		X_qt = factor(ifelse(X_qt=="q1", "low", ifelse(X_qt=="q5", "high", "middle")), levels=c("low","middle","high")),
 		Y_date = dat[[Y]],
-		Y_yes = ifelse( is.na(dat[[Y]]), 0,1),
-		Y_status = ifelse(!is.na(Y_date), "Disease", ifelse(!is.na(death_date), "Decease", "OK")),
+		Y_yes = ifelse(is.na(dat[[Y]]), 0, 1),
+		Y_status = ifelse(!is.na(Y_date), "Disease", ifelse(!is.na(date_lost), "Lost", ifelse(!is.na(death_date), "Decease", "OK"))),
 		follow_end_day = data.table::fifelse(!is.na(Y_date), Y_date, data.table::fifelse(!is.na(death_date), death_date, as.Date("2021-10-01"))), # fifelse preserves the type and class of the inputs.
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 		follow_years_int = ceiling(follow_years),
