@@ -22,7 +22,7 @@ phe0 <- merge(phe1, phe2, by="eid") %>%
 	for (date1 in dates) { phe0[[date1]][phe0[[date1]] %in% dates_bad] <- NA }
 phe <- phe0 %>%  
 	mutate(
-	across(grep("deprivation", names(phe0), invert=T, value=T), ~ifelse(.x<0, NA, .x)), #phe0[phe0 <0] = NA 适用于一次性处理所有变量！
+	across(grep("deprivation|date", names(phe0), invert=T, value=T), ~ifelse(.x<0, NA, .x)), # 该命令也不适用于date变量
 	ethnic_cat = ifelse(grepl("^1",ethnicity),1, ifelse(grepl("^2",ethnicity),2, ifelse(grepl("^3",ethnicity),3, ifelse(grepl("^4",ethnicity),4, ethnicity)))),
 	ethnic_cat = factor(ethnic_cat, levels=c(1,2,3,4,5,6), labels=c("White","Mixed","Asian","Black","Chinese","Other")),	
 	age_cat = cut(age, breaks=seq(35,75,5)),
