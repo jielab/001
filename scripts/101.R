@@ -45,9 +45,8 @@ dir <- "D:/data/ukb/phe/"
 pku <- read.csv(paste0(dir,"PKU_lungcancer.csv"))
 	surv.obj <- Surv(time=pku$lung_cancer_time, event=pku$lung_cancer_inc)
 	fit.cox <- coxph(surv.obj ~ walkingpace + rs1815739_C + walkingpace*rs1815739_C +age+sex+centre+Townsend_i, data=pku); coef(summary(fit.cox))  
-	data=pku); beta(summary(fit.cox))  
 pku <- dat0 %>% merge(pku, by.x="eid", by.y="n_eid") %>% rename(age=age.x, sex=sex.x) 
-	nrow(pku); grep("\\.y", names(pku), value=TRUE)
+	nrow(pku); grep("\\.y", names(pku), value=TRUE); table(pku$ethnic_cat)
 	table(pku$walking_pace, pku$walkingpace, useNA="always") # walkingpace来自北大的数据
 	plot(pku$Townsend_i, pku$deprivation); table(!is.na(pku$Townsend_i), !is.na(pku$deprivation))
 dat1 <- pku %>% # 继续比较survival分析用到的变量
