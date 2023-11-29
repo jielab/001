@@ -44,8 +44,8 @@ dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(
 dir <- "D:/data/ukb/phe/"
 pku <- read.csv(paste0(dir,"PKU_lungcancer.csv"))
 	surv.obj <- Surv(time=pku$lung_cancer_time, event=pku$lung_cancer_inc)
-	fit.cox <- coxph(surv.obj ~ walkingpace + rs7191721_G + walkingpace*rs7191721_G +age+sex+centre+Townsend_i+alcohol+Smoking+pa_3c+HDS2_i +BMI_i+grip_i+hpt_baseline+diabetes_baseline_first_report+cvd_baseline+famhis_lungcancer+genebatch+genePC1+genePC2+genePC3+genePC4+genePC5+genePC6+genePC7+genePC8+genePC9+genePC10, data=pku)
-	summary(fit.cox)  
+	fit.cox <- coxph(surv.obj ~ walkingpace + rs1815739_C + walkingpace*rs1815739_C +age+sex+centre+Townsend_i, data=pku); coef(summary(fit.cox))  
+	data=pku); beta(summary(fit.cox))  
 pku <- dat0 %>% merge(pku, by.x="eid", by.y="n_eid") %>% rename(age=age.x, sex=sex.x) 
 	nrow(pku); grep("\\.y", names(pku), value=TRUE)
 	table(pku$walking_pace, pku$walkingpace, useNA="always") # walkingpace来自北大的数据
@@ -60,8 +60,10 @@ dat1 <- pku %>% # 继续比较survival分析用到的变量
 	table(dat1$Y_yes, dat1$lung_cancer_inc, useNA="always")
 	plot(dat1$follow_year, dat1$lung_cancer_time) # 基本对上了
 		table(!is.na(dat1$follow_year), !is.na(dat1$lung_cancer_time))
-		gg <- ggplot(data=dat1, aes(x=follow_year, y=lung_cancer_time)) + geom_point() # + stat_summary(fun="count") ??????????????
+		gg <- ggplot(data=dat1, aes(x=follow_year, y=lung_cancer_time)) + geom_point()
 		ggplotly(gg)
+	surv.obj <- Surv(time=dat1$follow_year, event=dat1$Y_yes)
+	fit.cox <- coxph(surv.obj ~ walking_pace + endurance.RBFOX1.rs7191721_G + walking_pace*endurance.RBFOX1.rs7191721_G +age+sex+centre+deprivation, data=dat1); coef(summary(fit.cox))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
