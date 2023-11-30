@@ -15,9 +15,7 @@ dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") %>%
 	a_se = factor(paste(a, se, sep="."), levels=c("non-A.se", "non-A.non-se", "A.se", "A.non-se")), # 把最多的组放在前面，作为ref
 	o_se = factor(paste(o, se, sep="."), levels=c("non-O.se", "non-O.non-se", "O.se", "O.non-se")), # 把最多的组放在前面，作为ref
 	s = ifelse(sp1.S==0, "non-S", "S"),
-	z = ifelse(sp1.Z==0, "non-Z", "Z"),
-	shbg.rs6257_T = hardcall(shbg.rs6257_T),
-	rh.RHD.rs590787_A = hardcall(rh.RHD.rs590787_A)
+	z = ifelse(sp1.Z==0, "non-Z", "Z")	
 	) %>% 
 	dplyr::select(-c(lct.microbe.rs3940549_A, lct.microbe.rs182549_T)) # 这两个SNP跟lct.MCM6.rs4988235_A高度相关：r>0.9
 naniar::gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=TRUE)), facet=sex)
@@ -36,11 +34,13 @@ dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(
 	psych::pairs.panels(dat)
 
 
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 北大公卫数据 Sanity check
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # PKU_le8.xlsx sex +dashpts +PA_pts +smoke_pts +sleep_pts +bmi_pts +nonhdl_pts +hba1c_pts +BP_pts +LE8score +CVH_cat
-# 文章中的两个SNP：power.ACTN3.rs1815739_C in ACTN3, rs7191721_G in RBFOX1
+# 文章中的两个SNP：power.ACTN3.rs1815739_C, endurance.RBFOX1.rs7191721_G
 dir <- "D:/data/ukb/phe/"
 pku <- read.csv(paste0(dir,"PKU_lungcancer.csv"))
 	surv.obj <- Surv(time=pku$lung_cancer_time, event=pku$lung_cancer_inc)
@@ -71,7 +71,6 @@ dat1 <- pku %>% filter(sex==1) %>% # 继续比较survival分析用到的变量
 dat <- dat0 %>% drop_na(abo, se, apoe) %>%
 	filter(ethnic_cat=="White" & sex==0) %>% # ethnicity_gen==1
 	mutate(
-		walk = inormal(walking_time * walking_freq * walking_pace),
 		across(grep("walking", names(dat0), value=T), ~factor(.x))
 	) 
 Xs <- c("bb_ALP", "bb_CRE", "bb_CRP", "bb_CYS", "bb_LPA", "bb_oestradiol", "bb_SHBG", "bb_TES") # grep("^bb_", names(dat), value=TRUE)
@@ -123,39 +122,30 @@ dat <- read.table(outfile, sep='|', header=FALSE, as.is=TRUE)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 针对某一*显著*结果的精细分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-X="bb_TES"
-Y="icdDate_t2dm"
-Z="o.se"
-dat1 <- dat %>% 
+X="walking_pace"
+Y="icdDate_lungcancer"
+Z="power.ACTN3.rs1815739_C" # endurance.RBFOX1.rs7191721_G"
+dat <- dat0 %>% filter(ethnic_cat=="Asian")
+dat1 <- dat %>%  
 	mutate(
 		X = dat[[X]],
 		X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
 		X_qt = factor(ifelse(X_qt=="q1", "low", ifelse(X_qt=="q5", "high", "middle")), levels=c("low","middle","high")),
 		Y_date = dat[[Y]],
 		Y_yes = ifelse(is.na(dat[[Y]]), 0, 1),
-		Y_status = ifelse(!is.na(Y_date), "Disease", ifelse(!is.na(date_lost), "Lost", ifelse(!is.na(death_date), "Decease", "OK"))),
 		follow_end_day = data.table::fifelse(!is.na(Y_date), Y_date, data.table::fifelse(!is.na(death_date), death_date, as.Date("2021-12-31"))), # fifelse preserves the type and class of the inputs.
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
-		follow_years_int = ceiling(follow_years),
-		Z = dat[[Z]]
+		Z = dat[[Z]]	
 	) %>% filter( follow_years >0 ) 
-plot(dat1$date_attend, dat1$follow_end_day)
-table(dat1$Y_status, dat1$follow_years_int)
-surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
-	surv.obj[1:20]
-	fit.surv <- survfit(surv.obj ~1); str(fit.surv)
-	fit.surv %>% ggsurvfit::ggsurvfit() + add_confidence_interval() + add_risktable() #Kaplan-Meier curve
-	ggsurvplot(survfit(surv.obj ~1, data=dat1), ylim=c(0.9,1),risk.table=TRUE)
-	#palette=c("green","green4", "gold","gold4", "tomato","tomato4"), 
-	ggsurvplot(survfit(surv.obj ~X_qt + Z, data=dat1), ylim=c(0.8,1), conf.int=FALSE, pval=FALSE, pval.method=TRUE, test.for.trend=FALSE, surv.median.line="hv", risk.table=TRUE, cumevents=FALSE)
-	#dat1 %>% ggscatter(x=X, y=Y, color=Z, xlab=X, ylab=Y, add="reg.line", ellipse=TRUE, conf.int=FALSE, mean.point=TRUE)
+table(dat1$Y_status, dat1$follow_years_int); plot(dat1$date_attend, dat1$follow_end_day)
+surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes); surv.obj[1:10]
+	ggsurvplot(survfit(surv.obj ~X + Z, data=dat1), ylim=c(0.95,1), conf.int=FALSE, risk.table=TRUE) # palette=c("green","green4", "gold","gold4", "tomato","tomato4"), 
 fit.cox <- coxph(surv.obj ~ X + Z + X*Z +age+bmi+PC1+PC2, data=dat1); coef(summary(fit.cox))
-	res.cox <- coef(summary(fit.cox)) #%>% as.data.frame(row.names=dimnames(.)[[1]]) %>% data.frame(X=row.names(.), row.names=NULL) 
-	data.table::setDT(res.cox, keep.rownames="X")
-	survminer::ggforest(fit.cox, main="", fontsize=1.2, data=dat1)
 	fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
-	res.cox as.data.frame(res.cox, row.names=dimnames(res.cox)[[1]])
-	res.add <- rbind(res.cox) ## 把多个分析结果综合起来
-	ggforestplot::forestplot(df=df, name=name, estimate=beta, se=se, pvalue=pvalue, psignif=0.002, colour=study, shape=study, xlab="", title="", logodds=TRUE) + 
+	survminer::ggforest(fit.cox, main="", fontsize=1.2, data=dat1) # 不能显示interaction的值，因此用下面的代码倒腾一下
+	res.cox <- coef(summary(fit.cox)) #%>% as.data.frame(row.names=dimnames(.)[[1]]) %>% data.frame(X=row.names(.), row.names=NULL) 
+		data.table::setDT(res.cox, keep.rownames="X")
+		res.add <- rbind(res.cox) ## 把多个分析结果综合起来
+		ggforestplot::forestplot(df=df, name=name, estimate=beta, se=se, pvalue=pvalue, psignif=0.002, colour=study, shape=study, xlab="", title="", logodds=TRUE) + 
 		ggplot2::scale_shape_manual(values = c(23L, 21L, 21L, 21L, 21L), labels = c("Meta-analysis", "NFBC-1997", "DILGOM", "FINRISK-1997", "YFS"))
 	
