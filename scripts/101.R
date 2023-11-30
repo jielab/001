@@ -122,10 +122,10 @@ dat <- read.table(outfile, sep='|', header=FALSE, as.is=TRUE)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 针对某一*显著*结果的精细分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-X="walking_pace"
-Y="icdDate_lungcancer"
-Z="power.ACTN3.rs1815739_C" # endurance.RBFOX1.rs7191721_G"
-dat <- dat0 %>% filter(ethnic_cat=="Asian")
+X="bb_SHBG"
+Y="icdDate_t2dm"
+Z="bb.TP53.rs1042522_C" # endurance.RBFOX1.rs7191721_G"
+dat <- dat0 %>% filter(ethnic_cat=="White" & sex ==1)
 dat1 <- dat %>%  
 	mutate(
 		X = dat[[X]],
@@ -137,10 +137,11 @@ dat1 <- dat %>%
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 		Z = dat[[Z]]	
 	) %>% filter( follow_years >0 ) 
-table(dat1$Y_status, dat1$follow_years_int); plot(dat1$date_attend, dat1$follow_end_day)
-surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes); surv.obj[1:10]
-	ggsurvplot(survfit(surv.obj ~X + Z, data=dat1), ylim=c(0.95,1), conf.int=FALSE, risk.table=TRUE) # palette=c("green","green4", "gold","gold4", "tomato","tomato4"), 
-fit.cox <- coxph(surv.obj ~ X + Z + X*Z +age+bmi+PC1+PC2, data=dat1); coef(summary(fit.cox))
+table(dat1$Y_status, dat1$follow_years_int)
+#plot(dat1$date_attend, dat1$follow_end_day)
+surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
+	ggsurvplot(survfit(surv.obj ~ X_qt + Z, data=dat1), ylim=c(0.9,1), conf.int=FALSE, risk.table=FALSE) # palette=c("green","green4", "gold","gold4", "tomato","tomato4"), 
+fit.cox <- coxph(surv.obj ~ X + Z +age+bmi+PC1+PC2, data=dat1); coef(summary(fit.cox))
 	fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
 	survminer::ggforest(fit.cox, main="", fontsize=1.2, data=dat1) # 不能显示interaction的值，因此用下面的代码倒腾一下
 	res.cox <- coef(summary(fit.cox)) #%>% as.data.frame(row.names=dimnames(.)[[1]]) %>% data.frame(X=row.names(.), row.names=NULL) 

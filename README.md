@@ -176,6 +176,6 @@ GWAS-PRS-MR ”三驾马车“ 入门：
 > - [Doing and reporting your first mediation analysis in R](https://towardsdatascience.com/doing-and-reporting-your-first-mediation-analysis-in-r-2fe423b92171)
 > - [Add P-values and Significance Levels to ggplots](https://www.r-bloggers.com/2017/06/add-p-values-and-significance-levels-to-ggplots/)
 > - [Top 100 R resources on COVID-19 Coronavirus](https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/)
-> - 以及 modelSummary, forplo，sankey diagram, CellChat, ComplexHeatmap，等等
+> - 以及 scitb, CanvasXpress, modelSummary, forplo，sankey diagram, CellChat, ComplexHeatmap，等等
 <br/>
 <br/>
