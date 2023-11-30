@@ -1,4 +1,4 @@
-setwd("D:/101")
+setwd("D:/101/female")
 pacman::p_load(data.table, readxl, lubridate, tidyverse, plotly, dplyr, survival, survminer, ggsurvfit, reshape2, psych)
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 hardcall <- function(x) ifelse(x<0.5, 0, ifelse(x<1.5, 1, 2))
@@ -69,12 +69,12 @@ dat1 <- pku %>% filter(sex==1) %>% # 继续比较survival分析用到的变量
 # X-Y-Z 批量分析示例
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% drop_na(abo, se, apoe) %>%
-	filter(ethnic_cat=="White" & sex==1) %>% # ethnicity_gen==1
+	filter(ethnic_cat=="White" & sex==0) %>% # ethnicity_gen==1
 	mutate(
 		walk = inormal(walking_time * walking_freq * walking_pace),
 		across(grep("walking", names(dat0), value=T), ~factor(.x))
 	) 
-Xs <- c("bb_ALP", "bb_AST", "bb_BUN", "bb_CRE", "bb_CRP", "bb_CYS", "bb_LPA", "bb_oestradiol", "bb_SHBG", "bb_TES") # grep("^bb_", names(dat), value=TRUE)
+Xs <- c("bb_ALP", "bb_CRE", "bb_CRP", "bb_CYS", "bb_LPA", "bb_oestradiol", "bb_SHBG", "bb_TES") # grep("^bb_", names(dat), value=TRUE)
 Ys <- c("icdDate_lungcancer", "icdDate_t2dm", "icdDate_chd", "icdDate_stroke", "icdDate_asthma", "icdDate_copd") # grep("^icdDate", names(dat), value=TRUE)
 Zs <- grep("^o$|^se$|^rh|shbg|^apoe$|\\.rs", names(dat), value=TRUE) #  
 outfile="res.txt"; sink(outfile)
@@ -92,16 +92,17 @@ for (Y in Ys) {
 		dat1$X = dat1[[X]]
 		for (Z in Zs) {
 			dat1$Z <- dat1[[Z]]
-			dat1$X_qt = cut(dat1$X, breaks=quantile(dat1$X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5))
-			dat1$X_qt = factor(ifelse(dat1$X_qt=="q1", "low", ifelse(dat1$X_qt=="q5", "high", "middle")), levels=c("low","middle","high"))
+			dat1$X_qt <- cut(dat1$X, breaks=quantile(dat1$X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5))
+			dat1$X_qt <- factor(ifelse(dat1$X_qt=="q1", "low", ifelse(dat1$X_qt=="q5", "high", "middle")), levels=c("low","middle","high"))
 			#fit.glm <- glm(Y_yes ~ X +Z +X*Z +age+sex+bmi+education+deprivation +PC1+PC2, data=dat1, family="binomial")
-			fit.cox <- coxph(surv.obj ~ X + Z + X*Z +shbg.rs6259_G +age+sex+bmi +PC1+PC2, data=dat1)
+			fit.cox <- coxph(surv.obj ~ X + Z + X*Z +age+bmi +PC1+PC2, data=dat1)
 			res.cox <- coef(summary(fit.cox))
 			p_int <- signif(tail(res.cox,1)[,5] ,2)
 			if (!is.na(p_int) & p_int < 0.05) {
 				print(paste(X, Y, Z, p_int)) 
 				png(paste(X,Y,Z,"png",sep="."))
-				print(ggsurvplot(survfit(surv.obj ~X_qt + Z, data=dat1), ylim=c(0.8,1), conf.int=FALSE, pval=FALSE, pval.method=TRUE, test.for.trend=FALSE, surv.median.line="hv", risk.table=FALSE, cumevents=FALSE))
+				if (Z %like% "\\.rs" & length(unique(dat1$Z)) >3) dat1$Z <- hardcall(dat1$Z) # 要不然没法画出Z的3个类型
+				print(ggsurvplot(survfit(surv.obj ~X_qt + Z, data=dat1), ylim=c(0.8,1), risk.table=FALSE))	
 				dev.off()
 			}
 		}
