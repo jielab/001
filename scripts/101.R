@@ -34,8 +34,6 @@ dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(
 	psych::pairs.panels(dat)
 
 
-
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 北大公卫数据 Sanity check
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
