@@ -70,7 +70,7 @@ for (M in Ms) { # M
 
 			dat <- harmonise_data(dat_X8M, dat_Y)
 			# Total effect
-			res_X2Y <- dat %>% filter(id.exposure=="exposure") %>% mr() %>% filter(method=='Inverse variance weighted') 
+			res_X2Y <- dat %>% filter(id.exposure==X) %>% mr() %>% filter(method=='Inverse variance weighted') 
 				beta_X2Y <- res_X2Y %>% pull(b); se_X2Y <- res_X2Y %>% pull(se); p_X2Y <- signif(res_X2Y %>% pull(pval),2)
 			# Two-step MR 
 			res_X2M <- mr(dat_X2M) %>% filter(method=='Wald ratio' | method=='Inverse variance weighted') # 1st step 三角形的上坡
