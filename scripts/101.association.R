@@ -148,3 +148,22 @@ fit.cox <- coxph(surv.obj ~ X + Z +age+bmi+PC1+PC2, data=dat1); coef(summary(fit
 		ggforestplot::forestplot(df=df, name=name, estimate=beta, se=se, pvalue=pvalue, psignif=0.002, colour=study, shape=study, xlab="", title="", logodds=TRUE) + 
 		ggplot2::scale_shape_manual(values = c(23L, 21L, 21L, 21L, 21L), labels = c("Meta-analysis", "NFBC-1997", "DILGOM", "FINRISK-1997", "YFS"))
 	
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 比较两个GWAS的beta之间的相关性
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+IV <- read.table("D:/data/gwas/pheno/bb_CRP.top.snps", header=T)
+dat_X <- read.table("D:/data/gwas/pheno/bb_CRP.gz", header=T) %>% merge(IV, by="SNP") %>% 
+	format_data(type ="exposure", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P") 
+dat_Y <- extract_outcome_data(dat_X$SNP, "ieu-b-35") # CRP
+dat <- harmonise_data(dat_X, dat_Y, action=2)
+plot(dat$beta.exposure, dat$beta.outcome)
+res <- mr(dat); p1 <- mr_scatter_plot(res, dat); p1[[1]]
+bsmr_dat <- TwoSampleMR::dat_to_MRInput(dat); bsmr_dat <- bsmr_dat[[1]]
+MendelianRandomization::mr_plot(bsmr_dat)
+# 画图
+dat <- read.table('D:/analysis/ldsc/all.rg.res', header=T)
+rg <- dat %>% select(p1, p2, rg) %>% acast(p1 ~ p2, value.var='rg'); rg[is.na(rg)] =0;  rg=round(rg,1)
+pval <- dat %>% select(p1, p2, p) %>% acast(pval, p1 ~ p2, value.var='p')
+plt <- ggcorrplot(rg, lab=T, p.mat=pval, sig.level=5e-4, insig ='blank') 
+	plt + theme(axis.title=element_text(size=15, face='bold'), axis.text=element_text(size=12, face='bold'))
