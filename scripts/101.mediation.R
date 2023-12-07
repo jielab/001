@@ -1,15 +1,15 @@
 setwd("C:/Users/jiehu/Desktop")
 pacman::p_load(readxl, dplyr, tidyverse, TwoSampleMR, MVMR)
-label = 'mb'
-dir_X = 'D:/data/gwas/mb'
+label = 'height'
+dir_X = 'D:/data/gwas/pheno'
 dir_M = 'D:/data/gwas/pheno'
 dir_Y = 'D:/data/gwas/pheno' 
 X_ieus = ''  # BMI
 M_ieus = '' # CRP
 Y_ieus = '' # CAD 
 # XYs = as.data.frame(read_excel(paste0('D:/analysis/mr/', label,'.xlsx'))); rownames(XYs) <- XYs$variable; XYs$variable <- NULL
-X_list = 'phylum.Actinobacteria.id.400' # rownames(XYs)
-M_list = 'bb_ALB' # c('bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_CHOL', 'bb_CRE', 'bb_CRP', 'bb_CYS', 'bb_EGFR', 'bb_LPA', 'bb_SHBG', 'bb_TES', 'bb_VITD')
+X_list = 'height' # rownames(XYs)
+M_list = 'bb_CRE' # c('bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_CHOL', 'bb_CRE', 'bb_CRP', 'bb_CYS', 'bb_EGFR', 'bb_LPA', 'bb_SHBG', 'bb_TES', 'bb_VITD')
 Y_list = 'y.vte' # grep('^y.', names(XYs), value=T)
 
 if (X_ieus !='') {Xs=X_ieus; X_use_ieu=TRUE} else {Xs=X_list; X_use_ieu=FALSE}
@@ -35,7 +35,7 @@ for (M in Ms) { # M
 		} else {
 			dat_X0 <- read.table(paste0(dir_X, '/', X, '.gz'), header=T) %>% mutate(exposure=X)
 			IV_X <- read.table(paste0(dir_X, '/', X, '.top.snps'), header=F); names(IV_X) <- "SNP" 
-			dat_X1 <- dat_X0 %>% merge(IV_X) %>% format_data(type='exposure', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P')
+			dat_X1 <- dat_X0 %>% merge(IV_X) %>% format_data(type='exposure', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
 			dat_X1.clumped <- dat_X1
 		}
 		if (M_use_ieu) {
@@ -49,7 +49,7 @@ for (M in Ms) { # M
 		if (X_use_ieu) {
 			dat_X <- extract_outcome_data(dat_X8M1$SNP, X) %>% convert_outcome_to_exposure()
 		} else {
-			dat_X <- dat_X0 %>% merge(subset(dat_X8M1, select='SNP')) %>% format_data(type='exposure', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=M)
+			dat_X <- dat_X0 %>% merge(subset(dat_X8M1, select='SNP')) %>% format_data(type='exposure', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
 		}
 		if (M_use_ieu) {
 			dat_M <- extract_outcome_data(dat_X8M1$SNP, M) %>% convert_outcome_to_exposure()
@@ -70,7 +70,7 @@ for (M in Ms) { # M
 
 			dat <- harmonise_data(dat_X8M, dat_Y)
 			# Total effect
-			res_X2Y <- dat %>% filter(id.exposure==X) %>% mr() %>% filter(method=='Inverse variance weighted') 
+			res_X2Y <- dat %>% filter(id.exposure=="exposure") %>% mr() %>% filter(method=='Inverse variance weighted') 
 				beta_X2Y <- res_X2Y %>% pull(b); se_X2Y <- res_X2Y %>% pull(se); p_X2Y <- signif(res_X2Y %>% pull(pval),2)
 			# Two-step MR 
 			res_X2M <- mr(dat_X2M) %>% filter(method=='Wald ratio' | method=='Inverse variance weighted') # 1st step 三角形的上坡
