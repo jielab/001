@@ -8,7 +8,7 @@ X_ieus = ''  # BMI
 M_ieus = '' # CRP
 Y_ieus = '' # CAD 
 # XYs = as.data.frame(read_excel(paste0('D:/analysis/mr/', label,'.xlsx'))); rownames(XYs) <- XYs$variable; XYs$variable <- NULL
-X_list = 'height' # rownames(XYs)
+X_list = 'x.height' # rownames(XYs)
 M_list = 'bb_CRE' # c('bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_CHOL', 'bb_CRE', 'bb_CRP', 'bb_CYS', 'bb_EGFR', 'bb_LPA', 'bb_SHBG', 'bb_TES', 'bb_VITD')
 Y_list = 'y.vte' # grep('^y.', names(XYs), value=T)
 
@@ -23,7 +23,7 @@ for (M in Ms) { # M
 		dat_M1 <- extract_instruments(outcomes=M, clump=F) %>% dplyr::select(-c(samplesize.exposure, data_source.exposure))
 	} else {
 		dat_M0 <- read.table(paste0(dir_M, '/', M, '.gz'), header=T) %>% mutate(exposure=M)
-		IV_M <- read.table(paste0(dir_M, '/', M, '.top.snps'), header=T); names(IV_M) <- "SNP"  
+		IV_M <- read.table(paste0(dir_M, '/', M, '.top.snp'), header=T); names(IV_M) <- "SNP"  
 		dat_M1 <- dat_M0 %>% merge(IV_M) %>% format_data(type='exposure', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=M)
 	}
 
@@ -33,8 +33,8 @@ for (M in Ms) { # M
 			dat_X1 <- extract_instruments(outcomes=X, clump=F) %>% dplyr::select(-c(samplesize.exposure, data_source.exposure))
 			dat_X1.clumped <- dat_X1 %>% clump_data()
 		} else {
-			dat_X0 <- read.table(paste0(dir_X, '/', X, '.gz'), header=T) %>% mutate(exposure=X)
-			IV_X <- read.table(paste0(dir_X, '/', X, '.top.snps'), header=F); names(IV_X) <- "SNP" 
+			dat_X0 <- read.table(paste0(dir_X, '/', X, '.gz'), header=T)
+			IV_X <- read.table(paste0(dir_X, '/', X, '.top.snp'), header=F); names(IV_X) <- "SNP" 
 			dat_X1 <- dat_X0 %>% merge(IV_X) %>% format_data(type='exposure', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
 			dat_X1.clumped <- dat_X1
 		}
