@@ -26,6 +26,10 @@ dat_Y4xm.2 <- extract_outcome_data(dat_XnM.2$SNP, Y)
 mv_harmonise_data(dat_XnM, dat_Y4xm) %>% mv_multiple()
 mv_harmonise_data(dat_XnM.2, dat_Y4xm.2) %>% mv_multiple()
 
+# MVMR from WSpiller Package
+dat <- format_mvmr(RSID=rownames(dat$exposure_beta), BXGs=dat$exposure_beta, BYG=dat$outcome_beta, seBXGs=dat$exposure_se, seBYG=dat$outcome_se)
+ivw_mvmr(r_input=dat)
+
 # Two-step MR 
 res_X2Y <- harmonise_data(dat_X.clumped, dat_Y4x) %>% mr() %>% filter(method=='Inverse variance weighted') 
 	beta_X2Y <- res_X2Y %>% pull(b); se_X2Y <- res_X2Y %>% pull(se); p_X2Y <- signif(res_X2Y %>% pull(pval),2)
