@@ -1,4 +1,4 @@
-setwd("D:/101/female")
+setwd("C:/Users/jiehu/Desktop")
 pacman::p_load(data.table, readxl, lubridate, tidyverse, plotly, dplyr, survival, survminer, ggsurvfit, reshape2, psych)
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 hardcall <- function(x) ifelse(x<0.5, 0, ifelse(x<1.5, 1, 2))
@@ -162,8 +162,8 @@ res <- mr(dat); p1 <- mr_scatter_plot(res, dat); p1[[1]]
 bsmr_dat <- TwoSampleMR::dat_to_MRInput(dat); bsmr_dat <- bsmr_dat[[1]]
 MendelianRandomization::mr_plot(bsmr_dat)
 # 画图
-dat <- read.table('D:/analysis/ldsc/all.rg.res', header=T)
-rg <- dat %>% select(p1, p2, rg) %>% acast(p1 ~ p2, value.var='rg'); rg[is.na(rg)] =0;  rg=round(rg,1)
-pval <- dat %>% select(p1, p2, p) %>% acast(pval, p1 ~ p2, value.var='p')
+dat <- read.table('D:/analysis/mr/pheno/res.p.txt', header=F); dat$V3 <- signif(dat$V3,2)
+pval <- dat %>% reshape2::acast(V1 ~ V2, value.var='V3')
+write.table(pval, "res.p.txt", sep="\t", row.names=T, col.names=T, quote=F, append=F)
 plt <- ggcorrplot(rg, lab=T, p.mat=pval, sig.level=5e-4, insig ='blank') 
 	plt + theme(axis.title=element_text(size=15, face='bold'), axis.text=element_text(size=12, face='bold'))
