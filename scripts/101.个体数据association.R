@@ -35,35 +35,6 @@ dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 北大公卫数据 Sanity check
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# PKU_le8.xlsx sex +dashpts +PA_pts +smoke_pts +sleep_pts +bmi_pts +nonhdl_pts +hba1c_pts +BP_pts +LE8score +CVH_cat
-# 文章中的两个SNP：power.ACTN3.rs1815739_C, endurance.RBFOX1.rs7191721_G
-dir <- "D:/data/ukb/phe/"
-pku <- read.csv(paste0(dir,"PKU_lungcancer.csv"))
-	surv.obj <- Surv(time=pku$lung_cancer_time, event=pku$lung_cancer_inc)
-	fit.cox <- coxph(surv.obj ~ walkingpace + rs1815739_C + walkingpace*rs1815739_C +age+sex+centre+Townsend_i, data=pku); coef(summary(fit.cox))  
-pku <- dat0 %>% merge(pku, by.x="eid", by.y="n_eid", all.y=T) %>% rename(age=age.x, sex=sex.x) 
-	nrow(pku); grep("\\.y", names(pku), value=TRUE); table(pku$ethnic_cat)
-	table(pku$walking_pace, pku$walkingpace, useNA="always") # walkingpace来自北大的数据
-	plot(pku$Townsend_i, pku$deprivation); table(!is.na(pku$Townsend_i), !is.na(pku$deprivation))
-dat1 <- pku %>% filter(sex==1) %>% # 继续比较survival分析用到的变量
-	mutate(
-		Y_date = icdDate_lungcancer,
-		Y_yes = ifelse( is.na(icdDate_lungcancer), 0,1),
-		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(death_date), death_date, as.Date("2021-12-31")))),
-		follow_year = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
-	) 
-	table(dat1$Y_yes, dat1$lung_cancer_inc, useNA="always")
-	plot(dat1$follow_year, dat1$lung_cancer_time) # 基本对上了
-		table(!is.na(dat1$follow_year), !is.na(dat1$lung_cancer_time))
-		gg <- ggplot(data=dat1, aes(x=follow_year, y=lung_cancer_time)) + geom_point()
-		ggplotly(gg)
-	surv.obj <- Surv(time=dat1$follow_year, event=dat1$Y_yes)
-	fit.cox <- coxph(surv.obj ~ walking_pace + endurance.RBFOX1.rs7191721_G  + walking_pace*endurance.RBFOX1.rs7191721_G  +age+sex+centre+deprivation, data=dat1); coef(summary(fit.cox))
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # X-Y-Z 批量分析示例
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% drop_na(abo, se, apoe) %>%
@@ -115,7 +86,10 @@ dat <- read.table(outfile, sep='|', header=FALSE, as.is=TRUE)
 	dat.p <- dat %>% dplyr::select(X, Y, p) %>% acast(X ~ Y, value.var='p')
 	write.table(dat.p, file=outfile2, sep='\t', row.names=TRUE, col.names=TRUE, append=FALSE, quote=FALSE)
 	#plt <- ggcorrplot(dat.b, lab=TRUE, p.mat=dat.p, sig.level=1e-4, insig ='blank') + theme(axis.text=element_text(size=12, face='bold', color=c("black","blue")))
-
+dat <- read.table('D:/analysis/mr/pheno/res.p.txt', header=F); dat$V3 <- signif(dat$V3,2)
+	pval <- dat %>% reshape2::acast(V1 ~ V2, value.var='V3')
+	write.table(pval, "res.p.txt", sep="\t", row.names=T, col.names=T, quote=F, append=F)
+	
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 针对某一*显著*结果的精细分析
@@ -147,23 +121,3 @@ fit.cox <- coxph(surv.obj ~ X + Z +age+bmi+PC1+PC2, data=dat1); coef(summary(fit
 		res.add <- rbind(res.cox) ## 把多个分析结果综合起来
 		ggforestplot::forestplot(df=df, name=name, estimate=beta, se=se, pvalue=pvalue, psignif=0.002, colour=study, shape=study, xlab="", title="", logodds=TRUE) + 
 		ggplot2::scale_shape_manual(values = c(23L, 21L, 21L, 21L, 21L), labels = c("Meta-analysis", "NFBC-1997", "DILGOM", "FINRISK-1997", "YFS"))
-	
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 比较两个GWAS的beta之间的相关性
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-IV <- read.table("D:/data/gwas/pheno/bb_CRP.top.snps", header=T)
-dat_X <- read.table("D:/data/gwas/pheno/bb_CRP.gz", header=T) %>% merge(IV, by="SNP") %>% 
-	format_data(type ="exposure", snp_col="SNP", effect_allele_col="EA", other_allele_col="NEA", beta_col="BETA", se_col="SE", pval_col="P") 
-dat_Y <- extract_outcome_data(dat_X$SNP, "ieu-b-35") # CRP
-dat <- harmonise_data(dat_X, dat_Y, action=2)
-plot(dat$beta.exposure, dat$beta.outcome)
-res <- mr(dat); p1 <- mr_scatter_plot(res, dat); p1[[1]]
-bsmr_dat <- TwoSampleMR::dat_to_MRInput(dat); bsmr_dat <- bsmr_dat[[1]]
-MendelianRandomization::mr_plot(bsmr_dat)
-# 画图
-dat <- read.table('D:/analysis/mr/pheno/res.p.txt', header=F); dat$V3 <- signif(dat$V3,2)
-pval <- dat %>% reshape2::acast(V1 ~ V2, value.var='V3')
-write.table(pval, "res.p.txt", sep="\t", row.names=T, col.names=T, quote=F, append=F)
-plt <- ggcorrplot(rg, lab=T, p.mat=pval, sig.level=5e-4, insig ='blank') 
-	plt + theme(axis.title=element_text(size=15, face='bold'), axis.text=element_text(size=12, face='bold'))

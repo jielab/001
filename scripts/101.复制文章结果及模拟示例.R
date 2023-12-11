@@ -1,4 +1,15 @@
-pacman::p_load(tidyverse, mediation)
+pacman::p_load(readxl, tidyverse, TwoSampleMR, MendelianRandomization, mediation)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 重现阜外医院NAFLD文章结果
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+dat_X <- as.data.frame(read_excel("D:/Downloads/2023阜外医院NAFLD附件.xlsx", sheet="Table S3", skip=1)) %>% rename(EA="Effect Allele", EAF="Effect Allele Frequency", P="P value")
+dat_Y <- extract_outcome_data(dat_X$SNP, "ebi-a-GCST90091033")
+#dat <- harmonise_data(dat_X, dat_Y); dat %>% mr()
+dat0 <- merge(dat_X, dat_Y, by="SNP") 
+	dat0$beta.outcome.NEW <- ifelse(dat0$EA==dat0$effect_allele.outcome, dat0$beta.outcome, 0-dat0$beta.outcome)
+	mr_ivw(mr_input(dat0$Beta, dat0$SE, dat0$beta.outcome, dat0$se.outcome))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
