@@ -10,7 +10,7 @@ Y_ieus = '' # 无
 XYs = as.data.frame(read_excel(paste0('D:/analysis/mr/', label,'.xlsx')))
 	rownames(XYs) <- XYs$trait; XYs$trait <- NULL # EXCEL文件第一个格子应该是trait
 X_list = 'x.height' # rownames(XYs)
-M_list = 'bb_ALB' # c('bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_CHOL', 'bb_CRE', 'bb_CRP', 'bb_CYS', 'bb_EGFR', 'bb_LPA', 'bb_SHBG', 'bb_TES', 'bb_VITD')
+M_list = 'bb_CRE' # c('bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_CHOL', 'bb_CRE', 'bb_CRP', 'bb_CYS', 'bb_EGFR', 'bb_LPA', 'bb_SHBG', 'bb_TES', 'bb_VITD')
 Y_list = 'y.vte' # grep('^y.', names(XYs), value=T)
 
 if (X_ieus !='') {Xs=X_ieus; X_use_ieu=TRUE} else {Xs=X_list; X_use_ieu=FALSE}
@@ -36,11 +36,12 @@ for (M in Ms) { # M
 			dat_X.iv <- read.table(paste0(dir_X, '/', X, '.top.snp'), header=T); names(dat_X.iv) <- "SNP" 
 		}
 
-		dat_XnM.snp <- rbind(dat_X.iv, dat_M.iv) %>% unique() # 最理想的是 %>% clump_data() %>% select(SNP)
+		dat_XnM.snp <- rbind(dat_X.iv, dat_M.iv) %>% unique() # 最理想的是把 dat_X.snp和dat_M.snp合并然后 %>% clump_data() %>% select(SNP)
 		if (X_use_ieu) {
 			dat_X <- extract_outcome_data(dat_XnM.snp, X) %>% convert_outcome_to_exposure()
 		} else {
-			dat_X <- dat_X.raw %>% merge(dat_XnM.snp) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
+			dat_X <- dat_X.raw %>% merge(dat_XnM.snp) 
+			%>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
 		}
 		if (M_use_ieu) {
 			dat_M <- extract_outcome_data(dat_XnM.snp, M)

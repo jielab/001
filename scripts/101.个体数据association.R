@@ -37,10 +37,10 @@ dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # X-Y-Z 批量分析示例
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- dat0 %>% drop_na(abo, se, apoe) %>%
+dat <- dat0 %>% drop_na(age, sex, bmi) %>%
 	filter(ethnic_cat=="White" & sex==0) %>% # ethnicity_gen==1
 	mutate(
-		across(grep("walking", names(dat0), value=T), ~factor(.x))
+		across(grep("walking", names(dat0), value=T), ~factor(.x)) # 批量变成 factor
 	) 
 Xs <- c("bb_ALP", "bb_CRE", "bb_CRP", "bb_CYS", "bb_LPA", "bb_oestradiol", "bb_SHBG", "bb_TES") # grep("^bb_", names(dat), value=TRUE)
 Ys <- c("icdDate_lungcancer", "icdDate_t2dm", "icdDate_chd", "icdDate_stroke", "icdDate_asthma", "icdDate_copd") # grep("^icdDate", names(dat), value=TRUE)
@@ -79,25 +79,19 @@ for (Y in Ys) {
 sink()
 # 如果上面代码用了write.table，可用下面代码整合分析结果
 outfile2="surv.p.tsv"; file.create(outfile2)
-dat <- read.table(outfile, sep='|', header=FALSE, as.is=TRUE) 
-	names(dat) <- c('X', 'Y', 'cnt', 'b', 'se', 'p')
-	dat$p=signif(dat$p,2)
-	dat.b <- dat %>% dplyr::select(X, Y, b) %>% acast(X ~ Y, value.var='b'); dat.b=round(dat.b,1)
-	dat.p <- dat %>% dplyr::select(X, Y, p) %>% acast(X ~ Y, value.var='p')
-	write.table(dat.p, file=outfile2, sep='\t', row.names=TRUE, col.names=TRUE, append=FALSE, quote=FALSE)
-	#plt <- ggcorrplot(dat.b, lab=TRUE, p.mat=dat.p, sig.level=1e-4, insig ='blank') + theme(axis.text=element_text(size=12, face='bold', color=c("black","blue")))
 dat <- read.table('D:/analysis/mr/pheno/res.p.txt', header=F); dat$V3 <- signif(dat$V3,2)
-	pval <- dat %>% reshape2::acast(V1 ~ V2, value.var='V3')
-	write.table(pval, "res.p.txt", sep="\t", row.names=T, col.names=T, quote=F, append=F)
+	pval <- dat %>% reshape2::acast(V1 ~ V2, value.var='V3'); pval=signif(pval,2) 
+	write.table(pval, file=outfile2, sep='\t', row.names=TRUE, col.names=TRUE, append=FALSE, quote=FALSE)
+	#plt <- ggcorrplot(dat.b, lab=TRUE, p.mat=dat.p, sig.level=1e-4, insig ='blank') + theme(axis.text=element_text(size=12, face='bold', color=c("black","blue")))
 	
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 针对某一*显著*结果的精细分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-X="bb_SHBG"
-Y="icdDate_t2dm"
-Z="bb.TP53.rs1042522_C" # endurance.RBFOX1.rs7191721_G"
-dat <- dat0 %>% filter(ethnic_cat=="White" & sex ==1)
+X="bb_CRP" # "bb_SHBG"
+Y="icdDate_chd" # "icdDate_t2dm"
+Z="cvd.9p21.rs2383206_G"  # "bb.TP53.rs1042522_C"
+dat <- dat0 %>% filter(ethnic_cat=="White" & sex==1)
 dat1 <- dat %>%  
 	mutate(
 		X = dat[[X]],
@@ -107,13 +101,12 @@ dat1 <- dat %>%
 		Y_yes = ifelse(is.na(dat[[Y]]), 0, 1),
 		follow_end_day = data.table::fifelse(!is.na(Y_date), Y_date, data.table::fifelse(!is.na(death_date), death_date, as.Date("2021-12-31"))), # fifelse preserves the type and class of the inputs.
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
-		Z = dat[[Z]]	
+		Z = hardcall(dat[[Z]])	
 	) %>% filter( follow_years >0 ) 
 table(dat1$Y_status, dat1$follow_years_int)
-#plot(dat1$date_attend, dat1$follow_end_day)
 surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
-	ggsurvplot(survfit(surv.obj ~ X_qt + Z, data=dat1), ylim=c(0.9,1), conf.int=FALSE, risk.table=FALSE) # palette=c("green","green4", "gold","gold4", "tomato","tomato4"), 
-fit.cox <- coxph(surv.obj ~ X + Z +age+bmi+PC1+PC2, data=dat1); coef(summary(fit.cox))
+	ggsurvplot(survfit(surv.obj ~ X_qt + Z, data=dat1), ylim=c(0.8,1), conf.int=FALSE, risk.table=FALSE) # palette=c("green","green4", "gold","gold4", "tomato","tomato4"), 
+fit.cox <- coxph(surv.obj ~ X + Z +X*Z +age+bmi+PC1+PC2, data=dat1); coef(summary(fit.cox))
 	fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
 	survminer::ggforest(fit.cox, main="", fontsize=1.2, data=dat1) # 不能显示interaction的值，因此用下面的代码倒腾一下
 	res.cox <- coef(summary(fit.cox)) #%>% as.data.frame(row.names=dimnames(.)[[1]]) %>% data.frame(X=row.names(.), row.names=NULL) 
