@@ -91,7 +91,7 @@ dat <- read.table('D:/analysis/mr/pheno/res.p.txt', header=F); dat$V3 <- signif(
 X="bb_CRP" # "bb_SHBG"
 Y="icdDate_chd" # "icdDate_t2dm"
 Z="cvd.9p21.rs2383206_G"  # "bb.TP53.rs1042522_C"
-dat <- dat0 %>% filter(ethnic_cat=="White" & sex==1)
+dat <- dat0 %>% filter(ethnic_cat=="White" & sex==0)
 dat1 <- dat %>%  
 	mutate(
 		X = dat[[X]],
@@ -99,7 +99,7 @@ dat1 <- dat %>%
 		X_qt = factor(ifelse(X_qt=="q1", "low", ifelse(X_qt=="q5", "high", "middle")), levels=c("low","middle","high")),
 		Y_date = dat[[Y]],
 		Y_yes = ifelse(is.na(dat[[Y]]), 0, 1),
-		follow_end_day = data.table::fifelse(!is.na(Y_date), Y_date, data.table::fifelse(!is.na(death_date), death_date, as.Date("2021-12-31"))), # fifelse preserves the type and class of the inputs.
+		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(death_date), death_date, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 		Z = hardcall(dat[[Z]])	
 	) %>% filter( follow_years >0 ) 
