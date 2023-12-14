@@ -10,8 +10,7 @@ dat <- iris %>% rename(X=Sepal.Length) %>%
 		random1=runif(nrow(iris),min=min(X),max=max(X)),
 		M=X*0.35+random1*0.65,
 		random2=runif(nrow(iris),min=min(M),max=max(M)),
-	
-	Y=M*0.35+random2*.65,
+		Y=M*0.35+random2*.65,
 		G1 = ifelse(X > quantile(X, probs=0.90), 2, ifelse(X < quantile(X, probs=0.10), 0, 1))
 )
 dat %>% dplyr::select(random1, random2, X, M, Y) %>% psych::pairs.panels()
