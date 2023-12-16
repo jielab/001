@@ -25,7 +25,7 @@ for (M in Ms) { # M
 		names(dat_XM) <- gsub("outcome", "mediator", names(dat_XM))
 
 		for (Y in Ys) { # Y
-			ivw_p <- XYs[X,Y]; if (!is.na(ivw_p) & ivw_p > 1e-4) next
+			ivw_p <- as.numeric(XYs[X,Y]); if (is.na(ivw_p) | ivw_p > 1e-4) next
 			writeLines(paste('\n\nRun:', X, M, Y))
 			dat_Y.raw <- read.table(paste0(dir_Y, '/', Y, '.gz'), header=T)
 			dat_Y <- merge(dat_Y.raw, dat_XnM.snp) %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)
