@@ -3,7 +3,7 @@ pacman::p_load(readxl, dplyr, tidyverse, TwoSampleMR, MVMR)
 
 label = 'pheno'
 dir_X = dir_M = dir_Y = 'D:/data/gwas/pheno'
-XYs = as.data.frame(read_excel(paste0('D:/analysis/mr/', label,'.xlsx'))); rownames(XYs) <- XYs$trait; XYs$trait <- NULL # EXCEL文件第一个格子应该是trait
+XYs = as.data.frame(read_excel(paste0('D:/analysis/mr/', label,'.xlsx'))) %>% filter(!grepl("bb_", trait)); rownames(XYs) <- XYs$trait; XYs$trait <- NULL # EXCEL文件第一个格子应该是trait
 Xs = rownames(XYs)
 Ms = c('bb_CRE', 'bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_CHOL', 'bb_CRE', 'bb_CRP', 'bb_CYS', 'bb_EGFR', 'bb_LPA', 'bb_SHBG', 'bb_TES', 'bb_VITD')
 Ys = grep('^y.', names(XYs), value=T)
