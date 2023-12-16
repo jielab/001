@@ -4,9 +4,9 @@ pacman::p_load(readxl, dplyr, tidyverse, TwoSampleMR, MVMR)
 label = 'pheno'
 dir_X = dir_M = dir_Y = 'D:/data/gwas/pheno'
 XYs = as.data.frame(read_excel(paste0('D:/analysis/mr/', label,'.xlsx'))); rownames(XYs) <- XYs$trait; XYs$trait <- NULL # EXCEL文件第一个格子应该是trait
-X_list = 'x.height' # rownames(XYs)
-M_list = 'bb_CRE' # c('bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_CHOL', 'bb_CRE', 'bb_CRP', 'bb_CYS', 'bb_EGFR', 'bb_LPA', 'bb_SHBG', 'bb_TES', 'bb_VITD')
-Y_list = 'y.vte' # grep('^y.', names(XYs), value=T)
+Xs = 'x.height' # rownames(XYs)
+Ms = 'bb_CRE' # c('bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_CHOL', 'bb_CRE', 'bb_CRP', 'bb_CYS', 'bb_EGFR', 'bb_LPA', 'bb_SHBG', 'bb_TES', 'bb_VITD')
+Ys = 'y.vte' # grep('^y.', names(XYs), value=T)
 
 for (M in Ms) { # M
 	writeLines(paste('\n\nRun:', M))
