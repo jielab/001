@@ -1,6 +1,7 @@
 Arr1=("snp" "chr" "pos" "ea" "nea" "eaf" "n" "beta" "se" "p")
 Arr2=("snp|rsid|variant_id" "chr|chrom|chromosome" "pos|bp|base_pair" "ea|eff.allele|alt|a1|allele1" "nea|ref.allele|ref|a2|allele0" "eaf|a1freq" "n" "beta" "se|standard_error" "^p|pval|p_bolt_lmm")
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 数据准备：GWAS download and format
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,32 +70,32 @@ awk 'NR==1 || FNR>1' *.rg.txt > all.rg.res
 # C2: Causation 主要是通过MR分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 label=pheno
-X_dir=/mnt/d/data/gwas/$label
-Y_dir=/mnt/d/data/gwas/$label
-Xs=`cd $X_dir; ls *.gz | sed 's/\.gz//g'`
-Ys=`cd $Y_dir; ls *.gz | sed 's/\.gz//g'`
+dir_X=/mnt/d/data/gwas/$label
+dir_Y=/mnt/d/data/gwas/$label
+Xs=`cd $dir_X; *.gz | sed 's/\.gz//g'`
+Ys=`cd $dir_Y; *.gz | sed 's/\.gz//g'`
 for X in $Xs; do
 	outdir=/mnt/d/analysis/mr/$label/$X; mkdir -p $outdir; cd $outdir
-	X_file0=$X_dir/$X.gz
-	head_row=`zcat $X_file0 | head -1 | sed 's/\t/ /g'`
+	file_X0=$dir_X/$X.gz
+	head_row=`zcat $file_X0 | head -1 | sed 's/\t/ /g'`
 	for i in ${!Arr1[@]}; do
 		eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
 	done
 	echo X $X, snp $snp, chr $chr, pos $pos, p $p
-	X_iv_file=$X_dir/$X.top.snp
-	if [ ! -e $X_iv_file ]; then
-		X_iv_file=$X.top.snp # 这是本地的 $X.top.snp 文件，不是上面的 $X_dir/$X.top.snp
-		if [ ! -e $X_iv_file ]; then
-			zcat $X_file0 | awk -v snp=$snp -v chr=$chr -v pos=$pos -v p=$p 'NR==1 || $p<=5e-8 {posm=int($pos/1e6); print $snp, $chr, $pos, $p, posm}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1; arr[$NF] ="Y"}' > $X.top.snp
+	iv_X=$dir_X/$X.top.snp
+	if [ ! -e $iv_X ]; then
+		iv_X=$X.top.snp # 这是本地的 $X.top.snp 文件，不是上面的 $dir_X/$X.top.snp
+		if [ ! -e $iv_X ]; then
+			zcat $file_X0 | awk -v snp=$snp -v chr=$chr -v pos=$pos -v p=$p 'NR==1 || $p<=5e-8 {posm=int($pos/1e6); print $snp, $chr, $pos, $p, posm}' | sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $1; arr[$NF] ="Y"}' > $X.top.snp
 		fi
 	fi
-	X_iv_line=`wc -l $X_iv_file | awk '{printf $1}'`
-	if [ "$X_iv_line" -le 1 ]; then # no IV SNP
+	iv_X_line=`wc -l $iv_X | awk '{printf $1}'`
+	if [ "$iv_X_line" -le 1 ]; then # no IV SNP
 		continue 
 	fi
-	X_file=$X.txt
+	file_X=$X.txt
 	if [ ! -e $X.txt ]; then
-		zcat $X_file0 | fgrep -wf $X_iv_file | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $X.txt	
+		zcat $file_X0 | fgrep -wf $iv_X | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $X.txt	
 	fi
 	for Y in $Ys; do
 		if [ "$X" = "$Y" ]; then continue; fi
@@ -102,21 +103,21 @@ for X in $Xs; do
 			continue
 		fi
 		echo Running: $X $Y 
-		Y_file0=$Y_dir/$Y.gz
-		head_row=`zcat $Y_file0 | head -1 | sed 's/\t/ /g'`
+		file_Y0=$dir_Y/$Y.gz
+		head_row=`zcat $file_Y0 | head -1 | sed 's/\t/ /g'`
 		for i in ${!Arr1[@]}; do
 			eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
 		done
 		echo Y $Y, snp $snp, ea $ea, nea $nea, beta $beta, se $se, p $p
-		Y_file=$X.list.$Y.txt
-		if [ ! -e $Y_file ]; then
-			zcat $Y_file0 | fgrep -wf $X_iv_file | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $X.list.$Y.txt
+		file_Y=$Y.4.$X.txt
+		if [ ! -e $file_Y ]; then
+			zcat $file_Y0 | fgrep -wf $iv_X | awk -v snp=$snp -v ea=$ea -v nea=$nea -v beta=$beta -v se=$se -v p=$p BEGIN'{print "SNP EA NEA BETA SE P"}{print $snp, toupper($ea), toupper($nea), $beta, $se, $p}' > $Y.4.$X.txt
 		fi
 		echo "
 		source('/mnt/d/scripts/library/tsmr.f.R')
-		tsmr_fn( X_iv_file='$X_iv_file',
-			X_name='$X', X_pheno='$X', X_ieu='NA', X_file='$X_file',  
-			Y_name='$Y', Y_pheno='$Y', Y_ieu='NA', Y_file='$Y_file'
+		tsmr_fn( iv_X='$iv_X',
+			pheno_X='$X', ieu_X='NA', file_X='$file_X',  
+			pheno_Y='$Y', ieu_Y='NA', file_Y='$file_Y'
 		)
 		" > $X.$Y.R
 		R CMD BATCH $X.$Y.R
