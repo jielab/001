@@ -1,4 +1,4 @@
-pacman::p_load(readxl, tidyverse, TwoSampleMR, MendelianRandomization, RMediation, mediation)
+pacman::p_load(tidyverse, TwoSampleMR, MendelianRandomization, psych, RMediation)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # mediation个体数据分析示例
@@ -28,14 +28,13 @@ fit_M2Y.adjX <- lm(Y ~ M+X, dat)
 	beta_M2Y.adjX <- res_M2Y.adjX[2,1]; se_M2Y.adjX <- res_M2Y.adjX[2,2]; p_M2Y.adjX <- signif(res_M2Y.adjX[2,4],2)
 	beta_X2Y.adjM <- res_M2Y.adjX[3,1]; se_X2Y.adjM <- res_M2Y.adjX[3,2]; p_X2Y.adjM <- signif(res_M2Y.adjX[3,4],2)
 res <- mediation::mediate(fit_X2M, fit_M2Y.adjX, treat='X', mediator = 'M', boot=T); summary(res)
-beta = beta_X2Y - beta_X2Y.adjM; beta # 减法 Difference
-beta = beta_X2M * beta_M2Y.adjX; beta # 乘法 Product
+beta_medi = beta_X2Y - beta_X2Y.adjM; beta_medi # 减法 Difference
+beta_medi = beta_X2M * beta_M2Y.adjX; beta_medi # 乘法 Product
 CIs = RMediation::medci(beta_X2M, beta_M2Y.adjX, se_X2M, se_M2Y.adjX, type="dop"); CIs
-se = CIs$SE; se # Delta 法
-se = sqrt(se_X2M^2 + se_M2Y.adjX^2); se # Propagation of errors (POE) 法
-se = sqrt(beta_X2M^2 * se_X2M^2 + beta_M2Y.adjX^2 * se_M2Y.adjX^2); se # ?? 法
-pval = signif(2*pnorm(abs(beta/se), lower.tail=F),2); pval
-print(paste(round(beta_X2Y,3),round(se_X2Y,3),p_X2Y, round(beta_X2M,3),round(se_X2M,3),p_X2M, round(beta_M2Y.adjX,3),round(se_M2Y.adjX,3),p_M2Y.adjX, round(beta,3),round(se,3), pval))
+se_medi = CIs$SE; se_medi # Delta 法
+se_medi = sqrt(beta_X2M^2 * se_X2M^2 + beta_M2Y.adjX^2 * se_M2Y.adjX^2); se_medi # Propagation of errors (POE) 法，不是 sqrt(se_X2M^2 + se_M2Y.adjX^2)
+pval_medi = signif(2*pnorm(abs(beta_medi/se_medi), lower.tail=F),2); pval_medi
+print(paste(round(beta_X2Y,3),round(se_X2Y,3),p_X2Y, round(beta_X2M,3),round(se_X2M,3),p_X2M, round(beta_M2Y.adjX,3),round(se_M2Y.adjX,3),p_M2Y.adjX, round(beta_medi,3),round(se_medi,3), pval_medi))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
