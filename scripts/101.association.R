@@ -45,7 +45,7 @@ dat <- dat0 %>% drop_na(age, sex, bmi) %>%
 Xs <- c("bb_ALP", "bb_CRE", "bb_CRP", "bb_CYS", "bb_LPA", "bb_oestradiol", "bb_SHBG", "bb_TES") # grep("^bb_", names(dat), value=TRUE)
 Ys <- c("icdDate_lungcancer", "icdDate_t2dm", "icdDate_chd", "icdDate_stroke", "icdDate_asthma", "icdDate_copd") # grep("^icdDate", names(dat), value=TRUE)
 Zs <- grep("^o$|^se$|^rh|shbg|^apoe$|\\.rs", names(dat), value=TRUE) #  
-outfile="res.txt"; sink(outfile)
+sink("association.txt")
 for (Y in Ys) {
 	print(Y)
 	dat1 <- dat %>%

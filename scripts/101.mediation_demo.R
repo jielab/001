@@ -28,11 +28,12 @@ fit_M2Y.adjX <- lm(Y ~ M+X, dat)
 	beta_M2Y.adjX <- res_M2Y.adjX[2,1]; se_M2Y.adjX <- res_M2Y.adjX[2,2]; p_M2Y.adjX <- signif(res_M2Y.adjX[2,4],2)
 	beta_X2Y.adjM <- res_M2Y.adjX[3,1]; se_X2Y.adjM <- res_M2Y.adjX[3,2]; p_X2Y.adjM <- signif(res_M2Y.adjX[3,4],2)
 res <- mediation::mediate(fit_X2M, fit_M2Y.adjX, treat='X', mediator = 'M', boot=T); summary(res)
-beta_medi = beta_X2Y - beta_X2Y.adjM; beta_medi # 减法 Difference
-beta_medi = beta_X2M * beta_M2Y.adjX; beta_medi # 乘法 Product
-CIs = RMediation::medci(beta_X2M, beta_M2Y.adjX, se_X2M, se_M2Y.adjX, type="dop"); CIs
-se_medi = CIs$SE; se_medi # Delta 法
-se_medi = sqrt(beta_X2M^2 * se_X2M^2 + beta_M2Y.adjX^2 * se_M2Y.adjX^2); se_medi # Propagation of errors (POE) 法，不是 sqrt(se_X2M^2 + se_M2Y.adjX^2)
+# 1. 乘法 Product
+beta_medi = beta_X2M * beta_M2Y.adjX; beta_medi # 也有人简单的 beta_X2M * beta_M2Y，不考虑 .adjX
+se_medi = sqrt(beta_X2M^2 * se_X2M^2 + beta_M2Y.adjX^2 * se_M2Y.adjX^2); se_medi # Delta 法，可通过R包实现 CIs = RMediation::medci(beta_X2M, beta_M2Y.adjX, se_X2M, se_M2Y.adjX, type="dop"); CIs; se_medi = CIs$SE; se_medi 
+# 2. 减法 Difference
+beta_medi = beta_X2Y - beta_X2Y.adjM; beta_medi 
+se_medi = sqrt(se_X2Y^2 + se_X2Y.adjM^2); se_medi # Propagation of errors (POE) 法 
 pval_medi = signif(2*pnorm(abs(beta_medi/se_medi), lower.tail=F),2); pval_medi
 print(paste(round(beta_X2Y,3),round(se_X2Y,3),p_X2Y, round(beta_X2M,3),round(se_X2M,3),p_X2M, round(beta_M2Y.adjX,3),round(se_M2Y.adjX,3),p_M2Y.adjX, round(beta_medi,3),round(se_medi,3), pval_medi))
 
