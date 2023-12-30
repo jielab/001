@@ -11,7 +11,8 @@ dat <- iris %>% rename(X=Sepal.Length) %>%
 		M=X*0.35+random1*0.65,
 		random2=runif(nrow(iris),min=min(M),max=max(M)),
 		Y=M*0.35+random2*.65,
-		G1 = ifelse(X > quantile(X, probs=0.90), 2, ifelse(X < quantile(X, probs=0.10), 0, 1))
+		G1 = ifelse(X > quantile(X, probs=0.80), 2, ifelse(X < quantile(X, probs=0.20), 0, 1)), # a strong SNP
+		G2 = ifelse(X > quantile(X, probs=0.98), 2, ifelse(X < quantile(X, probs=0.02), 0, 1))  # a weak SNP		
 )
 dat %>% dplyr::select(random1, random2, X, M, Y) %>% psych::pairs.panels()
 psych::mediate(y="Y", x="X", m="M", data=dat, n.iter=10000) %>% print(short=FALSE)
@@ -34,23 +35,24 @@ se_medi = sqrt(beta_X2M^2 * se_X2M^2 + beta_M2Y.adjX^2 * se_M2Y.adjX^2); se_medi
 # 2. 减法 Difference
 beta_medi = beta_X2Y - beta_X2Y.adjM; beta_medi 
 se_medi = sqrt(se_X2Y^2 + se_X2Y.adjM^2); se_medi # Propagation of errors (POE) 法 
-pval_medi = signif(2*pnorm(abs(beta_medi/se_medi), lower.tail=F),2); pval_medi
+pval_medi = signif(2*pnorm(-abs(beta_medi/se_medi)),2); pval_medi
 print(paste(round(beta_X2Y,3),round(se_X2Y,3),p_X2Y, round(beta_X2M,3),round(se_X2M,3),p_X2M, round(beta_M2Y.adjX,3),round(se_M2Y.adjX,3),p_M2Y.adjX, round(beta_medi,3),round(se_medi,3), pval_medi))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 模拟基于individual或summary数据的 MR
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-summary(lm(X ~ G, dat)); summary(lm(X ~ G1, dat)) # G强，G1弱
-summary(lm(M ~ G, dat)); summary(lm(Y ~ G, dat)) #由于样本量不够大，G和Y没有显著性
-dat$X_byG = predict.lm( lm( X ~ G, data=dat)) 
+summary(lm(X ~ G1, dat)); summary(lm(X ~ G2, dat)) # G1强，G2弱
+summary(lm(M ~ G1, dat)); summary(lm(M ~ G2, dat)) # G2和M没有显著性了
+summary(lm(Y ~ G1, dat)); summary(lm(Y ~ G2, dat)) # G1和Y也快没有显著性了
 dat$X_byG1 = predict.lm( lm( X ~ G1, data=dat)) 
-summary(lm(M ~ X, dat));  summary(lm(M ~ X_byG, dat)) # 对于一个很强的G，G基本就可代表X
-summary(lm(M ~ X, dat));  summary(lm(M ~ X_byG1, dat)) # 但对于一个弱的G1，“G1所决定的XX” 跟 “XX”本身，差别很大
-summary(lm(Y ~ X_byG, data=dat))
-	beta_G2X = summary(lm( X ~ G, data=dat))$coef[2,1]
-	beta_G2Y = summary(lm( Y ~ G, data=dat))$coef[2,1]
-	se_G2X = summary(lm( X ~ G, data=dat))$coef[2,2]
-	se_G2Y = summary(lm( Y ~ G, data=dat))$coef[2,2]
+dat$X_byG2 = predict.lm( lm( X ~ G2, data=dat)) 
+summary(lm(Y ~ X, dat));  summary(lm(Y ~ X_byG1, dat)) # 对于一个很强的G1，G1基本就可代表“X本身”
+summary(lm(Y ~ X, dat));  summary(lm(Y ~ X_byG2, dat)) # 对于一个很弱的G2，“G2所决定的XX” 跟 ”X本身“，差别很大
+	beta_G2X = summary(lm( X ~ G1, data=dat))$coef[2,1]
+	beta_G2Y = summary(lm( Y ~ G1, data=dat))$coef[2,1]
+	se_G2X = summary(lm( X ~ G1, data=dat))$coef[2,2]
+	se_G2Y = summary(lm( Y ~ G1, data=dat))$coef[2,2]
 	beta_wald = beta_G2Y / beta_G2X; beta_wald
-	se_wald = se_G2Y / beta_G2X; se_wald 
+	se_wald = se_G2Y / beta_G2X; se_wald
+	signif(2*pnorm(-abs(beta_wald/se_wald)), 2)
