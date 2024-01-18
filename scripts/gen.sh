@@ -9,7 +9,7 @@ echo -e "66137\na93100fe54833270898b8e87f96646fdf52f509de2b87248ed1ea92b560c2ba1
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Download and format
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-wget -nd  biobank.ndph.ox.ac.uk/ukb/ukb/auxdata/ukb_snp_bim.tar
+wget -nd biobank.ndph.ox.ac.uk/ukb/ukb/auxdata/ukb_snp_bim.tar
 for chr in {1..22} X XY; do # Y MT for typed only
     echo "#!/bin/bash
     echo \"Starting on : \$(date); Running on : \$(hostname); Job ID : \$JOB_ID\"
@@ -32,12 +32,12 @@ for chr in {1..22} X XY; do
     sam_imp=`ls -1 $dir/ukb/ukb22828_c${chr}_b0_v3_s*.sample | awk '{printf $1}'`
     echo "#!/bin/bash
     echo \"Starting on : \$(date); Running on : \$(hostname); Job ID : \$JOB_ID\"
+    cat chr$chr.pvar | awk '{if (arry[\$3]==\"Y\") {\$3=\$3\".DUP\"}; print \$0; arry[\$3]=\"Y\"}' | sed 's/ /\t/g' > chr$chr.NEW.pvar
     plink2 --bed $dir/ukb/ukb22418_c${chr}_b0_v2.bed --bim $dir/ukb/ukb_snp_chr${chr}_v2.bim --fam $sam_typ --remove negative.sam.id --make-bed --out chr$chr
     plink2 --bgen $dir/ukb/ukb22438_c${chr}_b0_v2.bgen ref-first --sample $sam_hap --remove negative.sam.id --oxford-single-chr $chr --make-pgen --out chr$chr.hap
     plink2 --bgen $dir/ukb/ukb22828_c${chr}_b0_v3.bgen ref-first --sample $sam_imp --remove negative.sam.id --make-pgen --out chr$chr
-    awk '{if (NR==1) c=\"CHRPOS\"; else c=\$1\":\"\$2; id=\$3; if (arry[id]==\"Y\") {i++; id=id\".DUP\"i}; print \$1,\$2,id,\$4,\$5,c; arry[id]=\"Y\"}' chr$chr.pvar > chr$chr.NEW.pvar
     " > $outdir/chr$chr.cmd
-	cd $outdir # short, medium, large:wq
+	cd $outdir # short, medium, large
     bsub -q smp -J ukb.chr$chr -o chr$chr.LOG -e chr$chr.ERR < chr$chr.cmd
 done
 exit
@@ -54,14 +54,14 @@ dir=/data/sph-huangj
 label=vip
 snps=/work/sph-huangj/data/ukb/phe/common/ukb.$label.snp
 outdir=/work/sph-huangj/tmp/$label
-	if [ -d $outdir ]; then rm -r $outdir; fi; mkdir -p $outdir
+if [ -d $outdir ]; then rm -r $outdir; fi; mkdir -p $outdir
 echo -e "#!/bin/bash -l
 for chr in {1..22} X; do
 	plink2 --pfile $dir/ukb/imp/chr\$chr --extract $snps --make-pgen --out chr\$chr
 done
 ls -1 chr*.pgen | awk '{print \$1}' | sort -k 1,1 -V | sed 's/\.pgen//' > merge-list.txt
-plink2 --pmerge-list merge-list.txt -delete-pmerge-result --update-name $snps 1 2 --make-pgen --out vip
-	plink2 --pfile vip --maj-ref --export A --out $label
+plink2 --pmerge-list merge-list.txt -delete-pmerge-result --update-name $snps 1 2 --make-pgen --out $label
+	plink2 --pfile $label --maj-ref --export A --out $label
 	cut -f 2,7- $label.raw | sed 's/\t/ /g' | gzip -f > $label.raw.gz
 " > $outdir/$label.cmd
 cd $outdir
@@ -75,36 +75,39 @@ bsub -q smp -J $label.gen -o $label.LOG -e $label.ERR < $label.cmd
 dir=/work/sph-huangj
 gendir=/data/sph-huangj/ukb/imp
 gwasdir=$dir/files/posCtrls
-label=dementia
-gwas=$gwasdir/$label.txt
-outdir=$dir/tmp/$label
-	if [ -d $outdir ]; then rm -r $outdir; fi; mkdir -p $outdir
-head_row=`head -1 $gwas | sed 's/\t/ /g'`
-	chr_str=`echo $head_row | tr ' ' '\n' | grep -Einw 'chr|chrom|chromosome'`; chr_col=`echo $chr_str | sed 's/:.*//'`
-	snp_str=`echo $head_row | tr ' ' '\n' | grep -Einw 'snp|rsid|variant_id|markername'`; snp_col=`echo $snp_str | sed 's/:.*//'`
-	ea_str=`echo $head_row  | tr ' ' '\n' | grep -Einw 'ea|alt|effect_allele|allele1'`; ea_col=`echo $ea_str | sed 's/:.*//'`
-	beta_str=`echo $head_row | tr ' ' '\n' | grep -Einw 'beta'`; beta_col=`echo $beta_str | sed 's/:.*//'`
-	cols="$snp_col $ea_col $beta_col header"; echo $cols
-for chr in {1..22}; do
+for label in `cd $gwasdir; ls *ref | sed 's/\.top.ref$//g'`; do
+	echo RUN $label
+	gwas=$gwasdir/$label.top.ref
+	outdir=$dir/tmp/$label
+		if [ -d $outdir ]; then rm -r $outdir; fi; mkdir -p $outdir
+	head_row=`head -1 $gwas | sed 's/\t/ /g'`
+		chr_str=`echo $head_row | tr ' ' '\n' | grep -Einw 'chr|chrom|chromosome'`; chr_col=`echo $chr_str | sed 's/:.*//'`
+		snp_str=`echo $head_row | tr ' ' '\n' | grep -Einw 'snp|rsid|variant_id|markername'`; snp_col=`echo $snp_str | sed 's/:.*//'`
+		ea_str=`echo $head_row  | tr ' ' '\n' | grep -Einw 'ea|alt|effect_allele|allele1'`; ea_col=`echo $ea_str | sed 's/:.*//'`
+		beta_str=`echo $head_row | tr ' ' '\n' | grep -Einw 'beta'`; beta_col=`echo $beta_str | sed 's/:.*//'`
+		cols="$snp_col $ea_col $beta_col header"; echo $cols
+	for chr in {1..22}; do
+		echo "#!/bin/bash
+		awk 'NR==1 || \$$chr_col==$chr' $gwas > chr$chr.ref
+		nref=\`wc -l chr$chr.ref | awk '{printf \$1}'\`
+		if [[ \$nref == 1 ]]; then exit; fi
+		plink2 --pgen $gendir/chr$chr.pgen --psam $gendir/chr$chr.psam --pvar $gendir/chr$chr.NEW.pvar --chr $chr --score chr$chr.ref $cols no-mean-imputation cols=+scoresums list-variants --out chr$chr
+		" > $outdir/chr$chr.cmd
+		cd $outdir
+		bsub -q smp -J $label.chr$chr -o chr$chr.LOG -e chr$chr.ERR < chr$chr.cmd
+	done
 	echo "#!/bin/bash
-	awk 'NR==1 || \$$chr_col==$chr' $gwas > chr$chr.ref
-	nref=\`wc -l chr$chr.ref | awk '{printf \$1}'\`
-	if [[ \$nref == 1 ]]; then exit; fi
-	plink2 --pfile $gendir/chr$chr --chr $chr --score chr$chr.ref $cols no-mean-imputation cols=+scoresums list-variants --out chr$chr
-	" > $outdir/chr$chr.cmd
+		paste -d ' ' chr*.sscore > $label.prs.tmp
+		awk '{print NF}' $label.prs.tmp | sort -nu
+		num=\`ls -l chr*.sscore | wc -l | awk '{printf \$1}'\`
+		awk -v num=\$num '{if (NR==1) print \"eid $label.allele_cnt $label.dosage_sum $label.score_avg $label.score_sum\"; else {allele_cnt=dosage_sum=score_avg=score_sum=0; for (i=1;i<=num;i++) {if (\$(i*6-5) !=\$1) score_sum=score_sum\"\"i\"ERR,\"; else {allele_cnt=allele_cnt+\$(i*6-3); dosage_sum=dosage_sum+\$(i*6-2); score_avg=score_avg+\$(i*6-1); score_sum=score_sum+\$(i*6-0)}}; print \$1, allele_cnt, dosage_sum, score_avg, score_sum} }' $label.prs.tmp > $label.prs.txt
+		fgrep ERR $label.prs.txt
+	" > $outdir/step2.cmd
 	cd $outdir
-	bsub -q smp -J ukb.chr$chr -o chr$chr.LOG -e chr$chr.ERR < chr$chr.cmd
+	bsub -q smp -J $label.step2 -w 'done($label.chr*)' -o step2.LOG -e step2.ERR < step2.cmd
 done
-echo "#!/bin/bash
-	paste -d ' ' chr*.sscore > $label.prs.tmp	
-	awk '{print NF}' $label.prs.tmp | sort -nu
-	num=\`ls -l chr*.sscore | wc -l | awk '{printf \$1}'\`
-	awk -v num=\$num '{if (NR==1) print \"eid $label.allele_cnt $label.dosage_sum $label.score_avg $label.score_sum\"; else {allele_cnt=dosage_sum=score_avg=score_sum=0; for (i=1;i<=num;i++) {if (\$(i*6-5) !=\$1) score_sum=score_sum\"\"i\"ERR,\"; else {allele_cnt=allele_cnt+\$(i*6-3); dosage_sum=dosage_sum+\$(i*6-2); score_avg=score_avg+\$(i*6-1); score_sum=score_sum+\$(i*6-0)}}; print \$1, allele_cnt, dosage_sum, score_avg, score_sum} }' $label.prs.tmp > $label.prs.txt
-	fgrep ERR $label.prs.txt
-" > $outdir/step2.cmd
-cd $outdir
-bsub -q smp -J step2.$label -o step2.LOG -e step2.ERR < step2.cmd
 # Merge many PRS files into one
+fgrep "error|ERR" */*.log 
 paste -d ' ' */*.prs.txt > all.prs.txt
 awk '{print NF}' all.prs.txt | sort -nu
 num=`ls -l */*prs.txt | wc -l | awk '{printf $1}'`
@@ -172,16 +175,16 @@ dir=/restricted/projectnb/ukbiobank/jiehuang
 cnt=0
 for dat in `cat failed.list`; do
 	let "cnt=$cnt+1"
-        let "gp=($cnt-1)/9"
-        let "gp2=$gp +1"
-        if [[ $gp2 == 1 ]]; then
-                qsub_str="-N g$gp2.$cnt"
-        else
-                qsub_str="-N g$gp2.$cnt -hold_jid g$gp.*"
-        fi
+	let "gp=($cnt-1)/9"
+	let "gp2=$gp +1"
+	if [[ $gp2 == 1 ]]; then
+		qsub_str="-N g$gp2.$cnt"
+	else
+		qsub_str="-N g$gp2.$cnt -hold_jid g$gp.*"
+	fi
 	raw=${dat/list/raw}
-        outdir=$dir/data/ukb/wes/BAM/$raw;
+	outdir=$dir/data/ukb/wes/BAM/$raw;
 	echo process $cnt, $gp, $gp2, $dat.cmd
 	cd $outdir
-        qsub -P ukbiobank $qsub_str -o $dat.LOG -e $dat.ERR < $dat.cmd
+	qsub -P ukbiobank $qsub_str -o $dat.LOG -e $dat.ERR < $dat.cmd
 done

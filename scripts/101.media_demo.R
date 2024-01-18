@@ -1,5 +1,39 @@
 pacman::p_load(tidyverse, TwoSampleMR, MendelianRandomization, psych, RMediation)
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 经典MR结果复现
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# 用2个SNP rs6257, rs6259 (SHBG --> T2D, NEJM 2009)
+
+# 用1个SNP rs61755018 (HDL --> MI, Lancet 2012)
+
+# 用 180个SNP (Height --> CAD, NEJM 2015)
+
+mr_plot(mr_input(bx=ldlc, bxse=ldlcse, by=chdlodds, byse=chdloddsse), error=T, orientate=F, line="ivw", interactive=F, labels=T)
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 模拟基于individual或summary数据的 MR
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+summary(lm(X ~ G1, dat)); summary(lm(X ~ G2, dat)) # G1强，G2弱
+summary(lm(M ~ G1, dat)); summary(lm(M ~ G2, dat)) # G2和M没有显著性了
+summary(lm(Y ~ G1, dat)); summary(lm(Y ~ G2, dat)) # G1和Y也快没有显著性了
+dat$X_byG1 = predict.lm( lm( X ~ G1, data=dat)) 
+dat$X_byG2 = predict.lm( lm( X ~ G2, data=dat)) 
+summary(lm(Y ~ X, dat));  summary(lm(Y ~ X_byG1, dat)) # 对于一个很强的G1，G1基本就可代表“X本身”
+summary(lm(Y ~ X, dat));  summary(lm(Y ~ X_byG2, dat)) # 对于一个很弱的G2，“G2所决定的XX” 跟 ”X本身“，差别很大
+	beta_G2X = summary(lm( X ~ G1, data=dat))$coef[2,1]
+	beta_G2Y = summary(lm( Y ~ G1, data=dat))$coef[2,1]
+	se_G2X = summary(lm( X ~ G1, data=dat))$coef[2,2]
+	se_G2Y = summary(lm( Y ~ G1, data=dat))$coef[2,2]
+	beta_wald = beta_G2Y / beta_G2X; beta_wald
+	se_wald = se_G2Y / beta_G2X; se_wald
+	signif(2*pnorm(-abs(beta_wald/se_wald)), 2)
+	
+	
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # mediation个体数据分析示例
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -40,19 +74,7 @@ print(paste(round(beta_X2Y,3),round(se_X2Y,3),p_X2Y, round(beta_X2M,3),round(se_
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 模拟基于individual或summary数据的 MR
+# MVMR
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-summary(lm(X ~ G1, dat)); summary(lm(X ~ G2, dat)) # G1强，G2弱
-summary(lm(M ~ G1, dat)); summary(lm(M ~ G2, dat)) # G2和M没有显著性了
-summary(lm(Y ~ G1, dat)); summary(lm(Y ~ G2, dat)) # G1和Y也快没有显著性了
-dat$X_byG1 = predict.lm( lm( X ~ G1, data=dat)) 
-dat$X_byG2 = predict.lm( lm( X ~ G2, data=dat)) 
-summary(lm(Y ~ X, dat));  summary(lm(Y ~ X_byG1, dat)) # 对于一个很强的G1，G1基本就可代表“X本身”
-summary(lm(Y ~ X, dat));  summary(lm(Y ~ X_byG2, dat)) # 对于一个很弱的G2，“G2所决定的XX” 跟 ”X本身“，差别很大
-	beta_G2X = summary(lm( X ~ G1, data=dat))$coef[2,1]
-	beta_G2Y = summary(lm( Y ~ G1, data=dat))$coef[2,1]
-	se_G2X = summary(lm( X ~ G1, data=dat))$coef[2,2]
-	se_G2Y = summary(lm( Y ~ G1, data=dat))$coef[2,2]
-	beta_wald = beta_G2Y / beta_G2X; beta_wald
-	se_wald = se_G2Y / beta_G2X; se_wald
-	signif(2*pnorm(-abs(beta_wald/se_wald)), 2)
+MRMVInputObject <- mr_mvinput(bx=cbind(ldlc, hdlc, trig), bxse=cbind(ldlcse, hdlcse, trigse), by=chdlodds, byse=chdloddsse); MRMVInputObject
+MRMVObject <- mr_mvivw(MRMVInputObject, model="default", correl=FALSE, distribution="normal", alpha=0.05)
