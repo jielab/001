@@ -100,7 +100,7 @@ for label in `cd $gwasdir; ls *ref | sed 's/\.top.ref$//g'`; do
 		paste -d ' ' chr*.sscore > $label.prs.tmp
 		awk '{print NF}' $label.prs.tmp | sort -nu
 		num=\`ls -l chr*.sscore | wc -l | awk '{printf \$1}'\`
-		awk -v num=\$num '{if (NR==1) print \"eid $label.allele_cnt $label.dosage_sum $label.score_avg $label.score_sum\"; else {allele_cnt=dosage_sum=score_avg=score_sum=0; for (i=1;i<=num;i++) {if (\$(i*6-5) !=\$1) score_sum=score_sum\"\"i\"ERR,\"; else {allele_cnt=allele_cnt+\$(i*6-3); dosage_sum=dosage_sum+\$(i*6-2); score_avg=score_avg+\$(i*6-1); score_sum=score_sum+\$(i*6-0)}}; print \$1, allele_cnt, dosage_sum, score_avg, score_sum} }' $label.prs.tmp > $label.prs.txt
+		awk -v num=\$num '{if (NR==1) print \"eid $label.allele_cnt $label.score_sum\"; else {allele_cnt=score_sum=0; for (i=1;i<=num;i++) {if (\$(i*6-5) !=\$1) score_sum=score_sum\"\"i\"ERR,\"; else {allele_cnt=allele_cnt+\$(i*6-3); score_sum=score_sum+\$(i*6-0)}}; print \$1, allele_cnt score_sum} }' $label.prs.tmp > $label.prs.txt
 		fgrep ERR $label.prs.txt
 	" > $outdir/step2.cmd
 	cd $outdir
