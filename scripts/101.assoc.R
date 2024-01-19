@@ -45,7 +45,7 @@ dat <- dat0 %>% drop_na(age, sex) %>%
 	filter(ethnic_cat=="White") # %>% mutate( across(grep("score_sum", names(dat0), value=T), ~std(.x))) # 批量变成 ~factor(.x)
 	cor(dat$bmi, dat$bmi.EUR77.score_sum, use="complete.obs") # bmi.EUR941, bmi.EUR2446, height.EUR697, height.EUR3290
 	coef(summary(lm(bmi ~ bmi.EUR77.score_sum, data=dat)))
-Xs <- grep("^height$|^leg$|^chunk$", names(dat), value=TRUE) # |score_sum$
+Xs <- grep("^height$|^leg$|^chunk$|score_sum$", names(dat), value=TRUE) 
 Ys <- grep("^icdDate", names(dat), value=TRUE)
 Zs <- grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
 outfile="101.assoc.tsv"; file.create(outfile)
