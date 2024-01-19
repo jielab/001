@@ -19,7 +19,7 @@ dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") %>%
 	s = ifelse(sp1.S==0, "non-S", "S"),
 	z = ifelse(sp1.Z==0, "non-Z", "Z"),
 	leg = height - height_sitting,
-	leg_ratio = leg  /height_sitting,
+	leg_ratio = leg / height_sitting
 	) %>% rename (chunk=height_sitting)
 	summary(dat0$chunk)
 	naniar::gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=TRUE)), facet=sex)
