@@ -10,6 +10,7 @@ hardcall <- function(x) ifelse(x<0.5, 0, ifelse(x<1.5, 1, 2))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") %>%
 	dplyr::select(-c(lct.microbe.rs3940549_A, lct.microbe.rs182549_T)) %>% # 这两个SNP跟lct.MCM6.rs4988235_A高度相关：r>0.9
+	rename (chunk=height_sitting) %>% 
 	mutate (
 	a = ifelse(abo=="A", "A", "non-A"),
 	o = ifelse(abo=="O", "O", "non-O"),
@@ -18,9 +19,9 @@ dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") %>%
 	o_se = factor(paste(o, se, sep="."), levels=c("non-O.se", "non-O.non-se", "O.se", "O.non-se")), # 把最多的组放在前面，作为ref
 	s = ifelse(sp1.S==0, "non-S", "S"),
 	z = ifelse(sp1.Z==0, "non-Z", "Z"),
-	leg = height - height_sitting,
-	leg_ratio = leg / height_sitting
-	) %>% rename (chunk=height_sitting)
+	leg = height - chunk,
+	leg_ratio = leg / chunk
+	) 
 	summary(dat0$chunk)
 	naniar::gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=TRUE)), facet=sex)
 attach(dat0) #这样，下面就可以不用写 dat0$，直接写变量名字就行
@@ -45,12 +46,12 @@ dat <- dat0 %>% drop_na(age, sex) %>%
 	filter(ethnic_cat=="White") # %>% mutate( across(grep("score_sum", names(dat0), value=T), ~std(.x))) # 批量变成 ~factor(.x)
 	cor(dat$bmi, dat$bmi.EUR77.score_sum, use="complete.obs") # bmi.EUR941, bmi.EUR2446, height.EUR697, height.EUR3290
 	coef(summary(lm(bmi ~ bmi.EUR77.score_sum, data=dat)))
-Xs <- grep("^height$|^leg$|^chunk$|score_sum$", names(dat), value=TRUE) 
+Xs <- grep("^height$|^chunk$|^leg|score_sum$", names(dat), value=TRUE) 
 Ys <- grep("^icdDate", names(dat), value=TRUE)
 Zs <- grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
 outfile="101.assoc.tsv"; file.create(outfile)
 for (Y in Ys) {
-	print(Y)
+	writeLines(paste('\n\n-->Run:', Y))
 	dat1 <- dat %>%
 	mutate(
 		Y_date = dat[[Y]],
@@ -60,7 +61,8 @@ for (Y in Ys) {
 	) %>% filter( follow_years >0 )
 	surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
 	for (X in Xs) {
-		writeLines(paste('\n\n-->Run:', X, Y))
+		if (X==Y) next
+		print(paste(X, Y))
 		dat1$X = inormal(dat1[[X]])
 		fit.cox <- coxph(surv.obj ~ X +age+sex +PC1+PC2, data=dat1)
 		res.cox <- coef(summary(fit.cox)); print(res.cox[1,])
@@ -88,9 +90,10 @@ for (Y in Ys) {
 	}
 }
 # 可用下面代码 transpose 汇总数据，画 heatmap 图
-dat <- read.table('D:/analysis/mr/pheno/res.p.txt', header=F); dat$V3 <- signif(dat$V3,2)
-pval <- dat %>% reshape2::acast(V1 ~ V2, value.var='V3'); pval=signif(pval,2) 
-write.table(pval, file=outfile, sep='\t', row.names=TRUE, col.names=TRUE, append=FALSE, quote=FALSE)
+dat <- read.table('D:/tmp/101.assoc.tsv', header=F)
+dat$bnp <- paste(dat$V3, "(", dat$V5, ")", sep="")
+bnp <- dat %>% reshape2::acast(V2 ~ V1, value.var='bnp')
+write.table(bnp, file="101.new.tsv", sep='\t', row.names=TRUE, col.names=TRUE, append=FALSE, quote=FALSE)
 #plt <- ggcorrplot(dat.b, lab=TRUE, p.mat=dat.p, sig.level=1e-4, insig ='blank') + theme(axis.text=element_text(size=12, face='bold', color=c("black","blue")))
 	
 
