@@ -93,7 +93,7 @@ done
 > 
 用户也可以在得到[pheweb网站](https://resources.pheweb.org)上的 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid2.py。根据需要，可先运行 dos2unix add_rsid2.py，然后运行如下示例命令，具体的参数根据input文件调整。注意，--sep 后面有双引号，默许的版本是 python3。
 ```
-add_rsid2.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d files/rsids-v154-hg38.tsv.gz -o out.tsv
+python add_rsid2.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d files/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
 ```
 > 通过LD的计算来找到GWAS数据里面的independent top hits，也有一些问题。比如，g1k的LD不是金标准，r2也不是最合理的筛选办法，并且计算量很大。如果不考虑 SNP之间的LD，只考虑距离，假设GWAS的第1，2，3 列分别是 SNP, CHR, POS，最后一列是P，可以用下面这个简单的代码来寻找GWAS数据里面每1MB区间的top SNP。
 ```
