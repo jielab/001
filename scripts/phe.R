@@ -7,20 +7,19 @@ dates_bad=as.Date(c("1900-01-01", "1901-01-01", "1902-02-02", "1903-03-03", "199
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # main PHE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-vip <- read.table(paste0(indir,"common/ukb.vip.dat"), header=F, flush=T)
-	vip$V1[duplicated(vip$V1)]; vip$V2[duplicated(vip$V2)] #check duplication
-	vip$V2 <- paste0("f.", vip$V2, ".0.0")
-source(paste0(indir,"raw-670287/vip.r")) # first use the latest version
-	phe1 <- bd %>% subset(select=grep("f.eid|\\.0\\.0", names(bd))) %>% rename(eid=f.eid)
-	names1 <- names(phe1)
-source(paste0(indir,"raw-50136/vip.r")) # then add previous version
-	phe2 <- bd %>% subset(select=!names(bd) %in% names1) 
-	phe2 <- phe2 %>% subset(select=grep("f.eid|\\.0\\.0", names(phe2))) %>% rename(eid=f.eid)
-phe0 <- merge(phe1, phe2, by="eid") %>% 
-	crosswalkr::renamefrom(vip, V2, V1, drop_extra=F) %>% filter(eid>0)
+source(paste0(indir,"raw-670287/vip.r")); phe1 <- bd %>% rename(eid=f.eid) # use the latest version first
+source(paste0(indir,"raw-50136/vip.r")); phe2 <- subset(bd, select=!names(bd) %in% names(phe1)) 
+phe0 <- merge(phe1, phe2, by.x="eid", by.y="f.eid", all=TRUE) 
 	dates <- names(phe0)[sapply(phe0, is.Date)]; summary(phe0[,dates]) # check invalid dates
 	for (date1 in dates) { phe0[[date1]][phe0[[date1]] %in% dates_bad] <- NA }
-phe <- phe0 %>%  
+vip <- read.table(paste0(indir,"common/ukb.vip.dat"), header=FALSE, flush=TRUE)
+	vip$V1[duplicated(vip$V1)]; vip$V2[duplicated(vip$V2)] #check duplication
+	fid <- as.data.frame(names(phe0)[-1]); names(fid)="fid1"
+	fid[c('f0','f1','f2')] <- str_split_fixed(fid$fid1, "\\.", 3)
+	fid <- merge(fid, vip, by.x="f1", by.y="V1", all.x=TRUE) %>% 
+		mutate(fid2 = ifelse(f2=="0.0", V2, paste0(V2,".",f2))) 
+phe0 <- phe0 %>% crosswalkr::renamefrom(fid, fid1, fid2, drop_extra=F) %>% filter(eid>0) 
+phe <- phe0 %>% 
 	mutate(
 	across(grep("deprivation|date", names(phe0), invert=T, value=T), ~ifelse(.x<0, NA, .x)), # 该命令也不适用于date变量
 	ethnic_cat = ifelse(grepl("^1",ethnicity),1, ifelse(grepl("^2",ethnicity),2, ifelse(grepl("^3",ethnicity),3, ifelse(grepl("^4",ethnicity),4, ethnicity)))),
@@ -30,12 +29,9 @@ phe <- phe0 %>%
 	bmi_cat = cut(bmi, breaks=c(10,18.5,25,30,100), labels=c("lean","healthy","overweight","obese")),
 	bmi_cat = factor(bmi_cat, levels=c("healthy","lean","overweight","obese")),
 	smoke_status = factor(smoke_status, levels=0:2, labels=c("never","previous","current")), 
-	alcohol_status = factor(alcohol_status, levels=0:2, labels=c("never","previous","current")),
-	education = factor(ifelse(education<0, NA, education))
+	alcohol_status = factor(alcohol_status, levels=0:2, labels=c("never","previous","current"))
 	)
 saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
-	# covid0 <- read.table("D:/data/ukb/hes/covid19_result_england.txt", header=T)[,c(1,2,5,6)]
-	# covid <- aggregate(result ~ eid, data=covid0, sum) %>% rename(inf=result) 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,6 +96,6 @@ gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds")
 hla <- readRDS("D:/data/ukb/Rdata/ukb.hla.rds") 
 #hla <- hla %>% select(which(colMeans(.,na.rm=T) >=0.02))
 prs0 <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T)
-	prs <- subset(prs0, select=grepl("^eid$|score_sum", names(prs0)))
+	prs <- subset(prs0, select=grepl("^eid$|score_sum$", names(prs0)))
 dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, icd, fod, gen, prs)) 
 saveRDS(dat0, file="D:/data/ukb/Rdata/all.Rdata")

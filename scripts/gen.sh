@@ -69,15 +69,22 @@ bsub -q smp -J $label.gen -o $label.LOG -e $label.ERR < $label.cmd
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Calculate PRS
+# Calculate PRS by PRS-CSx
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+python PRScsx.py --ref_dir=path_to_ref --bim_prefix=path_to_bim/test --sst_file=path_to_sumstats/EUR_sumstats.txt,path_to_sumstats/EAS_sumstats.txt \
+	--n_gwas=200000,100000 --pop=EUR,EAS --chrom=22 --phi=1e-2 --out_dir=path_to_output --out_name=test
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Calculate PRS by PLINK
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #!/bin/bash -l
 dir=/work/sph-huangj
 gendir=/data/sph-huangj/ukb/imp
 gwasdir=$dir/files/posCtrls
-for label in `cd $gwasdir; ls *ref | sed 's/\.top.ref$//g'`; do
+for label in `cd $gwasdir; ls *ref | sed 's/\.ref$//g'`; do
 	echo RUN $label
-	gwas=$gwasdir/$label.top.ref
+	gwas=$gwasdir/$label.ref
 	outdir=$dir/tmp/$label
 		if [ -d $outdir ]; then rm -r $outdir; fi; mkdir -p $outdir
 	head_row=`head -1 $gwas | sed 's/\t/ /g'`
@@ -91,7 +98,7 @@ for label in `cd $gwasdir; ls *ref | sed 's/\.top.ref$//g'`; do
 		awk 'NR==1 || \$$chr_col==$chr' $gwas > chr$chr.ref
 		nref=\`wc -l chr$chr.ref | awk '{printf \$1}'\`
 		if [[ \$nref == 1 ]]; then exit; fi
-		plink2 --pgen $gendir/chr$chr.pgen --psam $gendir/chr$chr.psam --pvar $gendir/chr$chr.NEW.pvar --chr $chr --score chr$chr.ref $cols no-mean-imputation cols=+scoresums list-variants --out chr$chr
+		plink2 --pfile $gendir/chr$chr --chr $chr --score chr$chr.ref $cols no-mean-imputation ignore-dup-ids cols=+scoresums list-variants --out chr$chr
 		" > $outdir/chr$chr.cmd
 		cd $outdir
 		bsub -q smp -J $label.chr$chr -o chr$chr.LOG -e chr$chr.ERR < chr$chr.cmd
@@ -100,18 +107,18 @@ for label in `cd $gwasdir; ls *ref | sed 's/\.top.ref$//g'`; do
 		paste -d ' ' chr*.sscore > $label.prs.tmp
 		awk '{print NF}' $label.prs.tmp | sort -nu
 		num=\`ls -l chr*.sscore | wc -l | awk '{printf \$1}'\`
-		awk -v num=\$num '{if (NR==1) print \"eid $label.allele_cnt $label.score_sum\"; else {allele_cnt=score_sum=0; for (i=1;i<=num;i++) {if (\$(i*6-5) !=\$1) score_sum=score_sum\"\"i\"ERR,\"; else {allele_cnt=allele_cnt+\$(i*6-3); score_sum=score_sum+\$(i*6-0)}}; print \$1, allele_cnt score_sum} }' $label.prs.tmp > $label.prs.txt
+		awk -v num=\$num '{if (NR==1) print \"eid $label.allele_cnt $label.score_sum\"; else {allele_cnt=score_sum=0; for (i=1;i<=num;i++) {if (\$(i*6-5) !=\$1) score_sum=score_sum\"\"i\"ERR,\"; else {allele_cnt=allele_cnt+\$(i*6-3); score_sum=score_sum+\$(i*6-0)}}; print \$1, allele_cnt, score_sum} }' $label.prs.tmp > $label.prs.txt
 		fgrep ERR $label.prs.txt
 	" > $outdir/step2.cmd
 	cd $outdir
-	bsub -q smp -J $label.step2 -w 'done($label.chr*)' -o step2.LOG -e step2.ERR < step2.cmd
+	bsub -q smp -J $label.step2 -w "ended($label.chr*)" -o step2.LOG -e step2.ERR < step2.cmd
 done
 # Merge many PRS files into one
 fgrep "error|ERR" */*.log 
 paste -d ' ' */*.prs.txt > all.prs.txt
 awk '{print NF}' all.prs.txt | sort -nu
 num=`ls -l */*prs.txt | wc -l | awk '{printf $1}'`
-awk -v num=$num '{for (i=1;i<=num;i++) {if ($(i*5-4) !=$1) print $1, $i, "ERR" }}' all.prs.txt | head
+awk -v num=$num '{for (i=1;i<=num;i++) {if ($(i*3-2) !=$1) print $1, $i, "ERR" }}' all.prs.txt | head
 gzip all.prs.txt
 
 
