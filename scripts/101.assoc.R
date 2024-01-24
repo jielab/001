@@ -27,15 +27,15 @@ summary(dat0$chunk)
 	bp <- boxplot(bb_TES ~ abo*se, dat0, las=2, col=rainbow(6), font=2); bp$stats
 	dat0 %>% drop_na(abo, se) %>% ggplot(aes(x=abo, y=bb_TES, fill=se)) + geom_boxplot() + stat_summary(fun.y=mean, color="darkred", position=position_dodge(0.75), geom="point", shape=18, size=3)
 dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(dat0), value=TRUE)) %>% na.omit() %>% dplyr::sample_n(10000)
-	car::scatterplotMatrix(dat, spread=FALSE, smoother.args=list(lty=0.1))
-	psych::pairs.panels(dat)
+	#car::scatterplotMatrix(dat, spread=FALSE, smoother.args=list(lty=0.1))
+	#psych::pairs.panels(dat)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # X-Y 或 X-Y-Z交互作用 批量分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- dat0 %>% drop_na(age, sex) %>% filter(ethnic_cat=="White") 
-	# %>% mutate( across(grep("score_sum", names(dat0), value=T), ~std(.x))) # 批量 ~factor(.x)
+dat <- dat0 %>% drop_na(age, sex) %>% filter(ethnic_cat=="White") %>% 
+	mutate( across(grep("walking", names(dat0), value=T), ~factor(.x)))
 Xs <- grep("^height$|^chunk$|^leg|score_sum$", names(dat), value=TRUE) 
 Ys <- grep("^icdDate", names(dat), value=TRUE)
 Zs <- grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
@@ -86,36 +86,23 @@ write.table(bnp, file="101.new.tsv", sep='\t', row.names=TRUE, col.names=TRUE, a
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 针对某一*显著*结果的精细分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-X="bb_SHBG"
+X="walking_pace"
 Y="icdDate_t2dm" 
-dat <- dat0 %>% drop_na(age, sex) %>% filter(ethnic_cat=="White") 
-dat$X = inormal(dat[[X]]); summary(dat[[Y]])
+dat$X = dat[[X]]
 dat1 <- dat %>%  
 	mutate(
-		X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
-		X_qt = factor(ifelse(X_qt=="q1", "low", ifelse(X_qt=="q5", "high", "middle")), levels=c("low","middle","high")),
+	#	X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
+	#	X_qt = factor(ifelse(X_qt=="q1", "low", ifelse(X_qt=="q5", "high", "middle")), levels=c("low","middle","high")),
 		Y_date = dat[[Y]],
 		Y_yes = ifelse(is.na(dat[[Y]]), 0, 1),
 		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(death_date), death_date, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_years >0 ) 
-	table(dat1$Y_yes, floor(dat1$follow_years))
-	aggregate(Y_yes ~ X_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
+	#table(dat1$Y_yes, floor(dat1$follow_years))
+	#aggregate(Y_yes ~ X_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
 surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
-fit.cox <- coxph(surv.obj ~ X+ t2dm.score_sum + X*t2dm.score_sum + smoke_status+alcohol_status + age+sex+bmi+whr +PC1+PC2, data=dat1); coef(summary(fit.cox))
+fit.cox <- coxph(surv.obj ~ X+ y.cad.score_sum + X*y.cad.score_sum + smoke_status+alcohol_status + age+sex+bmi+whr +PC1+PC2, data=dat1); coef(summary(fit.cox))
 	survminer::ggforest(fit.cox, main="", fontsize=1.2, data=dat1) # 不能显示interaction值
 	fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
-	ggsurvplot(survfit(surv.obj ~X_qt + se, data=dat1), ylim=c(0.5,1), risk.table=FALSE)
+	ggsurvplot(survfit(surv.obj ~X + se, data=dat1), ylim=c(0.5,1), risk.table=FALSE)
 
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# PGS精细化分析
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Xs = c('height.EUR697', 'height.EUR3290', 'x.height', 'height.AFR', 'height.EAS', 'height.EUR', 'height.ALL')
-for (X in ) {
-	dat$X <- inormal(dat[[paste0(X,'.score_sum')]])
-	r <- cor(dat$height, dat$X, use="complete.obs")
-	reg <- coef(summary(lm(height ~ X, data=dat)))[2,]
-	print(paste(X, round(r,2), round(reg[1],4), signif(reg[4],2)))
-}
-summary(lm(bb_SHBG ~ shbg.rs6257_T + shbg.rs6259_G + shbg.rs1799941_G + shbg.rs727428_C + bb_shbg.tp53.rs1042522_C + shbg.rs6257_T * bb_shbg.tp53.rs1042522_C, data=dat0))
