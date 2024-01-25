@@ -16,7 +16,8 @@ dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") %>%
 	o_se = factor(paste(o, se, sep="."), levels=c("non-O.se", "non-O.non-se", "O.se", "O.non-se")),
 	s = ifelse(sp1.S==0, "non-S", "S"), z = ifelse(sp1.Z==0, "non-Z", "Z"),
 	leg = height - chunk, leg_ratio = leg / chunk, chunk_ratio = chunk / leg,
-	whr = waist / hip
+	whr = waist / hip, whr.2.0 = waist.2.0 / hip.2.0, whr_diff = whr.2.0 - whr,
+	bmi_diff = bmi.2.0 - bmi
 	) 
 summary(dat0$chunk)
 	naniar::gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=TRUE)), facet=sex)
@@ -86,23 +87,35 @@ write.table(bnp, file="101.new.tsv", sep='\t', row.names=TRUE, col.names=TRUE, a
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 针对某一*显著*结果的精细分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-X="walking_pace"
+X="whr_diff"
 Y="icdDate_t2dm" 
 dat$X = dat[[X]]
-dat1 <- dat %>%  
+dat1 <- dat %>% drop_na(age, sex, whr_diff, bmi_diff) 
+dat1 <- dat1 %>% 
 	mutate(
-	#	X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
-	#	X_qt = factor(ifelse(X_qt=="q1", "low", ifelse(X_qt=="q5", "high", "middle")), levels=c("low","middle","high")),
-		Y_date = dat[[Y]],
-		Y_yes = ifelse(is.na(dat[[Y]]), 0, 1),
+		X = std(X),
+		Z = std(y.t2d.score_sum),
+		X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
+		Z_qt = cut(Z, breaks=quantile(Z, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
+		X_qt = factor(ifelse(X_qt=="q1", "loss", ifelse(X_qt=="q5", "gain", "same")), levels=c("loss", "same", "gain")),
+		Z_qt = factor(ifelse(Z_qt=="q1", "low", ifelse(Z_qt=="q5", "high", "middle")), levels=c("low", "high", "middle")),
+		Y_date = dat1[[Y]],
+		Y_yes = ifelse(is.na(dat1[[Y]]), 0, 1),
 		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(death_date), death_date, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_years >0 ) 
-	#table(dat1$Y_yes, floor(dat1$follow_years))
-	#aggregate(Y_yes ~ X_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
+	aggregate(Y_yes ~ X_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
+	aggregate(Y_yes ~ Z_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
+	summary(glm(Y_yes ~ X_qt +Z_qt + X_qt*Z_qt + age+sex+bmi+whr +smoke_status+alcohol_status + PC1+PC2, data=dat1))
 surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
-fit.cox <- coxph(surv.obj ~ X+ y.cad.score_sum + X*y.cad.score_sum + smoke_status+alcohol_status + age+sex+bmi+whr +PC1+PC2, data=dat1); coef(summary(fit.cox))
+	ggsurvplot(survfit(surv.obj ~X_qt + Z_qt, data=dat1), ylim=c(0.8,1), risk.table=FALSE)
+	fit.cox <- coxph(surv.obj ~ X +Z + X*alcohol_status + age+sex+bmi+whr +smoke_status+alcohol_status + PC1+PC2, data=dat1)
+	print(coef(summary(fit.cox)))
 	survminer::ggforest(fit.cox, main="", fontsize=1.2, data=dat1) # 不能显示interaction值
 	fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
-	ggsurvplot(survfit(surv.obj ~X + se, data=dat1), ylim=c(0.5,1), risk.table=FALSE)
+	
+
+
+
+
 
