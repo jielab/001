@@ -7,8 +7,9 @@ hardcall <- function(x) ifelse(x<0.5, 0, ifelse(x<1.5, 1, 2))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 读入数据，生成几个ABO相关新变量，sanity check一下 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") %>%
-	rename (chunk=height_sitting) %>% 
+dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") %>% rename (chunk=height_sitting) 
+dat0$icdDate_vte <- as.Date(apply(subset(dat0, select=c(icdDate_pe, icdDate_i80, icdDate_i82)), 1, FUN=min, na.rm=T))
+dat0 <- dat0 %>% 
 	mutate (
 	a = ifelse(abo=="A", "A", "non-A"), o = ifelse(abo=="O", "O", "non-O"),
 	se = ifelse(fut2.rs601338_A==2, "non-se", "se"), # [PMID: 30345375]
@@ -16,13 +17,12 @@ dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") %>%
 	o_se = factor(paste(o, se, sep="."), levels=c("non-O.se", "non-O.non-se", "O.se", "O.non-se")),
 	s = ifelse(sp1.S==0, "non-S", "S"), z = ifelse(sp1.Z==0, "non-Z", "Z"),
 	leg = height - chunk, leg_ratio = leg / chunk, chunk_ratio = chunk / leg,
-	whr = waist / hip, whr.2.0 = waist.2.0 / hip.2.0, whr_diff = whr.2.0 - whr,
-	bmi_diff = bmi.2.0 - bmi
+	whr = waist / hip, whr.2.0 = waist.2.0 / hip.2.0, whr_diff = whr.2.0 - whr, bmi_diff = bmi.2.0 - bmi, 
+	vte.f2 = hardcall(vte.F2.rs1799963_G), vte.f5= hardcall(vte.F5.rs6025_C)
 	) 
-summary(dat0$chunk)
+prop.table(table(dat0$abo, dat0$fut2.rs601338_A),1)  
 	naniar::gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=TRUE)), facet=sex)
 	hist(dat0$icdDate_covid, breaks="weeks", freq=TRUE)
-	prop.table(table(dat0$abo, dat0$fut2.rs601338_A),1) 
 	group_by(dat0, abo, se) %>% summarise(count=n(), mean=mean(bb_TES, na.rm=TRUE))
 	aggregate(bb_TES ~ abo*se, dat0, FUN=function(x) {round(c(length(x), mean(x), sd(x), quantile(x,probs=c(0,0.5,1))), 2)} )
 	bp <- boxplot(bb_TES ~ abo*se, dat0, las=2, col=rainbow(6), font=2); bp$stats
@@ -87,14 +87,14 @@ write.table(bnp, file="101.new.tsv", sep='\t', row.names=TRUE, col.names=TRUE, a
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 针对某一*显著*结果的精细分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-X="whr_diff"
-Y="icdDate_t2dm" 
-dat$X = dat[[X]]
-dat1 <- dat %>% drop_na(age, sex, whr_diff, bmi_diff) 
+Y="icdDate_vte" 
+X="whr"; Z="vte.score_sum"
+dat$X = dat[[X]]; dat$Z = dat[[Z]]
+dat1 <- dat %>% drop_na(age, sex) 
 dat1 <- dat1 %>% 
 	mutate(
 		X = std(X),
-		Z = std(y.t2d.score_sum),
+		Z = std(Z),
 		X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
 		Z_qt = cut(Z, breaks=quantile(Z, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
 		X_qt = factor(ifelse(X_qt=="q1", "loss", ifelse(X_qt=="q5", "gain", "same")), levels=c("loss", "same", "gain")),
@@ -103,7 +103,8 @@ dat1 <- dat1 %>%
 		Y_yes = ifelse(is.na(dat1[[Y]]), 0, 1),
 		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(death_date), death_date, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
-	) %>% filter( follow_years >0 ) 
+	) %>% filter( follow_years >0 )
+prop.table(table(dat1$vte.f2, dat1$Y_yes),1); prop.table(table(dat1$vte.f5, dat1$Y_yes),1)
 	aggregate(Y_yes ~ X_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
 	aggregate(Y_yes ~ Z_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
 	summary(glm(Y_yes ~ X_qt +Z_qt + X_qt*Z_qt + age+sex+bmi+whr +smoke_status+alcohol_status + PC1+PC2, data=dat1))
@@ -113,9 +114,3 @@ surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
 	print(coef(summary(fit.cox)))
 	survminer::ggforest(fit.cox, main="", fontsize=1.2, data=dat1) # 不能显示interaction值
 	fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
-	
-
-
-
-
-
