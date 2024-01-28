@@ -87,8 +87,8 @@ write.table(bnp, file="101.new.tsv", sep='\t', row.names=TRUE, col.names=TRUE, a
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 针对某一*显著*结果的精细分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Y="icdDate_vte" 
-X="whr"; Z="vte.score_sum"
+Y="icdDate_t2dm" 
+X="whr"; Z="y.t2dm.score_sum"
 dat$X = dat[[X]]; dat$Z = dat[[Z]]
 dat1 <- dat %>% drop_na(age, sex) 
 dat1 <- dat1 %>% 
@@ -108,8 +108,13 @@ prop.table(table(dat1$vte.f2, dat1$Y_yes),1); prop.table(table(dat1$vte.f5, dat1
 	aggregate(Y_yes ~ X_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
 	aggregate(Y_yes ~ Z_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
 	summary(glm(Y_yes ~ X_qt +Z_qt + X_qt*Z_qt + age+sex+bmi+whr +smoke_status+alcohol_status + PC1+PC2, data=dat1))
+
 surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
-	ggsurvplot(survfit(surv.obj ~X_qt + Z_qt, data=dat1), ylim=c(0.8,1), risk.table=FALSE)
+	km.obj <- survfit(surv.obj ~X_qt + Z_qt, data=dat1)
+	plot(km.obj, ylim=c(0.5,1)); plot(km.obj, fun=function(x) 1-x)
+	ggsurvplot(km.obj, ylim=c(0,1), risk.table=FALSE)
+	pec::predictSurvProb(???)
+	
 	fit.cox <- coxph(surv.obj ~ X +Z + X*alcohol_status + age+sex+bmi+whr +smoke_status+alcohol_status + PC1+PC2, data=dat1)
 	print(coef(summary(fit.cox)))
 	survminer::ggforest(fit.cox, main="", fontsize=1.2, data=dat1) # 不能显示interaction值

@@ -2,28 +2,48 @@ setwd("C:/Users/jiehu/Desktop")
 pacman::p_load(readxl, dplyr, tidyverse, TwoSampleMR, MVMR)
 
 label = 'pheno'
+ieu_X = ''; ieu_M = ''; ieu_Y = ''
 dir_X = dir_M = dir_Y = 'D:/data/gwas/pheno'
 XYs = as.data.frame(read_excel(paste0('D:/analysis/mr/', label,'.xlsx'))) %>% filter(!grepl("bb_", trait)); rownames(XYs) <- XYs$trait; XYs$trait <- NULL # EXCEL文件第一个格子应该是trait
-Xs = rownames(XYs)
-Ms = c('bb_CRE', 'bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_CHOL', 'bb_CRE', 'bb_CRP', 'bb_CYS', 'bb_EGFR', 'bb_LPA', 'bb_SHBG', 'bb_TES', 'bb_VITD')
-Ys = grep('^y.', names(XYs), value=T)
+X_list = rownames(XYs)
+M_list = c('bb_CRE', 'bb_ALB', 'bb_ALP', 'bb_ALT', 'bb_APOA', 'bb_APOB', 'bb_CHOL', 'bb_CRE', 'bb_CRP', 'bb_CYS', 'bb_EGFR', 'bb_LPA', 'bb_SHBG', 'bb_TES', 'bb_VITD')
+Y_list = grep('^y.', names(XYs), value=T)
+if (ieu_X !='') {Xs=ieu_X; ieu_X_use=TRUE} else {Xs=X_list; ieu_X_use=FALSE}
+if (ieu_M !='') {Ms=ieu_M; ieu_M_use=TRUE} else {Ms=M_list; ieu_M_use=FALSE} 
+if (ieu_Y !='') {Ys=ieu_Y; ieu_Y_use=TRUE} else {Ys=Y_list; ieu_Y_use=FALSE} 
 
 sink("mediation.txt")
 for (M in Ms) { # M
 	writeLines(paste('\n\nRun:', M))
-	dat_M.raw <- read.table(paste0(dir_M, '/', M, '.gz'), header=T) 
-	dat_M.snp <- dat_M.raw %>% filter(P<5e-8) %>% dplyr::select(SNP)
-	dat_M.iv <- read.table(paste0(dir_M, '/', M, '.top.snp'), header=T); names(dat_M.iv) <- "SNP"  
-
+	if (ieu_M_use) {
+		dat_M.snp <- extract_instruments(outcomes=M, clump=F) %>% select(SNP)
+	} else {
+		dat_M.raw <- read.table(paste0(dir_M, '/', M, '.gz'), header=T) 
+		dat_M.snp <- dat_M.raw %>% filter(P<5e-8) %>% dplyr::select(SNP)
+		dat_M.iv <- read.table(paste0(dir_M, '/', M, '.top.snp'), header=T); names(dat_M.iv) <- "SNP"  
+	}
+	
 	for (X in Xs) { # X
-		dat_X.raw <- read.table(paste0(dir_X, '/', X, '.gz'), header=T)
-		dat_X.snp <- dat_X.raw %>% filter(P<5e-8) %>% dplyr::select(SNP)
-		dat_X.iv <- read.table(paste0(dir_X, '/', X, '.top.snp'), header=T); names(dat_X.iv) <- "SNP" 
+		if (ieu_X_use) {
+			dat_X.snp <- extract_instruments(outcomes=X, clump=F) %>% select(SNP)
+		} else {
+			dat_X.raw <- read.table(paste0(dir_X, '/', X, '.gz'), header=T)
+			dat_X.snp <- dat_X.raw %>% filter(P<5e-8) %>% dplyr::select(SNP)
+			dat_X.iv <- read.table(paste0(dir_X, '/', X, '.top.snp'), header=T); names(dat_X.iv) <- "SNP" 
+		}
 		dat_XnM.snp <- rbind(dat_X.iv, dat_M.iv) %>% unique() # 最理想的是把 dat_X.snp和dat_M.snp合并然后 %>% clump_data() %>% select(SNP)
-		dat_X <- dat_X.raw %>% merge(dat_XnM.snp) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
-		dat_M <- dat_M.raw %>% merge(dat_XnM.snp) %>% format_data(type='outcome', snp_col='SNP',  effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome=M)
+		if (ieu_X_use) {
+			dat_X <- extract_outcome_data(dat_XnM.snp, X) %>% convert_outcome_to_exposure()
+		} else {
+			dat_X <- dat_X.raw %>% merge(dat_XnM.snp) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
+		}
+		if (ieu_M_use) {
+			dat_M <- extract_outcome_data(dat_XnM.snp, M)
+		} else {
+			dat_M <- dat_M.raw %>% merge(dat_XnM.snp) %>% format_data(type='outcome', snp_col='SNP',  effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome=M)
+		}
 		dat_XM <- harmonise_data(dat_X, dat_M, action=1)
-		# Step1: M ~ X
+		# Step1: X --> M
 		res_X2M <- mr(dat_XM, method_list=c("mr_wald_ratio", "mr_ivw")); res_X2M 
 			beta_X2M <- res_X2M %>% pull(b); se_X2M <- res_X2M %>% pull(se); p_X2M <- signif(res_X2M %>% pull(pval),2)
 		names(dat_XM) <- gsub("outcome", "mediator", names(dat_XM))
@@ -31,8 +51,12 @@ for (M in Ms) { # M
 		for (Y in Ys) {
 			ivw_p <- as.numeric(XYs[X,Y]); if (is.na(ivw_p) | ivw_p > 1e-4) next
 			writeLines(paste('\n\n\t-->Run:', X, M, Y))
-			dat_Y.raw <- read.table(paste0(dir_Y, '/', Y, '.gz'), header=T)
-			dat_Y <- merge(dat_Y.raw, dat_XnM.snp) %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)
+			if (ieu_Y_use) {
+				dat_Y <- extract_outcome_data(dat_XnM.snp, Y)
+			} else {
+				dat_Y.raw <- read.table(paste0(dir_Y, '/', Y, '.gz'), header=T)
+				dat_Y <- merge(dat_Y.raw, dat_XnM.snp) %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)
+			}
 			dat_XY <- harmonise_data(dat_X, dat_Y, action=1) 
 			# Total effect
 			res_X2Y <- mr(dat_XY, method_list=c("mr_wald_ratio", "mr_ivw")); res_X2Y 
@@ -45,7 +69,7 @@ for (M in Ms) { # M
 			names(dat) <- gsub("\\.x$", "", names(dat))
 			dat <- subset(dat, select=!grepl("\\.y", names(dat)))
 			if (nrow(dat)==0) next
-			# Step 2: Y ~ M + X, 使用 MVMR from WSpiller Package
+			# Step 2: M (+X) --> Y, 使用 MVMR from WSpiller Package
 			dat1 <- format_mvmr(RSID=dat$SNP, BXGs=subset(dat, select=c(beta.mediator, beta.exposure)), BYG=dat$beta.outcome, seBXGs=subset(dat, select=c(se.mediator, se.exposure)), seBYG=dat$se.outcome)
 				res_mvmr <- ivw_mvmr(r_input=dat1); res_mvmr
 				beta_M2Y.adjX=res_mvmr[1,1]; se_M2Y.adjX=res_mvmr[1,2]; p_M2Y.adjX=signif(res_mvmr[1,4],2)
