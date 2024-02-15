@@ -84,14 +84,15 @@ done
 
 
 ## #3.3. GWAS的管理、QC、注释
-> 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。Pheweb的GWAS文件需要按照CHR和POS排好序，可用 sort -k 2,2n -k 3,3n 这样的命令来实现。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
+> 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
 > Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/173#issuecomment-1581798702)，用户可以在安装pheweb 后找到 add_rsids.py 文件，修改一行代码。如果用 which python 得到的python 路径是 XYZ/bin/python，那么 add_rsids.py 就位于 XYZ/lib/python3.8/site-packages/pheweb/load。将该代码的140行做如下修改即可。
 ```
 修改前：rsids = [rsid['rsid'] for rsid in rsid_group if cpra['ref'] == rsid['ref'] and are_match(cpra['alt'], rsid['alt'])]
 修改后：rsids = [rsid['rsid'] for rsid in rsid_group if (cpra['ref'] == rsid['ref'] and are_match(cpra['alt'], rsid['alt'])) or (cpra['ref'] == rsid['alt'] and are_match(cpra['alt'], rsid['ref']))]
 ```
 > 
-用户也可以在得到[pheweb网站](https://resources.pheweb.org)上的 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid.py，dos2unix add_rsid2.py，然后运行如下示例命令。注意事项，--sep 后面有双引号，输入文件必须是按照 CHR 和 POS 排好序的（可用sort -k 1,1n -k 2,2n）。
+用户也可以在得到[pheweb网站](https://resources.pheweb.org)上的 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid.py，dos2unix add_rsid2.py，然后运行如下示例命令。注意:--sep 后面有双引号。
+GWAS文件必须按照CHR和POS排好序，可用sort -k 1,1V -k 2,2n来实现，-V是为了把chrX和chrY排到最后，但是需要把第一行先写到新文件里。
 ```
 python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d files/dbsnp/rsids-v154-hg19.tsv.gz -o out.tsv
 ```
