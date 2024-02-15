@@ -84,7 +84,7 @@ done
 
 
 ## #3.3. GWAS的管理、QC、注释
-> 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
+> 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。Pheweb的GWAS文件需要按照CHR和POS排好序，可用 sort -k 2,2n -k 3,3n 这样的命令来实现。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
 > Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/173#issuecomment-1581798702)，用户可以在安装pheweb 后找到 add_rsids.py 文件，修改一行代码。如果用 which python 得到的python 路径是 XYZ/bin/python，那么 add_rsids.py 就位于 XYZ/lib/python3.8/site-packages/pheweb/load。将该代码的140行做如下修改即可。
 ```
 修改前：rsids = [rsid['rsid'] for rsid in rsid_group if cpra['ref'] == rsid['ref'] and are_match(cpra['alt'], rsid['alt'])]
