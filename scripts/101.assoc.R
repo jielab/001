@@ -17,7 +17,8 @@ dat0 <- dat0 %>%
 	a_se = factor(paste(a, se, sep="."), levels=c("non-A.se", "non-A.non-se", "A.se", "A.non-se")), # 把最多的组作为ref
 	o_se = factor(paste(o, se, sep="."), levels=c("non-O.se", "non-O.non-se", "O.se", "O.non-se")),
 	s = ifelse(sp1.S==0, "non-S", "S"), z = ifelse(sp1.Z==0, "non-Z", "Z"),
-	vte.f2 = hardcall(vte.F2.rs1799963_G), vte.f5= hardcall(vte.F5.rs6025_C)
+	vte.f2 = hardcall(vte.F2.rs1799963_G), vte.f5= hardcall(vte.F5.rs6025_C),
+	vte.ff = ifelse( (vte.f2==0 | vte.f5==0), "homozygote", ifelse((vte.f2==1 & vte.f5==1), "compound", ifelse((vte.f2==2 & vte.f5==2), "wild-type", "heterozygote"))) 
 	) 
 prop.table(table(dat0$abo, dat0$fut2.rs601338_A),1)  
 	naniar::gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=TRUE)), facet=sex)
