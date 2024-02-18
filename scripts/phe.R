@@ -1,4 +1,4 @@
-setwd("C:/Users/jiehu/Desktop")
+setwd("D:/")
 pacman::p_load(data.table, dplyr, tidyverse, crosswalkr, lubridate)
 indir = "D:/data/ukb/phe/"
 dates_bad=as.Date(c("1900-01-01", "1901-01-01", "1902-02-02", "1903-03-03", "1999-01-01", "2037-07-07"))
@@ -9,27 +9,36 @@ dates_bad=as.Date(c("1900-01-01", "1901-01-01", "1902-02-02", "1903-03-03", "199
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source(paste0(indir,"raw-670287/vip.r")); phe1 <- bd %>% rename(eid=f.eid) # use the latest version first
 source(paste0(indir,"raw-50136/vip.r")); phe2 <- subset(bd, select=!names(bd) %in% names(phe1)) 
-phe0 <- merge(phe1, phe2, by.x="eid", by.y="f.eid", all=TRUE) 
-	dates <- names(phe0)[sapply(phe0, is.Date)]; summary(phe0[,dates]) # check invalid dates
-	for (date1 in dates) { phe0[[date1]][phe0[[date1]] %in% dates_bad] <- NA }
+source(paste0(indir,"raw-50136/edu.r")); edu <- bd %>% dplyr::select(f.eid, f.6138.0.0) %>% rename(eid=f.eid, edu=f.6138.0.0) 
+phe0 <- merge(phe1, phe2, by.x="eid", by.y="f.eid", all=TRUE) %>% 
+	rename(f.25019.0.0=f.25019.2.0, f.25020.0.0=f.25020.2.0) 
+phe <- phe0 %>% 
+	dplyr::select(grep("eid|\\.0.0", names(phe0), value=T), f.48.2.0, f.49.2.0, f.21001.2.0) # 目前只保留 baseline 数据
+	dates <- names(phe)[sapply(phe, is.Date)]; summary(phe[,dates]) # check invalid dates
+	for (date1 in dates) { phe[[date1]][phe[[date1]] %in% dates_bad] <- NA }
 vip <- read.table(paste0(indir,"common/ukb.vip.dat"), header=FALSE, flush=TRUE)
 	vip$V1[duplicated(vip$V1)]; vip$V2[duplicated(vip$V2)] #check duplication
-	fid <- as.data.frame(names(phe0)[-1]); names(fid)="fid1"
-	fid[c('f0','f1','f2')] <- str_split_fixed(fid$fid1, "\\.", 3)
+	fid <- as.data.frame(names(phe)[-1]); names(fid)="id1"
+	fid[c('f0','f1','f2')] <- str_split_fixed(fid$id1, "\\.", 3)
 	fid <- merge(fid, vip, by.x="f1", by.y="V1", all.x=TRUE) %>% 
-		mutate(fid2 = ifelse(f2=="0.0", V2, paste0(V2,".",f2))) 
-phe0 <- phe0 %>% crosswalkr::renamefrom(fid, fid1, fid2, drop_extra=F) %>% filter(eid>0) 
-phe <- phe0 %>% 
+		mutate(id2 = ifelse(f2=="0.0", V2, paste0(V2,".",f2))) 
+phe <- phe %>% crosswalkr::renamefrom(fid, id1, id2, drop_extra=F) %>% 
+	filter(eid>0) %>% rename(chunk=height_sitting) %>% merge(edu, by="eid", all=TRUE)
+phe <- phe %>% 
 	mutate(
-	across(grep("deprivation|date", names(phe0), invert=T, value=T), ~ifelse(.x<0, NA, .x)), # 该命令也不适用于date变量
-	ethnic_cat = ifelse(grepl("^1",ethnicity),1, ifelse(grepl("^2",ethnicity),2, ifelse(grepl("^3",ethnicity),3, ifelse(grepl("^4",ethnicity),4, ethnicity)))),
-	ethnic_cat = factor(ethnic_cat, levels=c(1,2,3,4,5,6), labels=c("White","Mixed","Asian","Black","Chinese","Other")),	
-	age_cat = cut(age, breaks=seq(35,75,5)),
-	sex_f = ifelse(sex==0, "female", "male"),
-	bmi_cat = cut(bmi, breaks=c(10,18.5,25,30,100), labels=c("lean","healthy","overweight","obese")),
-	bmi_cat = factor(bmi_cat, levels=c("healthy","lean","overweight","obese")),
-	smoke_status = factor(smoke_status, levels=0:2, labels=c("never","previous","current")), 
-	alcohol_status = factor(alcohol_status, levels=0:2, labels=c("never","previous","current"))
+		across(grep("deprivation|date", names(phe), invert=T, value=T), ~ifelse(.x<0, NA, .x)), # 该命令也不适用于date变量
+		ethnic_cat = ifelse(grepl("^1",ethnicity),1, ifelse(grepl("^2",ethnicity),2, ifelse(grepl("^3",ethnicity),3, ifelse(grepl("^4",ethnicity),4, ethnicity)))),
+		ethnic_cat = factor(ethnic_cat, levels=c(1,2,3,4,5,6), labels=c("White","Mixed","Asian","Black","Chinese","Other")),	
+		age_cat = cut(age, breaks=seq(35,75,5)),
+		sex_f = ifelse(sex==0, "female", "male"),
+		bmi_cat = cut(bmi, breaks=c(10,18.5,25,30,100), labels=c("lean","healthy","overweight","obese")),
+		bmi_cat = factor(bmi_cat, levels=c("healthy","lean","overweight","obese")),
+		whr = waist / hip, whr.2.0 = waist.2.0 / hip.2.0, whr_diff = whr.2.0 - whr, bmi_diff = bmi.2.0 - bmi, 
+		smoke_status = factor(smoke_status, levels=0:2, labels=c("never","previous","current")), 
+		alcohol_status = factor(alcohol_status, levels=0:2, labels=c("never","previous","current")),
+		leg = height - chunk, leg_ratio = leg / chunk, chunk_ratio = chunk / leg,
+		leg_ratio_adj = leg_ratio / height, chunk_ratio_adj = chunk_ratio / height,
+		walk_pace=walk_pace-1, walk_brisk=ifelse(walk_pace==2, 1, 0)
 	)
 saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
 
@@ -87,7 +96,20 @@ saveRDS(fod, file="D:/data/ukb/Rdata/ukb.fod.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# merge all together
+# 生活方式（LE8等）
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 社会经济地位（SES等）
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#上面的 phe 已经提取了age_edu(845), edu(6138), edu_score(26414)
+job(20277)
+source(paste0(indir,"raw-50136/job.r")); phe1 <- bd %>% rename(eid=f.eid) 
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# merge all together 并生成GWAS需要的.pheno文件
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 phe <- readRDS("D:/data/ukb/Rdata/ukb.phe.rds")
 icd <- readRDS("D:/data/ukb/Rdata/ukb.icd.rds")
@@ -96,6 +118,29 @@ gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds")
 hla <- readRDS("D:/data/ukb/Rdata/ukb.hla.rds") 
 #hla <- hla %>% select(which(colMeans(.,na.rm=T) >=0.02))
 prs0 <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T)
-	prs <- subset(prs0, select=grepl("^eid$|score_sum$", names(prs0)))
-dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, icd, fod, gen, prs)) 
+	prs <- subset(prs0, select=grepl("^eid$|score_sum$|allele_cnt$", names(prs0)))
+dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, icd, fod, gen, prs)) %>% filter(eid>0)
 saveRDS(dat0, file="D:/data/ukb/Rdata/all.Rdata")
+dat <- dat0 %>% filter(ethnic_cat=="White" & is.na(related)) %>% 
+	rename(IID=eid) %>% mutate(FID=IID) %>% 
+	dplyr::select(FID, IID, age, sex, PC1, PC2, PC3, PC4, bmi, height, leg, chunk, leg_ratio, leg_ratio_adj, chunk_ratio, chunk_ratio_adj, walk_pace, walk_brisk)
+	write.table(dat, "ukb.pheno", append=FALSE, quote=FALSE, row.names=FALSE)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# find trio
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ped <- subset(dat0, ethnicity_gen==1, select=c("eid", "age", "sex", "birth_year"))
+kin <- read.table("D:/data/ukb/phe/common/ukb.kin0", header=T, as.is=T) %>% 
+	subset(ID1>0 & InfType=="PO", select=c("ID1", "ID2"))
+dat <- merge(ped, kin, by.x="eid", by.y="ID1")
+dat <- merge(ped, dat, by.x="eid", by.y="ID2") %>% 
+	subset(abs(age.x - age.y)> 18) %>% rename(eid.x=eid) %>%
+	mutate(
+		child = ifelse(age.x > age.y, eid.y, eid.x),
+		father = ifelse(eid.x==child & sex.y==1, eid.y, ifelse(eid.y==child & sex.x==1, eid.x, NA)),
+		mother = ifelse(eid.x==child & sex.y==0, eid.y, ifelse(eid.y==child & sex.x==0, eid.x, NA))
+	)
+father <- subset(dat, !is.na(father), select=c("child", "father"))
+mother <- subset(dat, !is.na(mother), select=c("child", "mother"))
+trio <- merge(father, mother)

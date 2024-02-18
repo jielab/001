@@ -1,14 +1,15 @@
-setwd("D:/tmp")
+setwd("D:/")
 pacman::p_load(data.table, readxl, lubridate, tidyverse, plotly, dplyr, survival, survminer, ggsurvfit, reshape2, psych)
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 std <- function(x) (x - mean(x,na.rm=T)) / sd(x,na.rm=T)
 hardcall <- function(x) ifelse(x<0.5, 0, ifelse(x<1.5, 1, 2))
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 读入数据，生成几个ABO相关新变量，sanity check一下 
+# 读入数据，生成几个新变量，sanity check一下 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") %>% rename (chunk=height_sitting) 
-dat0$icdDate_vte <- as.Date(apply(subset(dat0, select=c(icdDate_pe, icdDate_i80, icdDate_i82)), 1, FUN=min, na.rm=T))
+dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") 
+dat0$icdDate_vte <- as.Date(apply(subset(dat0, select=c(icdDate_dvt, icdDate_pe)), 1, FUN=min, na.rm=T))
 dat0 <- dat0 %>% 
 	mutate (
 	a = ifelse(abo=="A", "A", "non-A"), o = ifelse(abo=="O", "O", "non-O"),
@@ -16,8 +17,6 @@ dat0 <- dat0 %>%
 	a_se = factor(paste(a, se, sep="."), levels=c("non-A.se", "non-A.non-se", "A.se", "A.non-se")), # 把最多的组作为ref
 	o_se = factor(paste(o, se, sep="."), levels=c("non-O.se", "non-O.non-se", "O.se", "O.non-se")),
 	s = ifelse(sp1.S==0, "non-S", "S"), z = ifelse(sp1.Z==0, "non-Z", "Z"),
-	leg = height - chunk, leg_ratio = leg / chunk, chunk_ratio = chunk / leg,
-	whr = waist / hip, whr.2.0 = waist.2.0 / hip.2.0, whr_diff = whr.2.0 - whr, bmi_diff = bmi.2.0 - bmi, 
 	vte.f2 = hardcall(vte.F2.rs1799963_G), vte.f5= hardcall(vte.F5.rs6025_C)
 	) 
 prop.table(table(dat0$abo, dat0$fut2.rs601338_A),1)  
@@ -36,19 +35,19 @@ dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(
 # X-Y 或 X-Y-Z交互作用 批量分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% drop_na(age, sex) %>% filter(ethnic_cat=="White") %>% 
-	mutate( across(grep("walking", names(dat0), value=T), ~factor(.x)))
-Xs <- grep("^height$|^chunk$|^leg|score_sum$", names(dat), value=TRUE) 
+	mutate(across(grep("walk", names(dat0), value=T), ~factor(.x)))
 Ys <- grep("^icdDate", names(dat), value=TRUE)
+Xs <- grep("^age_sex|age_m|^edu_score|^birth_weight|^height$|^chunk|^leg|^hippo_|^fev1fvc|^stiffness|^bb_|^bc_|score_sum$", names(dat), value=TRUE) 
 Zs <- grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
 outfile="101.assoc.tsv"; file.create(outfile)
 #sink("101.assoc.log")
 for (Y in Ys) {
-	writeLines(paste('\n\n-->Run:', Y))
+	writeLines(paste('\n\n--> Run:', Y))
 	dat1 <- dat %>%
 	mutate(
 		Y_date = dat[[Y]],
-		Y_yes = ifelse( is.na(dat[[Y]]), 0,1),
-		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(death_date), death_date, as.Date("2021-12-31")))),
+		Y_yes = ifelse( is.na(Y_date), 0,1),
+		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_years >0 )
 	surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
@@ -60,9 +59,9 @@ for (Y in Ys) {
 		res.cox <- coef(summary(fit.cox))
 		b=round(res.cox[1,1],4); se=round(res.cox[1,3],4); p=signif(res.cox[1,5],2)
 		write.table(paste(Y, X, b, se, p), file=outfile, sep='\t', row.names=FALSE, col.names=FALSE, append=TRUE, quote=FALSE)
+		next
 		dat1$X_qt <- cut(dat1$X, breaks=quantile(dat1$X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5))
 		dat1$X_qt <- factor(ifelse(dat1$X_qt=="q1", "low", ifelse(dat1$X_qt=="q5", "high", "middle")), levels=c("low","middle","high"))
-		next
 		for (Z in Zs) {
 			print(paste("RUN", X, Y, Z))
 			dat1$Z <- dat1[[Z]]
@@ -77,45 +76,44 @@ for (Y in Ys) {
 }
 #sink()
 # 可用下面代码 transpose 汇总数据，画 heatmap 图
-dat <- read.table('D:/tmp/101.assoc.tsv', header=F)
-dat$bnp <- paste(dat$V3, "(", dat$V5, ")", sep="")
-bnp <- dat %>% reshape2::acast(V2 ~ V1, value.var='bnp')
-write.table(bnp, file="101.new.tsv", sep='\t', row.names=TRUE, col.names=TRUE, append=FALSE, quote=FALSE)
-#plt <- ggcorrplot(dat.b, lab=TRUE, p.mat=dat.p, sig.level=1e-4, insig ='blank') + theme(axis.text=element_text(size=12, face='bold', color=c("black","blue")))
+dat <- read.table('D:/101.assoc.tsv', header=F) %>% rename(b=V3, p=V5)
+dat$bp <- paste(dat$b, "(", dat$p, ")", sep="")
+reshape_bp <- dat %>% reshape2::acast(V2 ~ V1, value.var='bp')
+write.table(reshape_bp, file="101.new.tsv", sep='\t', row.names=TRUE, col.names=TRUE, append=FALSE, quote=FALSE)
+library(ggcorrplot); plot_bp <- ggcorrplot::ggcorrplot(dat_b, lab=TRUE, p.mat=dat_p, sig.level=1e-4, insig ='blank') + theme(axis.text=element_text(size=12, face='bold', color=c("black","blue")))
 	
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 针对某一*显著*结果的精细分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Y="icdDate_t2dm" 
-X="whr"; Z="y.t2dm.score_sum"
-dat$X = dat[[X]]; dat$Z = dat[[Z]]
-dat1 <- dat %>% drop_na(age, sex) 
+Y="icdDate_prostate_cancer" 
+X="age_sex"; dat$X = dat[[X]]
+Z="se"; dat$Z = dat[[Z]]
+dat1 <- dat %>% filter(sex==1)
 dat1 <- dat1 %>% 
 	mutate(
-		X = std(X),
-		Z = std(Z),
-		X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
-		Z_qt = cut(Z, breaks=quantile(Z, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
-		X_qt = factor(ifelse(X_qt=="q1", "loss", ifelse(X_qt=="q5", "gain", "same")), levels=c("loss", "same", "gain")),
-		Z_qt = factor(ifelse(Z_qt=="q1", "low", ifelse(Z_qt=="q5", "high", "middle")), levels=c("low", "high", "middle")),
+		#X = inormal(X),
+		#Z = inormal(Z),
+		#X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
+		#Z_qt = cut(Z, breaks=quantile(Z, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
+		#X_qt = factor(ifelse(X_qt=="q1", "loss", ifelse(X_qt=="q5", "gain", "same")), levels=c("loss", "same", "gain")),
+		#Z_qt = factor(ifelse(Z_qt=="q1", "low", ifelse(Z_qt=="q5", "high", "middle")), levels=c("low", "high", "middle")),
 		Y_date = dat1[[Y]],
-		Y_yes = ifelse(is.na(dat1[[Y]]), 0, 1),
-		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(death_date), death_date, as.Date("2021-12-31")))),
+		Y_yes = ifelse(is.na(Y_date), 0, 1),
+		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_years >0 )
-prop.table(table(dat1$vte.f2, dat1$Y_yes),1); prop.table(table(dat1$vte.f5, dat1$Y_yes),1)
+table(dat1$Y_yes, useNA="always")
 	aggregate(Y_yes ~ X_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
 	aggregate(Y_yes ~ Z_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
-	summary(glm(Y_yes ~ X_qt +Z_qt + X_qt*Z_qt + age+sex+bmi+whr +smoke_status+alcohol_status + PC1+PC2, data=dat1))
-
+	coef(summary(glm(Y_yes ~ X + age+sex+bmi+smoke_status+alcohol_status +PC1+PC2, data=dat1)))
 surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
-	km.obj <- survfit(surv.obj ~X_qt + Z_qt, data=dat1)
+km.obj <- survfit(surv.obj ~X_qt + Z_qt, data=dat1)
 	plot(km.obj, ylim=c(0.5,1)); plot(km.obj, fun=function(x) 1-x)
 	ggsurvplot(km.obj, ylim=c(0,1), risk.table=FALSE)
 	pec::predictSurvProb(???)
-	
-	fit.cox <- coxph(surv.obj ~ X +Z + X*alcohol_status + age+sex+bmi+whr +smoke_status+alcohol_status + PC1+PC2, data=dat1)
-	print(coef(summary(fit.cox)))
+fit.cox <- coxph(surv.obj ~ X +age+sex+PC1+PC2+ bmi+smoke_status+alcohol_status, data=dat1); print(coef(summary(fit.cox)))
 	survminer::ggforest(fit.cox, main="", fontsize=1.2, data=dat1) # 不能显示interaction值
 	fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
+		fit.glm <- glm(outcome_yes ~ gen, data=dat, family="binomial")
+	survdiff(surv.obj ~ gen_3p, data=dat) # log-rank test

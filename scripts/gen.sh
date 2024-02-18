@@ -22,7 +22,7 @@ for chr in {1..22} X XY; do # Y MT for typed only
 	gfetch 23158 -c$chr # WES PLINK bed
 	gfetch 23158 -c$chr -m
 	" > $outdir/chr$chr.cmd
-	cd $outdir # short, medium, large:wq
+	cd $outdir # short, medium, large
     bsub -q smp -J ukb.chr$chr -o chr$chr.LOG -e chr$chr.ERR < chr$chr.cmd
 done
 awk 'FNR!=1 && $1 <0 {print $1,$2}' chr*.psam | sort | uniq > negative.sam.id # 人为加上 5456019
