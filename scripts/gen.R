@@ -7,12 +7,7 @@ pacman::p_load(data.table, dplyr)
 imp <- read.table('D:/data/ukb/gen/imp/vip.raw.gz', header=T, as.is=T) %>% rename(eid=IID) 
 abo <- read.table('D:/data/ukb/phe/hes/covid19_misc.txt', header=T)
 apoe <- read.table("D:/data/ukb/gen/hap/apoe.hap", header=T, as.is=T) %>% rename(eid=IID) 
-sqc <- read.table("D:/data/ukb/phe/common/ukb_sqc_v2.txt", header=T, as.is=T) %>%
-	rename(garray=genotyping.array, batch=Batch, in.british=in.white.British.ancestry.subset, in.pca=used.in.pca.calculation, aneuploidy=putative.sex.chromosome.aneuploidy)
-sqc <- subset(sqc, select=grepl("eid|garray|batch|in\\.|aneuploidy|kinship|excess|PC", names(sqc)))
-# 先在LINUX里面跑：cat ukb1941_rel_s488366.dat | awk 'NR>1 {print $2}' | sort | uniq | awk 'BEGIN{print "eid related"}{print $1,"Y"}' > ukb.related
-rel <- read.table("D:/data/ukb/phe/common/ukb.related", header=T, as.is=T)
-dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(imp, abo, apoe, sqc, rel))
+dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(imp, abo, apoe))
 dat <- dat0 %>%
 	mutate(
 	abo=recode_factor(blood_group, "AA"="A", "BB"="B", "OO"="O", "AO"="A", "BO"="B"),

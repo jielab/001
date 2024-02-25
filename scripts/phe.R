@@ -44,6 +44,15 @@ saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# PC 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source(paste0(indir,"raw-50136/pc.r"))
+names(bd) <- gsub("f.22009.0.", "PC", names(bd))
+pc <- bd %>% rename(eid=f.eid)
+saveRDS(pc, file="D:/data/ukb/Rdata/ukb.pc.rds")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ICD 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source(paste0(indir,"raw-670287/icd.r")); icd <- bd

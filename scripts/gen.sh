@@ -67,6 +67,7 @@ plink2 --pmerge-list merge-list.txt -delete-pmerge-result --update-name $snps 1 
 cd $outdir
 bsub -q smp -J $label.gen -o $label.LOG -e $label.ERR < $label.cmd
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # extract APOE haplotype
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
