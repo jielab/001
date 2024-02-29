@@ -3,7 +3,7 @@ std <- function(x) (x - mean(x,na.rm=T)) / sd(x,na.rm=T)
 setwd("D:/")
 
 set.seed(12345)
-dat <- readRDS("ukb.dat")
+dat <- readRDS("ukb.rds")
 summary(lm(height ~ height.AFR.score_sum + height.EAS.score_sum + height.EUR.score_sum + height.SAS.score_sum +age+sex+PC1+PC2, data=dat))
 for (r in c("EUR", "SAS", "AFR", "EAS")){
 	dat_sub <- subset(dat, race==r); print(paste(r,nrow(dat_sub)))
