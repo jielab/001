@@ -9,7 +9,6 @@ dates_bad=as.Date(c("1900-01-01", "1901-01-01", "1902-02-02", "1903-03-03", "199
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source(paste0(indir,"raw-670287/vip.r")); phe1 <- bd %>% rename(eid=f.eid) # use the latest version first
 source(paste0(indir,"raw-50136/vip.r")); phe2 <- subset(bd, select=!names(bd) %in% names(phe1)) 
-source(paste0(indir,"raw-50136/edu.r")); edu <- bd %>% dplyr::select(f.eid, f.6138.0.0) %>% rename(eid=f.eid, edu=f.6138.0.0) 
 phe0 <- merge(phe1, phe2, by.x="eid", by.y="f.eid", all=TRUE) %>% 
 	rename(f.25019.0.0=f.25019.2.0, f.25020.0.0=f.25020.2.0) 
 phe <- phe0 %>% 
@@ -23,7 +22,7 @@ vip <- read.table(paste0(indir,"common/ukb.vip.dat"), header=FALSE, flush=TRUE)
 	fid <- merge(fid, vip, by.x="f1", by.y="V1", all.x=TRUE) %>% 
 		mutate(id2 = ifelse(f2=="0.0", V2, paste0(V2,".",f2))) 
 phe <- phe %>% crosswalkr::renamefrom(fid, id1, id2, drop_extra=F) %>% 
-	filter(eid>0) %>% rename(chunk=height_sitting) %>% merge(edu, by="eid", all=TRUE)
+	filter(eid>0) %>% rename(chunk=height_sitting) 
 phe <- phe %>% 
 	mutate(
 		across(grep("deprivation|date", names(phe), invert=T, value=T), ~ifelse(.x<0, NA, .x)), # 该命令也不适用于date变量
@@ -46,10 +45,12 @@ saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # PC 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+umap <- read.table("D:/data/ukb/ukb.umap.txt", header=TRUE) 
 source(paste0(indir,"raw-50136/pc.r"))
 names(bd) <- gsub("f.22009.0.", "PC", names(bd))
-pc <- bd %>% rename(eid=f.eid)
-saveRDS(pc, file="D:/data/ukb/Rdata/ukb.pc.rds")
+pca <- bd %>% rename(eid=f.eid) %>% merge(umap, by="eid", all=TRUE)
+saveRDS(pca, file="D:/data/ukb/Rdata/ukb.pca.rds")
+write.table(pca, "PC.txt", append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -112,15 +113,13 @@ saveRDS(fod, file="D:/data/ukb/Rdata/ukb.fod.rds")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 社会经济地位（SES等）
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#上面的 phe 已经提取了age_edu(845), edu(6138), edu_score(26414)
-job(20277)
-source(paste0(indir,"raw-50136/job.r")); phe1 <- bd %>% rename(eid=f.eid) 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # merge all together 并生成GWAS需要的.pheno文件
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 phe <- readRDS("D:/data/ukb/Rdata/ukb.phe.rds")
+pca <- readRDS("D:/data/ukb/Rdata/ukb.pca.rds")
 icd <- readRDS("D:/data/ukb/Rdata/ukb.icd.rds")
 fod <- readRDS("D:/data/ukb/Rdata/ukb.fod.rds")
 gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds") 
@@ -128,9 +127,9 @@ hla <- readRDS("D:/data/ukb/Rdata/ukb.hla.rds")
 #hla <- hla %>% select(which(colMeans(.,na.rm=T) >=0.02))
 prs0 <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T)
 	prs <- subset(prs0, select=grepl("^eid$|score_sum$|allele_cnt$", names(prs0)))
-dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, icd, fod, gen, prs)) %>% filter(eid>0)
+dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, pca, icd, fod, gen, prs)) %>% filter(eid>0)
 saveRDS(dat0, file="D:/data/ukb/Rdata/all.Rdata")
-dat <- dat0 %>% filter(ethnic_cat=="White" & is.na(related)) %>% 
+dat <- dat0 %>% filter(ethnic_cat=="White") %>% 
 	rename(IID=eid) %>% mutate(FID=IID) %>% 
 	dplyr::select(FID, IID, age, sex, PC1, PC2, PC3, PC4, bmi, height, leg, chunk, leg_ratio, leg_ratio_adj, chunk_ratio, chunk_ratio_adj, walk_pace, walk_brisk)
 	write.table(dat, "ukb.pheno", append=FALSE, quote=FALSE, row.names=FALSE)

@@ -10,7 +10,8 @@
 130	birth_east
 189	deprivation
 191	date_lost
-845	age_edu
+738	income
+845	age_education
 924	walk_pace
 971	walk_freq
 981	walk_time
@@ -21,6 +22,8 @@
 2159	gay
 2714	age_mn
 3581	age_menopause
+6138	edu
+6142	emp
 20015	height_sitting
 20022	birth_weight
 20116	smoke_status
