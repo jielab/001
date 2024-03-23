@@ -1,3 +1,4 @@
+# Lifestyle和SES相关代码，可参考 https://github.com/XiangyuYe/Infection_SES/
 setwd("D:/")
 pacman::p_load(data.table, dplyr, tidyverse, crosswalkr, lubridate)
 indir = "D:/data/ukb/phe/"
@@ -106,19 +107,32 @@ saveRDS(fod, file="D:/data/ukb/Rdata/ukb.fod.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 生活方式（LE8等）
+# 社会经济地位（SES）
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 社会经济地位（SES等）
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+set.seed(12345)
+pacman::p_load(dplyr, tidyverse, bigreadr, poLCA)
+phe0 <- readRDS("D:/data/ukb/Rdata/ukb.phe.rds") 
+phe <- phe0 %>% dplyr::select(eid, age, sex, emp, income, edu) %>% drop_na() #%>% dplyr::sample_n(10000) 
+sink("ses.log")
+phe$emp <- ifelse(phe$emp %in% c(1,2,6,7), 2, 1)
+phe$edu <- 7 - phe$edu
+SES_LCA_list <- list()
+for (n_class in 3:6) { 
+	SES_LCA_list[[n_class]] <- poLCA(cbind(edu, emp, income) ~1, data=phe, 
+		nclass=n_class, maxiter=10000, tol=1e-6, nrep=2, graphs=TRUE, probs.start=NULL)
+}
+sink()
+source("D:/scripts/library/00_LCA_out.R")
+LCA_out(SES_LCA_list,3,3)
+phe$ses <- SES_LCA_list[[3]]$predclass
+saveRDS(subset(ses, select=c(eid, ses)), file="D:/data/ukb/Rdata/ukb.ses.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # merge all together 并生成GWAS需要的.pheno文件
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 phe <- readRDS("D:/data/ukb/Rdata/ukb.phe.rds")
+ses <- readRDS("D:/data/ukb/Rdata/ukb.ses.rds")
 pca <- readRDS("D:/data/ukb/Rdata/ukb.pca.rds")
 icd <- readRDS("D:/data/ukb/Rdata/ukb.icd.rds")
 fod <- readRDS("D:/data/ukb/Rdata/ukb.fod.rds")
