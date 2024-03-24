@@ -112,12 +112,11 @@ saveRDS(fod, file="D:/data/ukb/Rdata/ukb.fod.rds")
 set.seed(12345)
 pacman::p_load(dplyr, tidyverse, bigreadr, poLCA)
 phe0 <- readRDS("D:/data/ukb/Rdata/ukb.phe.rds") 
-phe <- phe0 %>% dplyr::select(eid, age, sex, emp, income, edu) %>% drop_na() #%>% dplyr::sample_n(10000) 
-sink("ses.log")
+phe <- phe0 %>% dplyr::select(eid, age, sex, ethnic_cat, emp, income, edu) %>% filter(ethnic_cat=="White") %>% drop_na() #%>% dplyr::sample_n(10000) 
+sink("ses2.log")
 phe$emp <- ifelse(phe$emp %in% c(1,2,6,7), 2, 1)
-phe$edu <- 7 - phe$edu
 SES_LCA_list <- list()
-for (n_class in 3:6) { 
+for (n_class in 2:6) { 
 	SES_LCA_list[[n_class]] <- poLCA(cbind(edu, emp, income) ~1, data=phe, 
 		nclass=n_class, maxiter=10000, tol=1e-6, nrep=2, graphs=TRUE, probs.start=NULL)
 }
