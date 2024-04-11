@@ -3,15 +3,6 @@ pacman::p_load(data.table, dplyr, tidyverse, crosswalkr, lubridate, naniar)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Mortality
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- readRDS(file="D:/data/ukb/Rdata/ukb.phe.rds") %>% 
-	mutate(year_death=year(date_death), month_death=month(date_death), day_death=day(date_death))
-	hist(dat$year_death); table(dat$year_death)
-	subset(dat, select=c(date_death, age_death, death_cause, death_icd1)) %>% drop_na() %>% head()
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # lifestyle 之 “管住嘴、 迈开腿、 躺下睡”
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 健康植物性饮食指数（PMID: 36976560）
@@ -82,7 +73,8 @@ saveRDS(life_factor_df, file = "D:/data/ukb/Rdata/ukb.life.rds")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 空气和噪音污染，待完成
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 复旦公卫 Predicting particulate matter, nitrogen dioxide, and ozone across Great Britain with high spatiotemporal resolution based on random forest models
 air_no2, air_nox, 
 noise = rowMeans(cbind(noise_day, noise_evening+5, noise_night+10), na.rm = T),
 traffic, dist2road = 1/dist2road, log_traffic = log(traffic), logi_dist2road = -log(dist2road)
