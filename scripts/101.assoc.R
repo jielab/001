@@ -6,34 +6,19 @@ hardcall <- function(x) ifelse(x<0.5, 0, ifelse(x<1.5, 1, 2))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 读入数据，生成几个新变量，sanity check一下 
+# 最简单直接的 —— Mortality
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") 
-dat0$icdDate_vte <- as.Date(apply(subset(dat0, select=c(icdDate_dvt, icdDate_pe)), 1, FUN=min, na.rm=T))
-dat0 <- dat0 %>% 
-	mutate (
-	a = ifelse(abo=="A", "A", "non-A"), o = ifelse(abo=="O", "O", "non-O"),
-	se = ifelse(fut2.rs601338_A==2, "non-se", "se"), # [PMID: 30345375]
-	a_se = factor(paste(a, se, sep="."), levels=c("non-A.se", "non-A.non-se", "A.se", "A.non-se")), # 把最多的组作为ref
-	o_se = factor(paste(o, se, sep="."), levels=c("non-O.se", "non-O.non-se", "O.se", "O.non-se")),
-	s = ifelse(sp1.S==0, "non-S", "S"), z = ifelse(sp1.Z==0, "non-Z", "Z"),
-	walk_freq = ifelse(walk_freq %in% 1:2, "low", ifelse(walk_freq %in% 3:4, "average", "high")),
-	walk_time = ifelse(walk_time %in% 1:2, "short", ifelse(walk_time %in% 3:4, "average", "long")),
-	walk_freq = factor(walk_freq, levels=c("low", "average", "high")),
-	walk_time = factor(walk_time, levels=c("short", "average", "long")),
-	vte.f2 = hardcall(vte.F2.rs1799963_G), vte.f5= hardcall(vte.F5.rs6025_C),
-	vte.ff = ifelse( (vte.f2==0 | vte.f5==0), "homozygote", ifelse((vte.f2==1 & vte.f5==1), "compound", ifelse((vte.f2==2 & vte.f5==2), "wild-type", "heterozygote"))) 
+dat <- readRDS(file="D:/data/ukb/Rdata/ukb.phe.rds") %>% # dplyr::select(eid, age, sex, ethnic_cat, birth_year, date_attend, date_death)
+	mutate(
+		birth_year=ifelse((birth_year<1936 | birth_year>1970), NA, birth_year),
+		birth_5year=cut(birth_year, breaks=seq(1935,1970,5)),
+		attend_year=year(date_attend), death_year=year(date_death), lifespan=death_year - birth_year
 	) 
-prop.table(table(dat0$abo, dat0$fut2.rs601338_A),1) 
-	naniar::gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=TRUE)), facet=sex)
-	hist(dat0$icdDate_covid, breaks="weeks", freq=TRUE)
-	group_by(dat0, abo, se) %>% summarise(count=n(), mean=mean(bb_TES, na.rm=TRUE))
-	aggregate(bb_TES ~ abo*se, dat0, FUN=function(x) {round(c(length(x), mean(x), sd(x), quantile(x,probs=c(0,0.5,1))), 2)} )
-	bp <- boxplot(bb_TES ~ abo*se, dat0, las=2, col=rainbow(6), font=2); bp$stats
-	dat0 %>% drop_na(abo, se) %>% ggplot(aes(x=abo, y=bb_TES, fill=se)) + geom_boxplot() + stat_summary(fun.y=mean, color="darkred", position=position_dodge(0.75), geom="point", shape=18, size=3)
-dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(dat0), value=TRUE)) %>% na.omit() %>% dplyr::sample_n(10000)
-	#car::scatterplotMatrix(dat, spread=FALSE, smoother.args=list(lty=0.1))
-	#psych::pairs.panels(dat)
+	table(dat$birth_year)
+dat1 <- dat %>% filter(birth_year <=1960, lifespan <=60) %>% 
+	mutate(death_icd1l = substr(death_icd1,1,1))
+	table(dat1$death_icd1l)
+	aggregate(lifespan ~ birth_year, dat1, FUN=function(x) {round(c(length(x), min(x), mean(x), max(x)),1)} )
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,8 +26,6 @@ dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% drop_na(age, sex) %>% filter(ethnic_cat=="White") %>% 
 	mutate(across(grep("walk", names(dat0), value=T), ~factor(.x)))
-aggregate(cad.mult.score_sum ~ age_cat, dat, FUN=function(x) {round(c(length(x), mean(x), sd(x)), 2)} )
-	summary(lm(cad.mult.score_sum ~ age + sex + PC1+PC2, data=dat)) # height.EUR.score_sum, t2dm.EUR.score_sum, y.stroke.score_sum
 Ys <- grep("^fod_|icdDate_", names(dat), value=TRUE)
 Xs <- grep("^age_sex|age_m|^edu_score|^birth_weight|^height$|^chunk|^leg|^hippo_|^fev1fvc|^stiffness|score_sum$", names(dat), value=TRUE) 
 Zs <- grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
@@ -93,9 +76,11 @@ library(ggcorrplot); plot_bp <- ggcorrplot::ggcorrplot(dat_b, lab=TRUE, p.mat=da
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 针对某一*显著*结果的精细分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 看 birth_month 和 CVD 及 风湿病的相关性
+# 看 BMI change 和 job 的相关性
 dat1 <- dat %>% dplyr::select(height, chunk, leg, chunk_ratio, icdDate_cad, icdDate_vte, icdDate_lung_cancer, date_attend, date_lost, date_death, age,sex,bmi,whr,smoke_status,alcohol_status,PC1,PC2)
 dat1 <- dat %>% 
-	rename(X=walk_pace, Y_date=icdDate_cad, Z=vte.nf.score_sum) %>% 
+	rename(X=walk_pace, Y_date=icdDate_vte, Z=vte.nf.score_sum) %>% 
 	mutate(
 	#	X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
 		Z_qt = cut(Z, breaks=quantile(Z, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
