@@ -51,19 +51,21 @@ phe <- phe0 %>%
 		walk_time = factor(walk_time, levels=c("short", "average", "long"))
 	)
 table(phe$ethnicity, phe$ethnic_cat, useNA="always")
-	naniar::gg_miss_var(subset(phe, select=grep("sex|bb_", names(phe), value=TRUE)), facet=sex)
+naniar::gg_miss_var(subset(phe, select=grep("sex|bb_", names(phe), value=TRUE)), facet=sex)
+hist(phe$bmi_diff, nclass=100)
 saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # PC 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-umap <- read.table("D:/data/ukb/ukb.umap.txt", header=TRUE) 
+umap <- read.table(paste0(indir,"raw-50136/pc-umap.txt"), header=F)
+names(umap) <- c("eid", "umap1", "umap2")
 source(paste0(indir,"raw-50136/pc.r"))
 names(bd) <- gsub("f.22009.0.", "PC", names(bd))
-pca <- bd %>% rename(eid=f.eid) %>% merge(umap, by="eid", all=TRUE)
-saveRDS(pca, file="D:/data/ukb/Rdata/ukb.pca.rds")
-write.table(pca, "PC.txt", append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
+pc <- bd %>% rename(eid=f.eid) %>% merge(umap, by="eid", all=TRUE)
+saveRDS(pc, file="D:/data/ukb/Rdata/ukb.pc.rds")
+write.table(pc, "PC.txt", append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -119,8 +121,7 @@ saveRDS(fod, file="D:/data/ukb/Rdata/ukb.fod.rds")
 # merge all together 并生成GWAS需要的.pheno文件
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 phe <- readRDS("D:/data/ukb/Rdata/ukb.phe.rds")
-ses <- readRDS("D:/data/ukb/Rdata/ukb.ses.rds")
-pca <- readRDS("D:/data/ukb/Rdata/ukb.pca.rds")
+pc  <- readRDS("D:/data/ukb/Rdata/ukb.pc.rds")
 icd <- readRDS("D:/data/ukb/Rdata/ukb.icd.rds")
 fod <- readRDS("D:/data/ukb/Rdata/ukb.fod.rds")
 gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds") 
@@ -128,7 +129,7 @@ hla <- readRDS("D:/data/ukb/Rdata/ukb.hla.rds")
 #hla <- hla %>% select(which(colMeans(.,na.rm=T) >=0.02))
 prs0 <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T)
 	prs <- subset(prs0, select=grepl("^eid$|score_sum$|allele_cnt$", names(prs0)))
-dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, pca, icd, fod, gen, prs)) %>% filter(eid>0)
+dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, pc, icd, fod, gen, prs)) %>% filter(eid>0)
 saveRDS(dat0, file="D:/data/ukb/Rdata/all.Rdata")
 	group_by(dat0, abo, se) %>% summarise(count=n(), mean=mean(bb_TES, na.rm=TRUE))
 	aggregate(bb_TES ~ abo*se, dat0, FUN=function(x) {round(c(length(x), mean(x), sd(x), quantile(x,probs=c(0,0.5,1))), 2)} )
