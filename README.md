@@ -85,6 +85,7 @@ done
 
 ## #3.3. GWAS的管理、 QC、 注释
 > 如果GWAS数据的BETA, SE, P 出现“三缺一” 的情况，可以下面的R代码去寻找“第三者”。
+> 此外，GWAS文件必须按照CHR和POS排好序，可用sort -k 1,1V -k 2,2n来实现，-V是为了把chrX和chrY排到最后，但是需要把第一行先写到新文件里。
 ```
 b  = se * qnorm(p/2)
 se = abs(b/qnorm(p/2))
@@ -100,7 +101,6 @@ p  = 2*pnorm(-abs(b/se))
 ```
 > 
 用户也可以在得到[pheweb网站](https://resources.pheweb.org)上的 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid.py，dos2unix add_rsid2.py，然后运行如下示例命令。注意:--sep 后面有双引号。
-GWAS文件必须按照CHR和POS排好序，可用sort -k 1,1V -k 2,2n来实现，-V是为了把chrX和chrY排到最后，但是需要把第一行先写到新文件里。
 ```
 python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d files/dbsnp/rsids-v154-hg19.tsv.gz -o out.tsv
 ```
