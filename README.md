@@ -89,7 +89,7 @@ done
 b  = se * qnorm(p/2)
 se = abs(b/qnorm(p/2))
 se = (CI_upper - CI_lower)/(1.96*2) ; 
-p = 2*pnorm(-abs(b/se))
+p  = 2*pnorm(-abs(b/se))
 ```
 
 > 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
