@@ -1,6 +1,27 @@
 setwd("C:/Users/jiehu/Desktop")
-pacman::p_load(readxl, dplyr, tidyverse, TwoSampleMR, MVMR)
+pacman::p_load(readxl, dplyr, tidyverse, TwoSampleMR, MendelianRandomization, MVMR)
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 最简单原始的方法
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iv.snp <- read.table('D:/data/gwas/main/walk_pace.top.snp', header=T)
+dat_X <- read.table('D:/data/gwas/main/walk_pace.gz', header=T) %>% merge(iv.snp, by="SNP") %>% 
+	format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
+dat_Y <- read.table('D:/data/gwas/main/y.vte.gz', header=T) %>% merge(iv.snp, by="SNP") %>% 
+	format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
+dat <- harmonise_data(dat_X, dat_Y, action=1) 
+	plot(dat$beta.exposure, dat$beta.outcome)
+res <- mr(dat); res
+	mr_scatter_plot(res, dat)[[1]]
+bsmr_dat <- dat_to_MRInput(dat); bsmr_dat <- bsmr_dat[[1]]
+	mr_plot(bsmr_dat, interactive=F)
+	mr_forest(bsmr_dat, snp_estimates=F, methods=c("ivw", "median", "wmedian", "egger", "maxlik", "conmix")) + scale_colour_manual(values = c("IVW estimate"="red")) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=10, face="bold"), axis.text.x=element_text(size=10, face="bold"), axis.text.y=element_text(size=15, face="bold"))
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 基于MR的mediation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 label = 'pheno'
 ieu_X = ''; ieu_M = ''; ieu_Y = ''
 dir_X = dir_M = dir_Y = 'D:/data/gwas/pheno'
