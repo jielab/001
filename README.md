@@ -88,7 +88,7 @@ done
 ```
 b  = se * qnorm(p/2)
 se = abs(b/qnorm(p/2))
-se = (CI_upper - CI_lower)/(1.96*2) ; 
+se = (CI_upper - CI_lower)/(1.96*2)
 p  = 2*pnorm(-abs(b/se))
 ```
 
