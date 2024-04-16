@@ -83,7 +83,15 @@ done
 <br/><br/>
 
 
-## #3.3. GWAS的管理、QC、注释
+## #3.3. GWAS的管理、 QC、 注释
+> 如果GWAS数据的BETA, SE, P 出现“三缺一” 的情况，可以下面的R代码去寻找“第三者”。
+```
+b  = se * qnorm(p/2)
+se = abs(b/qnorm(p/2))
+se = (CI_upper - CI_lower)/(1.96*2) ; 
+p = 2*pnorm(-abs(b/se))
+```
+
 > 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
 > Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*"），修改一行代码（第140行）。。
 ```
@@ -184,7 +192,4 @@ GWAS-PRS-MR ”三驾马车“ 入门：
 ## 代码中的数字揭秘：
 > - X2Y: X到Y
 > - Y4x: Y中数据中为(for)了X的部分，里面并没有X的数据，因此小写x。
-> - X8M：X加上(bus)了M，的并集。
-> - dat0：0原始大量的数据，最好读一次，不要多次读取。
-> - dat1：1临时数据，在loop里面使用，要不然在loop外面和里面都用dat，会出问题。
-> - dat：正常分析用的数据。
+> - dat0 原始数据，很大，不要多次读取； dat正常分析用的数据； dat1 临时数据，在loop里面使用，要不然在loop外面和里面都用dat，会出问题。
