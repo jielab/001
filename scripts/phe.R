@@ -71,9 +71,8 @@ write.table(pc, "PC.txt", append=FALSE, quote=FALSE, row.names=FALSE, col.names=
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ICD 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ICD-10: 41202[41262] + 41270[41280]; ICD-9: 41203[41263] + 41271[41281]
-source(paste0(indir,"raw-670287/icd.r")); icd <- bd
-source(paste0(indir,"raw-670287/icdDate.r")); icdDate <- bd; bd <- NULL
+source(paste0(indir,"raw-670287/icd10.r")); icd <- bd
+source(paste0(indir,"raw-670287/icd10Date.r")); icdDate <- bd; bd <- NULL
 dates <- names(icdDate)[sapply(icdDate, is.Date)]; summary(icdDate[,-1])
 for (date1 in dates) { icdDate[[date1]][icdDate[[date1]] %in% as.Date(c("1900-01-01", "1999-01-01"))] <- NA }
 vip <- read.table(paste0(indir,"common/ukb.vip.icd"), header=F, flush=T) %>%
