@@ -40,7 +40,7 @@ phe <- phe0 %>%
 		alcohol_score = ifelse(alcohol_status==0,1, 0),
 		alcohol_status = factor(alcohol_status, levels=0:2, labels=c("never","previous","current")),
 		edu_score = ifelse(edu %in% 1:2,3, ifelse(edu %in% 3:6,2, 1)),  # 1-2: College or above; 3-6: High school or equivalent; -7: Less than high school
-		emp_score <- ifelse(emp %in% c(1,2,6,7), 2, 1), # 1 paid employment or self-employed; 2 retired; 6 doing unpaid or voluntary work; 7 full or part time students; 3 Looking after home and/or family; 4 Unable to work because of sickness or disability; 5 Unemployed 
+		emp_score = ifelse(emp %in% c(1,2,6,7), 2, 1), # 1 paid employment or self-employed; 2 retired; 6 doing unpaid or voluntary work; 7 full or part time students; 3 Looking after home and/or family; 4 Unable to work because of sickness or disability; 5 Unemployed 
 		income_cat = ifelse(income==1,1, ifelse(income %in% 2:3,2, 3)),
 		leg = height - chunk, leg_ratio = leg / chunk, chunk_ratio = chunk / leg,
 		leg_ratio_adj = leg_ratio / height, chunk_ratio_adj = chunk_ratio / height,

@@ -84,7 +84,7 @@ dat1 <- dat %>%
 	#	X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
 		Z_qt = cut(Z, breaks=quantile(Z, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
 	#	X_qt = factor(ifelse(X_qt=="q1", "loss", ifelse(X_qt=="q5", "gain", "same")), levels=c("loss", "same", "gain")),
-		Z_qt = factor(ifelse(vte.F2.rs1799963_G !=2, "F2", ifelse(vte.F5.rs6025_C >=1.5, "F5", ifelse(Z_qt=="q1", "low", ifelse(Z_qt=="q5", "high", "middle")))), levels=c("low", "middle", "high", "F5", "F2")),
+		Z_qt = factor(ifelse(hardcall(vte.F5.rs6025_C)!=2, "F5", ifelse(vte.F2.rs1799963_G !=2, "F2", ifelse(Z_qt=="q1", "low", ifelse(Z_qt=="q5", "high", "middle")))), levels=c("low", "middle", "high", "F2", "F5")),
 		Y_yes = ifelse(is.na(Y_date), 0, 1),
 		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
@@ -96,8 +96,7 @@ coef(summary(glm(Y_yes ~ X + age+sex+smoke_status+alcohol_status +PC1+PC2, data=
 surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
 km.obj <- survfit(surv.obj ~ Z_qt, data=dat1)
 	plot(km.obj, ylim=c(0.5,1)); plot(km.obj, fun=function(x) 1-x)
-	ggsurvplot(km.obj, ylim=c(0,0.1), break.time.by=2, ggtheme=theme_classic2(), risk.table=FALSE, censor=F, fun="event", pval=TRUE, pval.size=4, text.size=8) #palette=c("#EE6677","#4477AA", "#228833"),  
-	# "event" plots cumulative events (f(y) = 1-y), "cumhaz" plots the cumulative hazard function (f(y) = -log(y)), and "pct" for survival probability in percentage.
+	ggsurvplot(km.obj, ylim=c(0,0.1), break.time.by=2, ggtheme=theme_classic2(), risk.table=FALSE, censor=F, fun="event", text.size=8) #palette=c("") 
 fit.cox <- coxph(surv.obj ~ X+Z1+Z2 +X*Z1_qt +X*Z2_qt + vte.nf.score_sum+walk_time+walk_freq +age+sex+bmi+PC1+PC2+ smoke_status+alcohol_status, data=dat1); print(coef(summary(fit.cox)))
 	survminer::ggforest(fit.cox, main="", fontsize=1.2, data=dat1) # 不能显示interaction值
 	fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
