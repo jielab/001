@@ -8,22 +8,6 @@ dat0 <- readRDS(file="D:/data/ukb/Rdata/all.Rdata") %>% mutate(birth_month=facto
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 最简单直接的 —— Mortality
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- dat0 %>% # dplyr::select(eid, age, sex, ethnic_cat, birth_year, date_attend, date_death)
-	mutate(
-		birth_year=ifelse((birth_year<1936 | birth_year>1970), NA, birth_year),
-		birth_5year=cut(birth_year, breaks=seq(1935,1970,5)),
-		attend_year=year(date_attend), death_year=year(date_death), lifespan=death_year - birth_year
-	) 
-	table(dat$birth_year)
-dat1 <- dat %>% filter(birth_year <=1960, lifespan <=60) %>% 
-	mutate(death_icd1l = substr(death_icd1,1,1))
-	table(dat1$death_icd1l)
-	aggregate(lifespan ~ birth_year, dat1, FUN=function(x) {round(c(length(x), min(x), mean(x), max(x)),1)} )
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # X-Y 或 X-Y-Z交互作用 批量分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% drop_na(age, sex) %>% filter(ethnic_cat=="White") %>% 

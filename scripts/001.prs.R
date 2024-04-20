@@ -28,12 +28,12 @@ set.seed(12345)
 races=c("EUR", "SAS", "AFR", "EAS") 
 dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") 
 dat <- dat0 %>% subset(select=grepl("^eid|^age|^sex$|^ethnic|^PC|^umap|height|t2dm", names(dat0))) %>% 
-	filter(!is.na(PC1), ethnic_cat %in% c("White","Black","Asian","Chinese")) %>%
+	filter(!is.na(PC1), !is.na(umap1), ethnic_cat %in% c("White","Black","Asian","Chinese")) %>%
 	mutate(
 		race=ifelse((PC1> -25 & PC1<25 & PC2> -25 & PC2<20), "EUR",ifelse((PC1>25 & PC1<125 & PC2> -160 & PC2< -60), "SAS", ifelse((PC1>130 & PC1<180 & PC2> -290 & PC2< -250), "EAS", ifelse((PC1>250 & PC1<425 & PC2>25 & PC2<90), "AFR", NA)))),
 		t2dm=ifelse(is.na(icdDate_t2dm), 0, 1)
 	)
-ggplot(dat, aes(PC1, PC2, color=ethnic_cat)) + geom_point(size=1) + scale_color_manual(labels = c("白人", "南亚人", "黑人", "中国人"), values = c("blue", "purple", "black", "red")) + theme_bw() + guides(color=guide_legend("人种")) + 
+ggplot(dat, aes(umap1, umap2, color=ethnic_cat)) + geom_point(size=1) + scale_color_manual(labels = c("EUR", "SAS", "AFR", "EAS"), values = c("blue", "purple", "black", "red")) + theme_bw() + guides(color=guide_legend("race")) + 
 	geom_rect(aes(xmin=-25, xmax=25, ymin=-25, ymax=20), linetype=5, fill="transparent", color="blue", size=1) +
 	geom_rect(aes(xmin=25, xmax=125, ymin=-160, ymax=-60), linetype=5, fill="transparent", color="purple", size=1) +
 	geom_rect(aes(xmin=130, xmax=180, ymin=-290, ymax=-250), linetype=5, fill="transparent", color="red", size=1) + 

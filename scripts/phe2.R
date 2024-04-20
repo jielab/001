@@ -1,5 +1,37 @@
 setwd("D:/")
-pacman::p_load(data.table, dplyr, tidyverse, crosswalkr, lubridate, naniar)
+pacman::p_load(data.table, dplyr, tidyverse, lubridate, poLCA, BioAge)
+
+phe0 <- readRDS("D:/data/ukb/Rdata/all.Rdata")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 生物年龄 (PMID: 37080981)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#train=kdm_calc(biomarkers=var_kdm); kdm=kdm_calc(NHANES4, biomarkers=var_kdm, fit=train$fit, s_ba2=train$fit$s_ba2); data=kdm$data
+var_kdm = c("fev1","sbp","bb_TC","bb_HBA1C","bb_ALB","bb_CRE","bb_CRP","bb_ALP","bb_BUN") # "fev","sbp","totchol","hba1c","albumin", "creat","lncrp","alp","bun
+	kdm_male   = phe0 %>% filter (sex ==1) %>% kdm_calc(biomarkers=var_kdm, fit=kdm$fit$male,   s_ba2 = kdm$fit$male$s_b2)
+	kdm_female = phe0 %>% filter (sex ==0) %>% kdm_calc(biomarkers=var_kdm, fit=kdm$fit$female, s_ba2 = kdm$fit$female$s_b2)
+	kdm = rbind(kdm_female$data, kdm_male$data)
+var_phenoage = c("bb_ALB","bc_LYMPH_pt","bc_MSCV","bb_GLU","bc_RDW","bb_CRE","bb_CRP","bb_ALP","bc_WBC") # "albumin_gL","lymph","mcv","glucose_mmol","rdw","creat_umol","lncrp","alp","wbc"
+	phenoage_ukb = phe0 %>% phenoage_calc(biomarkers=var_phenoage, orig=TRUE) 
+	phenoage_ukb = phenoage_ukb$data
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 社会经济地位（SES）
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+set.seed(12345)
+dat <- phe0 %>% dplyr::select(eid, age, sex, ethnic_cat, emp, income, edu) %>% filter(ethnic_cat=="White") %>% drop_na() #%>% dplyr::sample_n(10000) 
+sink("ses.log")
+SES_LCA_list <- list()
+for (n_class in 2:6) { 
+	SES_LCA_list[[n_class]] <- poLCA(cbind(edu_cat, emp_cat, income_cat) ~1, data=dat, nclass=n_class, maxiter=10000, tol=1e-6, nrep=2, graphs=TRUE, probs.start=NULL)
+}
+sink()
+source("D:/scripts/library/00_LCA_out.R")
+LCA_out(SES_LCA_list,3,3)
+dat$ses <- SES_LCA_list[[3]]$predclass
+saveRDS(subset(dat, select=c(eid, ses)), file="D:/data/ukb/Rdata/ukb.ses.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -7,8 +39,7 @@ pacman::p_load(data.table, dplyr, tidyverse, crosswalkr, lubridate, naniar)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 健康植物性饮食指数（PMID: 36976560）
 # 南京医科大学版本（https://github.com/XiangyuYe/Infection_SES）
-dat <- phe0 %>% 
-dat <- phe0 %>% 
+dat0 <- phe0 %>% 
 	mutate(
 		num_pa = (days_pa_mod > 5) & (days_pa_vig > 1),
 		yes_pa_mod = ifelse(dura_pa_mod > 150, T, F),
@@ -52,23 +83,14 @@ dat <- phe0 %>%
 		sleep_score = ifelse(rowSums(sleep_mat, na.rm = TRUE) >= 4, TRUE, sleep_score),
 		sleep_score = ifelse(rowSums(is.na(sleep_mat)) + rowSums(sleep_mat, na.rm = TRUE) < 4, FALSE, sleep_score)
 	)
-lf <- dat[, c("eid","smoke_score","pa_score" ,"diet_score", "alcohol_score","sleep_score","cannabis_score")]
-	lf_df <- lf*1
-lifescore1 <- rep(NA, nrow(lf_df))
-	lifescore1[rowSums(lf_df, na.rm = T) >= 4] <- 3 
-	lifescore1[rowSums(lf_df[,c(1:5)], na.rm = T) == 3] <- 3
-	lifescore1[rowSums(lf_df, na.rm = T) >= 2 & (rowSums(lf_df, na.rm = T) + rowSums(is.na(lf_df))) < 4 ] <- 2 
-	lifescore1[(rowSums(lf_df, na.rm = T) + rowSums(is.na(lf_df))) < 2 |  rowSums(lf_df, na.rm = T) == 0] <- 1 
-lifescore2 <- rep(2, nrow(lf_df))
-	lifescore2[rowSums(lf_df, na.rm = T) >= 4] <- 3 
-	lifescore2[rowSums(lf_df[,c(1:5)], na.rm = T) >= 3] <- 3 
-	lifescore2[rowSums(lf_df == 0, na.rm = T) >= 4] <- 1
-lifescore3 <- rep(2, nrow(lf_df))
-	lifescore3[rowSums(lf_df, na.rm = T) >= 4] <- 3 
-	lifescore3[rowSums(lf_df[,c(1:5)], na.rm = T) >= 3] <- 3 
-	lifescore3[rowSums(lf_df == 0, na.rm = T) >= 5] <- 1
-	life_factor_df = data.frame(lf_df, lifescore1, lifescore2, lifescore3)
+dat <- dat0 %>% dplyr::select(eid, smoke_score, pa_score, diet_score, alcohol_score, sleep_score, cannabis_score) *1 %>% drop_na()
+dat <- dat  %>% 
+	mutate(
+		tot_score = rowSums(dat[,2:5], na.rm=T),
+		lf4_score =ifelse(tot_score >=3, "3-4", ifelse(tot_score ==2, "2", ifelse(tot_score <2, "0-1", NA)))
+	)
 saveRDS(life_factor_df, file = "D:/data/ukb/Rdata/ukb.life.rds")
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

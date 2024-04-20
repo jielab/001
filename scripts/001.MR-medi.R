@@ -8,8 +8,9 @@ pacman::p_load(readxl, dplyr, tidyverse, TwoSampleMR, MendelianRandomization, MV
 iv.snp <- read.table('D:/data/gwas/main/walk_pace.top.snp', header=T)
 dat_X <- read.table('D:/data/gwas/main/walk_pace.gz', header=T) %>% merge(iv.snp, by="SNP") %>% 
 	format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
-dat_Y <- read.table('D:/data/gwas/main/y.vte.gz', header=T) %>% merge(iv.snp, by="SNP") %>% 
-	format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
+dat_Y <- read.table('D:/Downloads/GCST004744_buildGRCh37.tsv', header=T) %>%
+ rename(SNP=variant_id) %>% merge(iv.snp, by="SNP") %>% 
+	format_data(type='outcome', snp_col='SNP', effect_allele_col='effect_allele', other_allele_col='other_allele', beta_col='beta', se_col='standard_error', pval_col='p_value') 
 dat <- harmonise_data(dat_X, dat_Y, action=1) 
 	plot(dat$beta.exposure, dat$beta.outcome)
 res <- mr(dat); res

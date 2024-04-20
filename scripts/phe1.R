@@ -1,6 +1,6 @@
 setwd("D:/")
-pacman::p_load(data.table, dplyr, tidyverse, crosswalkr, lubridate, naniar)
-indir = "D:/data/ukb/phe/"
+pacman::p_load(data.table, dplyr, tidyverse, crosswalkr, lubridate)
+indir="D:/data/ukb/phe/"
 dates_bad=as.Date(c("1900-01-01", "1901-01-01", "1902-02-02", "1903-03-03", "1999-01-01", "2037-07-07"))
 
 
@@ -48,11 +48,12 @@ phe <- phe0 %>%
 		walk_freq = ifelse(walk_freq %in% 1:2, "low", ifelse(walk_freq %in% 3:4, "average", "high")),
 		walk_time = ifelse(walk_time %in% 1:2, "short", ifelse(walk_time %in% 3:4, "average", "long")),
 		walk_freq = factor(walk_freq, levels=c("low", "average", "high")),
-		walk_time = factor(walk_time, levels=c("short", "average", "long"))
+		walk_time = factor(walk_time, levels=c("short", "average", "long")),
+		birth_year = ifelse((birth_year<1936 | birth_year>1970), NA, birth_year), # 1934年1个，1971年2个，去掉
+		birth_5year = cut(birth_year, breaks=seq(1935,1970,5)),
+		age_2021 = 2021-birth_year, age_2021 = ifelse(is.na(date_lost) & is.na(date_death), age_2021, NA),
+		lifespan = year(date_death) - birth_year
 	)
-table(phe$ethnicity, phe$ethnic_cat, useNA="always")
-naniar::gg_miss_var(subset(phe, select=grep("sex|bb_", names(phe), value=TRUE)), facet=sex)
-hist(phe$bmi_diff, nclass=100)
 saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
 
 
@@ -114,49 +115,3 @@ for (i in 1:nrow(vip)) {
 }
 fod <- subset(bd, select=grep("eid|fod_", names(bd), value=T)) %>% rename(eid=f.eid)
 saveRDS(fod, file="D:/data/ukb/Rdata/ukb.fod.rds")
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# merge all together 并生成GWAS需要的.pheno文件
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-phe <- readRDS("D:/data/ukb/Rdata/ukb.phe.rds")
-pc  <- readRDS("D:/data/ukb/Rdata/ukb.pc.rds")
-icd <- readRDS("D:/data/ukb/Rdata/ukb.icd.rds")
-fod <- readRDS("D:/data/ukb/Rdata/ukb.fod.rds")
-gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds") 
-hla <- readRDS("D:/data/ukb/Rdata/ukb.hla.rds") 
-#hla <- hla %>% select(which(colMeans(.,na.rm=T) >=0.02))
-prs0 <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T)
-	prs <- subset(prs0, select=grepl("^eid$|score_sum$|allele_cnt$", names(prs0)))
-dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, pc, icd, fod, gen, prs)) %>% filter(eid>0)
-saveRDS(dat0, file="D:/data/ukb/Rdata/all.Rdata")
-	group_by(dat0, abo, se) %>% summarise(count=n(), mean=mean(bb_TES, na.rm=TRUE))
-	aggregate(bb_TES ~ abo*se, dat0, FUN=function(x) {round(c(length(x), mean(x), sd(x), quantile(x,probs=c(0,0.5,1))), 2)} )
-	bp <- boxplot(bb_TES ~ abo*se, dat0, las=2, col=rainbow(6), font=2); bp$stats
-	dat0 %>% drop_na(abo, se) %>% ggplot(aes(x=abo, y=bb_TES, fill=se)) + geom_boxplot() + stat_summary(fun.y=mean, color="darkred", position=position_dodge(0.75), geom="point", shape=18, size=3)
-dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(dat0), value=TRUE)) %>% na.omit() %>% dplyr::sample_n(10000)
-	car::scatterplotMatrix(dat, spread=FALSE, smoother.args=list(lty=0.1))
-	psych::pairs.panels(dat)
-dat <- dat0 %>% filter(ethnic_cat=="White") %>% 
-	rename(IID=eid) %>% mutate(FID=IID) %>% 
-	dplyr::select(FID, IID, age, sex, PC1, PC2, PC3, PC4, bmi, height, leg, chunk, leg_ratio, leg_ratio_adj, chunk_ratio, chunk_ratio_adj, walk_pace, walk_brisk)
-	write.table(dat, "ukb.pheno", append=FALSE, quote=FALSE, row.names=FALSE)
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# find trio
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ped <- subset(dat0, ethnicity_gen==1, select=c("eid", "age", "sex", "birth_year"))
-kin <- read.table("D:/data/ukb/phe/common/ukb.kin0", header=T, as.is=T) %>% 
-	subset(ID1>0 & InfType=="PO", select=c("ID1", "ID2"))
-dat <- merge(ped, kin, by.x="eid", by.y="ID1")
-dat <- merge(ped, dat, by.x="eid", by.y="ID2") %>% 
-	subset(abs(age.x - age.y)> 18) %>% rename(eid.x=eid) %>%
-	mutate(
-		child = ifelse(age.x > age.y, eid.y, eid.x),
-		father = ifelse(eid.x==child & sex.y==1, eid.y, ifelse(eid.y==child & sex.x==1, eid.x, NA)),
-		mother = ifelse(eid.x==child & sex.y==0, eid.y, ifelse(eid.y==child & sex.x==0, eid.x, NA))
-	)
-father <- subset(dat, !is.na(father), select=c("child", "father"))
-mother <- subset(dat, !is.na(mother), select=c("child", "mother"))
-trio <- merge(father, mother)
