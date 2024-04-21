@@ -83,14 +83,19 @@ dat0 <- phe0 %>%
 		sleep_score = ifelse(rowSums(sleep_mat, na.rm = TRUE) >= 4, TRUE, sleep_score),
 		sleep_score = ifelse(rowSums(is.na(sleep_mat)) + rowSums(sleep_mat, na.rm = TRUE) < 4, FALSE, sleep_score)
 	)
-dat <- dat0 %>% dplyr::select(eid, smoke_score, pa_score, diet_score, alcohol_score, sleep_score, cannabis_score) *1 %>% drop_na()
+dat <- dat0 %>% dplyr::select(eid, smoke_score, pa_score, diet_score, alcohol_score, sleep_score, cannabis_score) *1
 dat <- dat  %>% 
 	mutate(
-		tot_score = rowSums(dat[,2:5], na.rm=T),
-		lf4_score =ifelse(tot_score >=3, "3-4", ifelse(tot_score ==2, "2", ifelse(tot_score <2, "0-1", NA)))
+		tt4_score = rowSums(dat[,2:5], na.rm=T),
+		lf4_score =ifelse(tt4_score >=3, "3-4", 
+			ifelse(tt4_score ==2, "2", 
+			ifelse(tt4_score <2, "0-1", NA))),
+		tt6_score = rowSums(dat[,2:7], na.rm=T),
+		tt6_score =ifelse(tt6_score >=4 | rowSums(dat[,2:6], na.rm=T)==3, "3", 
+			ifelse(tt6_score >=2 & (tt6_score + rowSums(is.na(dat))) < 4, "2", 
+			ifelse(tt6_score ==0, "1", "??")))
 	)
 saveRDS(life_factor_df, file = "D:/data/ukb/Rdata/ukb.life.rds")
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
