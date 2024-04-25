@@ -58,7 +58,7 @@ for (r in races){
 	ii <- sort(sample(1:nrow(dat_sub), round(nrow(dat_sub)*0.5)))
 	dat_sub.train <- dat_sub[ii,]
 	dat_sub.valid <- dat_sub[-ii,]
-	lm.train.adj <- lm(height ~ height.AFR.score_adj + height.EAS.score_adj + height.EUR.score_adj + height.SAS.score_adj +age+sex+PC1+PC2, data=dat_sub.train)
+	lm.train.adj <- lm(height ~ height.AFR.score_adj + height.EAS.score_adj + height.EUR.score_adj + height.SAS.score_adj +age+sex, data=dat_sub.train)
 	y.hat.adj <- predict(lm.train.adj, dat_sub.valid)
 	print((cor(y.hat.adj, dat_sub.valid$height, use="complete.obs"))^2)
 	# dfroc <- roc(dat_sub.valid$height, y.hat.adj)
