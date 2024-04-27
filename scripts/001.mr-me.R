@@ -8,13 +8,17 @@ pacman::p_load(readxl, dplyr, tidyverse, TwoSampleMR, MendelianRandomization, MV
 iv.snp <- read.table('D:/data/gwas/main/walk_pace.top.snp', header=T)
 dat_X <- read.table('D:/data/gwas/main/walk_pace.gz', header=T) %>% merge(iv.snp, by="SNP") %>% 
 	format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
-dat_Y <- read.table('D:/Downloads/GCST004744_buildGRCh37.tsv', header=T) %>%
- rename(SNP=variant_id) %>% merge(iv.snp, by="SNP") %>% 
-	format_data(type='outcome', snp_col='SNP', effect_allele_col='effect_allele', other_allele_col='other_allele', beta_col='beta', se_col='standard_error', pval_col='p_value') 
+dat_Y <- read.table('D:/data/gwas/main/y.vte.gz', header=T) %>%
+	merge(iv.snp, by="SNP") %>% 
+	format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
 dat <- harmonise_data(dat_X, dat_Y, action=1) 
-	plot(dat$beta.exposure, dat$beta.outcome)
 res <- mr(dat); res
-	mr_scatter_plot(res, dat)[[1]]
+	res_single <- mr_singlesnp(dat)
+	mr(dat, method_list = c("mr_ivw", "mr_egger_regression", "mr_egger_regression_bootstrap"))
+mr_pleiotropy_test(dat); mr_heterogeneity(dat)
+mr_scatter_plot(res, dat)[[1]]
+	mr_forest_plot(res_single)[[1]]
+	mr_funnel_plot(res_single)
 bsmr_dat <- dat_to_MRInput(dat); bsmr_dat <- bsmr_dat[[1]]
 	mr_plot(bsmr_dat, interactive=F)
 	mr_forest(bsmr_dat, snp_estimates=F, methods=c("ivw", "median", "wmedian", "egger", "maxlik", "conmix")) + scale_colour_manual(values = c("IVW estimate"="red")) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=10, face="bold"), axis.text.x=element_text(size=10, face="bold"), axis.text.y=element_text(size=15, face="bold"))
