@@ -66,24 +66,25 @@ dat1 <- dat %>%
 		across(grep("walk", names(dat0), value=T), ~factor(.x)),
 		walk_pace=factor(walk_pace, labels=c("brisk","steady", "slow"))
 	) %>%
-	rename(X=walk_pace, Y_date=icdDate_vte, Z=vte.nf.score_sum) %>% drop_na(X, Z) 
+	rename(X=walk_pace, Y_date=icdDate_vte) %>% drop_na(X) 
 dat1 <- dat1 %>% 
 	mutate(
 	#	X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
-		Z_qt = cut(Z, breaks=quantile(Z, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
+	#	Z_qt = cut(Z, breaks=quantile(Z, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
 	#	X_qt = factor(ifelse(X_qt=="q1", "loss", ifelse(X_qt=="q5", "gain", "same")), levels=c("loss", "same", "gain")),
-		Z_qt = factor(ifelse(hardcall(vte.F5.rs6025_C)!=2, "F5", ifelse(vte.F2.rs1799963_G !=2, "F2", ifelse(Z_qt=="q1", "low", ifelse(Z_qt=="q5", "high", "middle")))), levels=c("low", "middle", "high", "F2", "F5")),
-		X_Z = factor(paste(Z_qt, X, sep="|"), levels=c("low|brisk","low|steady","low|slow", "middle|brisk","middle|steady","middle|slow", "high|brisk","high|steady","high|slow",  "F2|brisk","F2|steady","F2|slow", "F5|brisk","F5|steady", "F5|slow")),
+	#	Z_qt = factor(ifelse(hardcall(vte.F5.rs6025_C)!=2, "F5", ifelse(vte.F2.rs1799963_G !=2, "F2", ifelse(Z_qt=="q1", "low", ifelse(Z_qt=="q5", "high", "middle")))), levels=c("low", "middle", "high", "F2", "F5")),
+		Z = factor(ifelse(hardcall(vte.F5.rs6025_C)!=2, "F5", ifelse(hardcall(vte.F2.rs1799963_G) !=2, "F2", "none")), levels=c("none","F2","F5")),
+		X_Z = factor(paste(Z, X, sep="|"), levels=c("none|brisk","none|steady","none|slow", "F2|brisk","F2|steady","F2|slow", "F5|brisk","F5|steady", "F5|slow")),
 		Y_yes = ifelse(is.na(Y_date), 0, 1),
 		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_years >0 )			
-coef(summary(glm(Y_yes ~ X + age+sex+smoke_status+alcohol_status +PC1+PC2, data=dat1)))
+coef(summary(glm(Y_yes ~ X+Z+ age+sex+smoke_status+alcohol_status +PC1+PC2, data=dat1)))
 	aggregate(Y_yes ~ X_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
 surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
-km.obj <- survfit(surv.obj ~ Z_qt, data=dat1)
+km.obj <- survfit(surv.obj ~ Z, data=dat1)
 	plot(km.obj, ylim=c(0.5,1)); plot(km.obj, fun=function(x) 1-x)
-	ggsurvplot(km.obj, ylim=c(0,0.1), fun="event", break.time.by=2, risk.table=FALSE, censor=FALSE, pval=TRUE) #palette=c("") 
+	ggsurvplot(km.obj, ylim=c(0,0.075), fun="event", break.time.by=2, risk.table=FALSE, surv.median.line="hv", palette=c("green","orange","red"))  
 fit.cox <- coxph(surv.obj ~ X_Z +walk_time+walk_freq +age+bmi+PC1+PC2+ smoke_status+alcohol_status, data=dat1); print(coef(summary(fit.cox)))
 	survminer::ggforest(fit.cox, main="", cpositions=c(0, 0.1, 0.3), fontsize=1.2, data=dat1) # 不能显示interaction值
 	fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
@@ -96,8 +97,9 @@ fit.cox <- coxph(surv.obj ~ X_Z +walk_time+walk_freq +age+bmi+PC1+PC2+ smoke_sta
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
 pacman::p_load(vivid, randomForest, MASS)
 set.seed(12345)
-dat2 <- dat1 %>% drop_na(X, Z, walk_time,walk_freq, age, sex, bmi,PC1,PC2,smoke_status,alcohol_status)
-rf_model <- randomForest(Y_yes ~ X+Z+ walk_time+walk_freq +age+sex+bmi+PC1+PC2+ smoke_status+alcohol_status, data=dat2)
-VIVI_rf <- vivi(fit = rf_model, response = "Y_yes", data=dat2)
-viviHeatmap(mat = VIVI_rf)
-viviNetwork(mat = VIVI_rf)
+dat2 <- dat1 %>% subset( as.numeric(rownames(dat1)) %% 10 ==0 | Y_yes==1) %>%
+	drop_na(X, Z, walk_time,walk_freq, age, sex, bmi,PC1,PC2,smoke_status,alcohol_status)
+fit.rf <- glm(Y_yes ~ X+Z+ walk_time+walk_freq +age+sex+smoke_status+alcohol_status, data=dat2)
+fit.vivi <- vivi(fit=fit.rf, response ="Y_yes", data=dat2)
+viviHeatmap(mat=fit.vivi)
+viviNetwork(mat=fit.vivi)
