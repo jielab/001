@@ -94,6 +94,18 @@ saveRDS(dat, file="D:/data/ukb/Rdata/ukb.icd.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# self-report ill (20002) 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source(paste0(indir,"raw-670287/ill.r"))
+dat <- subset(bd, select=f.eid) %>% rename(eid=f.eid)
+	dat1 <- bd[,-1]
+	exclude <- apply(dat1, 2, function(x){!grepl("1093|1094|1068",x)})  
+	dat1[exclude] <- NA
+	dat$sr_vte <- apply(dat1, 1, function(x){sum(!is.na(x))})
+saveRDS(dat, file="D:/data/ukb/Rdata/ukb.ill.rds")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # FOD (first occurrence date)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source(paste0(indir,"raw-670287/fod.r")) 

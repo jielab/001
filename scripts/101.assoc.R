@@ -10,7 +10,7 @@ dat0 <- readRDS(file="D:/data/ukb/Rdata/all.Rdata") %>% mutate(birth_month=facto
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # X-Y 或 X-Y-Z交互作用 批量分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- dat0 %>% drop_na(age, sex) %>% filter(ethnic_cat=="White")
+dat <- dat0 %>% filter(ethnic_cat=="White")
 Ys <- grep("^icdDate_", names(dat), value=TRUE)
 Xs <- grep("^age_sex|age_m|^edu_score|^birth_weight|birth_month|^height$|^chunk|^leg|^hippo_|^fev1fvc|^stiffness|score_sum$", names(dat), value=TRUE) 
 Zs <- grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
@@ -78,14 +78,14 @@ dat1 <- dat1 %>%
 		Y_yes = ifelse(is.na(Y_date), 0, 1),
 		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
-	) %>% filter( follow_years >0 )			
+	) %>% filter( follow_years >0, sr_vte==0)			
 coef(summary(glm(Y_yes ~ X+Z+ age+sex+smoke_status+alcohol_status +PC1+PC2, data=dat1)))
 	aggregate(Y_yes ~ X_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
 surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
 km.obj <- survfit(surv.obj ~ Z, data=dat1)
-	plot(km.obj, ylim=c(0.5,1)); plot(km.obj, fun=function(x) 1-x)
-	ggsurvplot(km.obj, ylim=c(0,0.075), fun="event", break.time.by=2, risk.table=FALSE, surv.median.line="hv", palette=c("green","orange","red"))  
-fit.cox <- coxph(surv.obj ~ X_Z +walk_time+walk_freq +age+bmi+PC1+PC2+ smoke_status+alcohol_status, data=dat1); print(coef(summary(fit.cox)))
+	plot(km.obj, fun=function(x) 1-x)
+	ggsurvplot(km.obj, ylim=c(0,0.08), fun="event") # linetype=rep(1:3,3), palette=rep(c("green","orange","red"),3))
+fit.cox <- coxph(surv.obj ~ X+Z+X*Z +walk_time+walk_freq +age+sex+bmi+PC1+PC2+ smoke_status+alcohol_status, data=dat1); print(coef(summary(fit.cox)))
 	survminer::ggforest(fit.cox, main="", cpositions=c(0, 0.1, 0.3), fontsize=1.2, data=dat1) # 不能显示interaction值
 	fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
 		fit.glm <- glm(outcome_yes ~ gen, data=dat, family="binomial")
