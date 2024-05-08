@@ -67,7 +67,7 @@ dat1 <- dat %>%
 		walk_pace=factor(walk_pace, labels=c("brisk","steady", "slow"))
 	) %>%
 	rename(X=walk_pace, Y_date=icdDate_vte) %>% drop_na(X) 
-dat1 <- dat1 %>% 
+dat1 <- dat1 %>%
 	mutate(
 	#	X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
 	#	Z_qt = cut(Z, breaks=quantile(Z, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
@@ -78,9 +78,10 @@ dat1 <- dat1 %>%
 		Y_yes = ifelse(is.na(Y_date), 0, 1),
 		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
-	) %>% filter( follow_years >0, sr_vte==0)			
-coef(summary(glm(Y_yes ~ X+Z+ age+sex+smoke_status+alcohol_status +PC1+PC2, data=dat1)))
-	aggregate(Y_yes ~ X_qt, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
+	) %>% filter( follow_years >0) %>% filter(!is.na(Y_date) | (is.na(Y_date) & sr_vte ==0))
+prop.table(table(dat1$X, dat1$Y_yes),1); prop.table(table(dat1$X_Z, dat1$Y_yes),1)	
+	aggregate(Y_yes ~ X, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
+	coef(summary(glm(Y_yes ~ X+Z+ age+sex+smoke_status+alcohol_status +PC1+PC2, data=dat1)))
 surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
 km.obj <- survfit(surv.obj ~ Z, data=dat1)
 	plot(km.obj, fun=function(x) 1-x)
