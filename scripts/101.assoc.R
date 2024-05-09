@@ -10,7 +10,11 @@ dat0 <- readRDS(file="D:/data/ukb/Rdata/all.Rdata") %>% mutate(birth_month=facto
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # X-Y 或 X-Y-Z交互作用 批量分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- dat0 %>% filter(ethnic_cat=="White")
+dat <- dat0 %>% 
+	mutate(
+		icdDate_vte2=as.Date(ifelse(!is.na(icdDate_vte), as.character(icdDate_vte), ifelse(!is.na(srdYear_vte), (paste0(srdYear_vte,"-07-01")), ifelse(!is.na(srdAge_vte) & srdAge_vte >0, paste0(birth_year+srdAge_vte,"-07-01"), NA))))
+	) %>% filter(ethnic_cat=="White") 
+hist(dat$icdDate_vte2, breaks="year")
 Ys <- grep("^icdDate_", names(dat), value=TRUE)
 Xs <- grep("^age_sex|age_m|^edu_score|^birth_weight|birth_month|^height$|^chunk|^leg|^hippo_|^fev1fvc|^stiffness|score_sum$", names(dat), value=TRUE) 
 Zs <- grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
@@ -66,7 +70,7 @@ dat1 <- dat %>%
 		across(grep("walk", names(dat0), value=T), ~factor(.x)),
 		walk_pace=factor(walk_pace, labels=c("brisk","steady", "slow"))
 	) %>%
-	rename(X=walk_pace, Y_date=icdDate_vte) %>% drop_na(X) 
+	rename(X=walk_pace, Y_date=icdDate_vte2) %>% drop_na(X) 
 dat1 <- dat1 %>%
 	mutate(
 	#	X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
@@ -78,7 +82,7 @@ dat1 <- dat1 %>%
 		Y_yes = ifelse(is.na(Y_date), 0, 1),
 		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
-	) %>% filter( follow_years >0) %>% filter(!is.na(Y_date) | (is.na(Y_date) & sr_vte ==0))
+	) %>% filter( follow_years >0)
 prop.table(table(dat1$X, dat1$Y_yes),1); prop.table(table(dat1$X_Z, dat1$Y_yes),1)	
 	aggregate(Y_yes ~ X, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
 	coef(summary(glm(Y_yes ~ X+Z+ age+sex+smoke_status+alcohol_status +PC1+PC2, data=dat1)))

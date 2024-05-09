@@ -8,11 +8,12 @@ pacman::p_load(data.table, dplyr, tidyverse, lubridate, naniar)
 phe <- readRDS("D:/data/ukb/Rdata/ukb.phe.rds")
 pc  <- readRDS("D:/data/ukb/Rdata/ukb.pc.rds")
 icd <- readRDS("D:/data/ukb/Rdata/ukb.icd.rds")
+srd <- readRDS("D:/data/ukb/Rdata/ukb.srd.rds")
 fod <- readRDS("D:/data/ukb/Rdata/ukb.fod.rds")
 gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds") 
 hla <- readRDS("D:/data/ukb/Rdata/ukb.hla.rds") #hla <- hla %>% select(which(colMeans(.,na.rm=T) >=0.02))
 prs0 <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T); prs <- subset(prs0, select=grepl("^eid$|score_sum$|allele_cnt$", names(prs0)))
-dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, pc, icd, fod, gen, prs)) %>% filter(eid>0)
+dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, pc, icd, srd, fod, gen, prs)) %>% filter(eid>0)
 saveRDS(dat0, file="D:/data/ukb/Rdata/all.Rdata")
 
 

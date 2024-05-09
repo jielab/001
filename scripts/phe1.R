@@ -70,23 +70,22 @@ write.table(pc, "PC.txt", append=FALSE, quote=FALSE, row.names=FALSE, col.names=
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ICD 
+# ICD10 (41270 和 41280)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source(paste0(indir,"raw-670287/icd10.r")); icd <- bd
 source(paste0(indir,"raw-670287/icd10Date.r")); icdDate <- bd; bd <- NULL
 dates <- names(icdDate)[sapply(icdDate, is.Date)]; summary(icdDate[,-1])
 for (date1 in dates) { icdDate[[date1]][icdDate[[date1]] %in% as.Date(c("1900-01-01", "1999-01-01"))] <- NA }
-vip <- read.table(paste0(indir,"common/ukb.vip.icd"), header=F, flush=T) %>%
-	rename(trait=V1, code=V2)
+vip <- read.table(paste0(indir,"common/ukb.vip.icd"), header=F, flush=T) %>% rename(trait=V1, code=V2)
 dat <- subset(icd, select=f.eid) %>% rename(eid=f.eid)
 for (i in 1:nrow(vip)) {
-	dat1 <- icd[,-1]
-	dat2 <- icdDate[,-1]
-	exclude <- apply(dat1, 2, function(x){!grepl(vip$code[i],x)}) # 2 或者 1:2 得到 same dimension
-	dat1[exclude] <- NA
-	dat2[exclude] <- NA
-	dat[[paste0("icd_",vip$trait[i])]] <- apply(dat1, 1, function(x){sum(!is.na(x))}) # apply 1
-	dat[[paste0("icdDate_",vip$trait[i])]] <- as.Date(apply(dat2, 1, FUN=min, na.rm=T)) 
+	datCode <- icd[,-1]
+	datDate <- icdDate[,-1]
+	exclude <- apply(datCode, 2, function(x){!grepl(vip$code[i],x)}) # 2 或者 1:2 得到 same dimension
+	datCode[exclude] <- NA
+	datDate[exclude] <- NA
+	dat[[paste0("icdCt_",vip$trait[i])]] <- apply(datCode, 1, function(x){sum(!is.na(x))}) # apply 1
+	dat[[paste0("icdDate_",vip$trait[i])]] <- as.Date(apply(datDate, 1, FUN=min, na.rm=T)) 
 }
 dat$icdDate_vte <- as.Date(apply(subset(dat, select=c(icdDate_dvt, icdDate_pe)), 1, FUN=min, na.rm=T))
 hist(dat$icdDate_covid, breaks="weeks", freq=TRUE)
@@ -94,15 +93,26 @@ saveRDS(dat, file="D:/data/ukb/Rdata/ukb.icd.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# self-report ill (20002) 
+# SRD (self-report disease) (20002 和 87) 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source(paste0(indir,"raw-670287/ill.r"))
-dat <- subset(bd, select=f.eid) %>% rename(eid=f.eid)
-	dat1 <- bd[,-1]
-	exclude <- apply(dat1, 2, function(x){!grepl("1093|1094|1068",x)})  
-	dat1[exclude] <- NA
-	dat$sr_vte <- apply(dat1, 1, function(x){sum(!is.na(x))})
-saveRDS(dat, file="D:/data/ukb/Rdata/ukb.ill.rds")
+source(paste0(indir,"raw-670287/srd.r")); srd <- bd
+source(paste0(indir,"raw-670287/srdTime.r")); srdTime <- bd; bd <- NULL
+vip <- read.table(paste0(indir,"common/ukb.vip.srd"), header=F, flush=T) %>% rename(trait=V1, code=V2)
+dat <- subset(srd, select=f.eid) %>% rename(eid=f.eid)
+for (i in 1:nrow(vip)) {
+	datCode <- srd[,-1]
+	datAge <- sapply(srdTime[,-1], as.numeric)
+	datYear <- sapply(srdTime[,-1], as.numeric)
+	exclude <- apply(datCode, 2, function(x){!grepl(vip$code[i],x)}) 
+	datCode[exclude] <- NA
+	datAge[exclude] <- NA; datAge[datAge >100] <- NA
+	datYear[exclude] <- NA; datYear[datYear <1930] <- NA
+	dat[[paste0("srdCt_",vip$trait[i])]] <- apply(datCode, 1, function(x){sum(!is.na(x))})
+	dat[[paste0("srdAge_",vip$trait[i])]] <- apply(datAge, 1, FUN=min, na.rm=TRUE)
+	dat[[paste0("srdYear_",vip$trait[i])]] <- apply(datYear, 1, FUN=min, na.rm=TRUE)
+}
+dat[sapply(dat, is.infinite)] <- NA #!!
+saveRDS(dat, file="D:/data/ukb/Rdata/ukb.srd.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

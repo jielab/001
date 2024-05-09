@@ -29,7 +29,8 @@ enc=ukb50136.enc_ukb
 enc=ukb670287.enc_ukb
 	ukbconv $enc docs
 	ukbconv $enc r -iukb.vip.id -ovip
-	ukbconv $enc r -s20002 -oill
+	ukbconv $enc r -s20002 -osrd
+	ukbconv $enc r -s87 -osrdTime
 	ukbconv $enc r -s20003 -omed
 	ukbconv $enc r -s40002 -odeath_icd10s # Contributory (secondary) causes of death: ICD10
 	ukbconv $enc r -s41270 -oicd10 # Diagnoses - ICD10
