@@ -70,14 +70,15 @@ dat1 <- dat %>%
 		across(grep("walk", names(dat0), value=T), ~factor(.x)),
 		walk_pace=factor(walk_pace, labels=c("brisk","steady", "slow"))
 	) %>%
-	rename(X=walk_pace, Y_date=icdDate_vte2) %>% drop_na(X) 
+	rename(X=walk_pace, Y_date=icdDate_vte2, F5=vte.F5.rs6025_C, F2=vte.F2.rs1799963_G) %>% 
+	drop_na(X, F2, F5) 
 dat1 <- dat1 %>%
 	mutate(
 	#	X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
 	#	Z_qt = cut(Z, breaks=quantile(Z, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
 	#	X_qt = factor(ifelse(X_qt=="q1", "loss", ifelse(X_qt=="q5", "gain", "same")), levels=c("loss", "same", "gain")),
 	#	Z_qt = factor(ifelse(hardcall(vte.F5.rs6025_C)!=2, "F5", ifelse(vte.F2.rs1799963_G !=2, "F2", ifelse(Z_qt=="q1", "low", ifelse(Z_qt=="q5", "high", "middle")))), levels=c("low", "middle", "high", "F2", "F5")),
-		Z = factor(ifelse(hardcall(vte.F5.rs6025_C)!=2, "F5", ifelse(hardcall(vte.F2.rs1799963_G) !=2, "F2", "none")), levels=c("none","F2","F5")),
+		Z = factor(ifelse(hardcall(F5)!=2, "F5", ifelse(hardcall(F2) !=2, "F2", "none")), levels=c("none","F2","F5")),
 		X_Z = factor(paste(Z, X, sep="|"), levels=c("none|brisk","none|steady","none|slow", "F2|brisk","F2|steady","F2|slow", "F5|brisk","F5|steady", "F5|slow")),
 		Y_yes = ifelse(is.na(Y_date), 0, 1),
 		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
@@ -90,7 +91,7 @@ surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
 km.obj <- survfit(surv.obj ~ Z, data=dat1)
 	plot(km.obj, fun=function(x) 1-x)
 	ggsurvplot(km.obj, ylim=c(0,0.08), fun="event") # linetype=rep(1:3,3), palette=rep(c("green","orange","red"),3))
-fit.cox <- coxph(surv.obj ~ X+Z+X*Z +walk_time+walk_freq +age+sex+bmi+PC1+PC2+ smoke_status+alcohol_status, data=dat1); print(coef(summary(fit.cox)))
+fit.cox <- cph(surv.obj ~ X+Z+X*Z +walk_time+walk_freq +age+sex+bmi+PC1+PC2+ smoke_status+alcohol_status, data=dat1); print(coef(summary(fit.cox)))
 	survminer::ggforest(fit.cox, main="", cpositions=c(0, 0.1, 0.3), fontsize=1.2, data=dat1) # 不能显示interaction值
 	fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
 		fit.glm <- glm(outcome_yes ~ gen, data=dat, family="binomial")
@@ -99,7 +100,37 @@ fit.cox <- coxph(surv.obj ~ X+Z+X*Z +walk_time+walk_freq +age+sex+bmi+PC1+PC2+ s
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 高阶分析和画图
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+library(QHScrnomo)
+dd <- datadist(prostate.dat)
+options(datadist = "dd")
+# Fit the Cox-PH model for prostate cancer-specific mortality
+prostate.f <- cph(Surv(TIME_EVENT,EVENT_DOD == 1) ~ TX  + rcs(PSA,3) + BX_GLSN_CAT + CLIN_STG + rcs(AGE,3) + RACE_AA, data = prostate.dat, x = TRUE, y= TRUE, surv=TRUE, time.inc = 144)
+prostate.crr <- crr.fit(prostate.f, cencode = 0, failcode = 1)
+set.seed(123)
+prostate.dat$preds.tenf <- tenf.crr(prostate.crr, time = 120, trace = FALSE) # 120 = 10 years
+str(prostate.dat$preds.tenf)
+#>  num [1:2000] 0.374 0.376 0.277 0.372 0.394 ...
+with(prostate.dat, cindex(preds.tenf, EVENT_DOD, TIME_EVENT, type = "crr"))["cindex"]
+# Set some nice display labels (also see ?Newlevels)
+prostate.g <-Newlabels(fit = prostate.crr,labels = c(
+        TX = "Treatment options",
+        PSA = "PSA (ng/mL)",
+        BX_GLSN_CAT = "Biopsy Gleason Score Sum",
+        CLIN_STG = "Clinical Stage",
+        AGE = "Age (Years)",
+        RACE_AA = "Race"))
+nomogram.crr(
+  fit = prostate.g,
+  failtime = 120,
+  lp = FALSE,
+  xfrac = 0.65,
+  fun.at = seq(0.2, 0.45, 0.05),
+  funlabel = "Predicted 10-year risk"
+)
+
+
+	
 pacman::p_load(vivid, randomForest, MASS)
 set.seed(12345)
 dat2 <- dat1 %>% subset( as.numeric(rownames(dat1)) %% 10 ==0 | Y_yes==1) %>%
