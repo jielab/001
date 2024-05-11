@@ -1,5 +1,5 @@
 setwd("D:/")
-pacman::p_load(data.table, readxl, lubridate, tidyverse, dplyr, survival, survminer, reshape2, psych)
+pacman::p_load(data.table, readxl, lubridate, tidyverse, dplyr, survival, survminer, gtsummary, reshape2, psych)
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 std <- function(x) (x - mean(x,na.rm=T)) / sd(x,na.rm=T)
 hardcall <- function(x) ifelse(x<0.5, 0, ifelse(x<1.5, 1, 2))
@@ -10,8 +10,7 @@ dat0 <- readRDS(file="D:/data/ukb/Rdata/all.Rdata") %>% mutate(birth_month=facto
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # X-Y 或 X-Y-Z交互作用 批量分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- dat0 %>% 
-	mutate(
+dat <- dat0 %>% mutate(
 		icdDate_vte2=as.Date(ifelse(!is.na(icdDate_vte), as.character(icdDate_vte), ifelse(!is.na(srdYear_vte), (paste0(srdYear_vte,"-07-01")), ifelse(!is.na(srdAge_vte) & srdAge_vte >0, paste0(birth_year+srdAge_vte,"-07-01"), NA))))
 	) %>% filter(ethnic_cat=="White") 
 hist(dat$icdDate_vte2, breaks="year")
@@ -33,8 +32,8 @@ for (Y in Ys) {
 		if (X==Y) next
 		print(paste("RUN", X, Y))
 		dat1$X = inormal(dat1[[X]])
-		fit.cox <- coxph(surv.obj ~ X +age+sex +PC1+PC2+weight+smoke_status+alcohol_status, data=dat1)
-		print(res.cox <- coef(summary(fit.cox)))
+		cox.fit <- coxph(surv.obj ~ X +age+sex +PC1+PC2+weight+smoke_status+alcohol_status, data=dat1)
+		print(res.cox <- coef(summary(cox.fit)))
 		b=round(res.cox[1,1],4); se=round(res.cox[1,3],4); p=signif(res.cox[1,5],2)
 		write.table(paste(Y, X, b, se, p), file=outfile, sep='\t', row.names=FALSE, col.names=FALSE, append=TRUE, quote=FALSE)
 		next
@@ -44,8 +43,8 @@ for (Y in Ys) {
 			print(paste("RUN", X, Y, Z))
 			dat1$Z <- dat1[[Z]]
 			if (Z %like% "\\.rs" & length(unique(dat1$Z)) >3) dat1$Z <- hardcall(dat1$Z) # 要不然没法画出Z的3个类型
-			fit.cox <- coxph(surv.obj ~ X + Z + X*Z +age+sex +PC1+PC2, data=dat1)
-			res.cox <- coef(summary(fit.cox)); print(res.cox)
+			cox.fit <- coxph(surv.obj ~ X + Z + X*Z +age+sex +PC1+PC2, data=dat1)
+			res.cox <- coef(summary(cox.fit)); print(res.cox)
 			png(paste(X, Y, Z, "png", sep="."))
 			print(ggsurvplot(survfit(surv.obj ~X_qt + Z, data=dat1), ylim=c(0.5,1), risk.table=FALSE))	
 			dev.off()
@@ -64,78 +63,50 @@ library(ggcorrplot); plot_bp <- ggcorrplot::ggcorrplot(dat_b, lab=TRUE, p.mat=da
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 针对某一*显著*结果的精细分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat1 <- dat %>% 
-	mutate(
+dat1 <- dat %>% mutate(
 		walk_pace=4 - walk_pace, 
 		across(grep("walk", names(dat0), value=T), ~factor(.x)),
 		walk_pace=factor(walk_pace, labels=c("brisk","steady", "slow"))
-	) %>%
-	rename(X=walk_pace, Y_date=icdDate_vte2, F5=vte.F5.rs6025_C, F2=vte.F2.rs1799963_G) %>% 
+	) %>% rename(X=walk_pace, Y_date=icdDate_vte2, F5=vte.F5.rs6025_C, F2=vte.F2.rs1799963_G) %>% 
 	drop_na(X, F2, F5) 
-dat1 <- dat1 %>%
-	mutate(
+dat1 <- dat1 %>% mutate(
 	#	X_qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
-	#	Z_qt = cut(Z, breaks=quantile(Z, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
-	#	X_qt = factor(ifelse(X_qt=="q1", "loss", ifelse(X_qt=="q5", "gain", "same")), levels=c("loss", "same", "gain")),
-	#	Z_qt = factor(ifelse(hardcall(vte.F5.rs6025_C)!=2, "F5", ifelse(vte.F2.rs1799963_G !=2, "F2", ifelse(Z_qt=="q1", "low", ifelse(Z_qt=="q5", "high", "middle")))), levels=c("low", "middle", "high", "F2", "F5")),
+	#	X_qt = factor(ifelse(X_qt=="q1", "low", ifelse(X_qt=="q5", "high", "middle")), levels=c("low", "middle", "high")),
+	#	Z = factor(ifelse(hardcall(F5)!=2, "F5", ifelse(F2 !=2, "F2", ifelse(Z_qt=="q1", "low", ifelse(Z_qt=="q5", "high", "middle")))), levels=c("low", "middle", "high", "F2", "F5")),
 		Z = factor(ifelse(hardcall(F5)!=2, "F5", ifelse(hardcall(F2) !=2, "F2", "none")), levels=c("none","F2","F5")),
-		X_Z = factor(paste(Z, X, sep="|"), levels=c("none|brisk","none|steady","none|slow", "F2|brisk","F2|steady","F2|slow", "F5|brisk","F5|steady", "F5|slow")),
+		Z_X = factor(paste(Z, X, sep="|"), levels=paste(rep(levels(Z),each=3), rep(levels(X),3), sep="|")),
 		Y_yes = ifelse(is.na(Y_date), 0, 1),
 		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_years >0)
 prop.table(table(dat1$X, dat1$Y_yes),1); prop.table(table(dat1$X_Z, dat1$Y_yes),1)	
 	aggregate(Y_yes ~ X, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
-	coef(summary(glm(Y_yes ~ X+Z+ age+sex+smoke_status+alcohol_status +PC1+PC2, data=dat1)))
+	coef(summary(glm(Y_yes ~ X+Z+ age+sex+smoke_status+alcohol_status +PC1+PC2, family="binomial", data=dat1)))
 surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
-km.obj <- survfit(surv.obj ~ Z, data=dat1)
+km.obj <- survfit(surv.obj ~ Z, data=dat1) # KM 是不能带协变量的，Z会被作为分层变量
+	survdiff(surv.obj ~ Z, data=dat1) # log-rank test
 	plot(km.obj, fun=function(x) 1-x)
 	ggsurvplot(km.obj, ylim=c(0,0.08), fun="event") # linetype=rep(1:3,3), palette=rep(c("green","orange","red"),3))
-fit.cox <- cph(surv.obj ~ X+Z+X*Z +walk_time+walk_freq +age+sex+bmi+PC1+PC2+ smoke_status+alcohol_status, data=dat1); print(coef(summary(fit.cox)))
-	survminer::ggforest(fit.cox, main="", cpositions=c(0, 0.1, 0.3), fontsize=1.2, data=dat1) # 不能显示interaction值
-	fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
-		fit.glm <- glm(outcome_yes ~ gen, data=dat, family="binomial")
-	survdiff(surv.obj ~ gen_3p, data=dat) # log-rank test
+cox.fit <- coxph(surv.obj ~ X+Z+X*Z +walk_time+walk_freq +age+sex+bmi+PC1+PC2+ smoke_status+alcohol_status, data=dat1); print(coef(summary(cox.fit)))
+	survminer::ggforest(cox.fit, main="", cpositions=c(0, 0.1, 0.3), fontsize=1.2, data=dat1) # 不能显示interaction值
+	cox.fit %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 高阶分析和画图
+# K-M & COX 科普
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-library(QHScrnomo)
-dd <- datadist(prostate.dat)
-options(datadist = "dd")
-# Fit the Cox-PH model for prostate cancer-specific mortality
-prostate.f <- cph(Surv(TIME_EVENT,EVENT_DOD == 1) ~ TX  + rcs(PSA,3) + BX_GLSN_CAT + CLIN_STG + rcs(AGE,3) + RACE_AA, data = prostate.dat, x = TRUE, y= TRUE, surv=TRUE, time.inc = 144)
-prostate.crr <- crr.fit(prostate.f, cencode = 0, failcode = 1)
-set.seed(123)
-prostate.dat$preds.tenf <- tenf.crr(prostate.crr, time = 120, trace = FALSE) # 120 = 10 years
-str(prostate.dat$preds.tenf)
-#>  num [1:2000] 0.374 0.376 0.277 0.372 0.394 ...
-with(prostate.dat, cindex(preds.tenf, EVENT_DOD, TIME_EVENT, type = "crr"))["cindex"]
-# Set some nice display labels (also see ?Newlevels)
-prostate.g <-Newlabels(fit = prostate.crr,labels = c(
-        TX = "Treatment options",
-        PSA = "PSA (ng/mL)",
-        BX_GLSN_CAT = "Biopsy Gleason Score Sum",
-        CLIN_STG = "Clinical Stage",
-        AGE = "Age (Years)",
-        RACE_AA = "Race"))
-nomogram.crr(
-  fit = prostate.g,
-  failtime = 120,
-  lp = FALSE,
-  xfrac = 0.65,
-  fun.at = seq(0.2, 0.45, 0.05),
-  funlabel = "Predicted 10-year risk"
-)
-
-
-	
-pacman::p_load(vivid, randomForest, MASS)
-set.seed(12345)
-dat2 <- dat1 %>% subset( as.numeric(rownames(dat1)) %% 10 ==0 | Y_yes==1) %>%
-	drop_na(X, Z, walk_time,walk_freq, age, sex, bmi,PC1,PC2,smoke_status,alcohol_status)
-fit.rf <- glm(Y_yes ~ X+Z+ walk_time+walk_freq +age+sex+smoke_status+alcohol_status, data=dat2)
-fit.vivi <- vivi(fit=fit.rf, response ="Y_yes", data=dat2)
-viviHeatmap(mat=fit.vivi)
-viviNetwork(mat=fit.vivi)
+dat <- NULL
+	dat$years <- c(2, 3, 4, 6, 9, 12, 15, 18, 20, 22)
+	dat$status <- c(1, 0, 1, 0, 1, 1, 0, 1, 0, 1) 
+	dat$ages <- seq(85, 40, -5)
+	dat$smokes <- rep(1, 1, 1, 1, 0, 0, 0, 1, 1, 1)
+surv.obj <- Surv(time=dat$years, event=dat$status, type="right")
+	km.obj <- survfit(surv.obj ~ 1, data=dat); round(km.obj$surv,2)
+	year <- 10; # 查找距离时间点“10年” 最近的记录点，找到5
+	index <- which(km.obj$time <= year)[length(which(km.obj$time <= year))]; index
+	1-km.obj$surv[index]; 1-km.obj$upper[index]; 1-km.obj$lower[index]
+cox.fit <- coxph(surv.obj ~ ages, data=dat)
+	base_hazard <- basehaz(cox.fit, centered = FALSE)
+	BETA <- cox.fit$coef
+	RR <- exp(sum(BETA * dat$smokes))
+	cumulative_risk <- 1 - exp(-base_hazard$hazard * RR) # 计算每个时间点的累积风险
