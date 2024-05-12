@@ -112,8 +112,8 @@ res <- data.frame(X = new_data$X, Z = new_data$Z, risk_10y=1-St, LowerCI =1-uppe
 	geom_errorbar(aes(ymin =UpperCI, ymax = LowerCI), width = 0.2, position = position_dodge(width = 0.7)) +
 	geom_text(aes(label = sprintf("%.2f", UpperCI), y = UpperCI), vjust = -0.5, position = position_dodge(width = 0.7), size = 2) +
 	geom_text(aes(label = sprintf("%.2f", LowerCI), y = LowerCI), vjust = 1.5, position = position_dodge(width = 0.7), size = 2) +
-	labs(x = "Mendelian mutations", y = "10-year risk", title = "") +
-	scale_fill_manual(values=c("green", "blue", "orange"), name="Walk pace") + theme_minimal() #+ coord_cartesian(ylim = c(0.915, 0.99))
+	labs(x = "Mendelian mutations", y = "10-year risk of VTE (%)", title = "") +
+	scale_fill_manual(values=c("green", "lightblue", "orange"), name="Walk pace") + theme_minimal() #+ coord_cartesian(ylim = c(0.915, 0.99))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
