@@ -79,6 +79,7 @@ dat1 <- dat1 %>% mutate(
 		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_years >0)
+	#dat2 <- dat1 %>% dplyr::select(eid, follow_years, Y_yes, X, Z, Z_X, walk_time,walk_freq,age,sex,bmi,PC1,PC2,smoke_status,alcohol_status) 
 prop.table(table(dat1$X, dat1$Y_yes),1); prop.table(table(dat1$X_Z, dat1$Y_yes),1)	
 	aggregate(Y_yes ~ X, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
 	coef(summary(glm(Y_yes ~ X+Z+ age+sex+smoke_status+alcohol_status +PC1+PC2, family="binomial", data=dat1)))
@@ -90,6 +91,29 @@ km.obj <- survfit(surv.obj ~ Z, data=dat1) # KM 是不能带协变量的，Z会�
 cox.fit <- coxph(surv.obj ~ X+Z+X*Z +walk_time+walk_freq +age+sex+bmi+PC1+PC2+ smoke_status+alcohol_status, data=dat1); print(coef(summary(cox.fit)))
 	survminer::ggforest(cox.fit, main="", cpositions=c(0, 0.1, 0.3), fontsize=1.2, data=dat1) # 不能显示interaction值
 	cox.fit %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
+cox.fit <- coxph(surv.ojb ~ X+Z, data = dat1)
+#	surv_pred <- survfit(cox.fit, newdata = new_data)
+#	surv_summary <- summary(surv_pred, times = 10)
+	base_haz <- basehaz(cox.fit, centered = FALSE)
+	cum_base_haz <- approx(base_haz$time, base_haz$hazard, xout = 10, method = "linear")$y
+	new_data <-  expand.grid(X = levels(dat$X), Z = levels(dat$Z))
+	new_data_num <- model.matrix(~ X + Z, data = new_data)[,-1]
+	Ht <- exp(new_data_num %*% cox.fit$coefficients) * cum_base_haz
+	St <- exp(-Ht)
+	var_beta_x <- new_data_num%*%diag(cox.fit$var) 
+	se_Ht <- sqrt(var_beta_x) * Ht
+	se_St <- St * se_Ht
+	z_value <- qnorm(0.975)  # 正态分布的97.5%分位数
+	lower_CI <- St * exp(-z_value * se_St)
+	upper_CI <- St * exp(z_value * se_St)
+res <- data.frame(X = new_data$X, Z = new_data$Z, risk_10y=1-St, LowerCI =1-upper_CI, UpperCI=1-lower_CI)
+	ggplot(res, aes(x = Z, y =risk_10y, fill = X)) +
+	geom_bar(stat = "identity", position = position_dodge(width = 0.7), width = 0.7) +
+	geom_errorbar(aes(ymin =UpperCI, ymax = LowerCI), width = 0.2, position = position_dodge(width = 0.7)) +
+	geom_text(aes(label = sprintf("%.2f", UpperCI), y = UpperCI), vjust = -0.5, position = position_dodge(width = 0.7), size = 2) +
+	geom_text(aes(label = sprintf("%.2f", LowerCI), y = LowerCI), vjust = 1.5, position = position_dodge(width = 0.7), size = 2) +
+	labs(x = "Mendelian mutations", y = "10-year risk", title = "") +
+	scale_fill_manual(values=c("green", "yellow", "orange"), name="Walk pace") + theme_minimal() #+ coord_cartesian(ylim = c(0.915, 0.99))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
