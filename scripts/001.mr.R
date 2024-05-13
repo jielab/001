@@ -102,7 +102,7 @@ for (M in Ms) { # M
 			
 			# Mediation 乘法计算
 			beta_2step <- round(beta_X2M * beta_M2Y.adjX, 4)
-				CIs = RMediation::medci(beta_X2M, beta_M2Y.adjX, se_X2M, se_M2Y.adjX, type='dop'); se_2step = CIs$SE; p_2step <- signif(2*pnorm(abs(beta_2step/se_2step), lower.tail=F),2)		
+			CIs = RMediation::medci(beta_X2M, beta_M2Y.adjX, se_X2M, se_M2Y.adjX, type='dop'); se_2step = CIs$SE; p_2step <- signif(2*pnorm(-abs(beta_2step/se_2step)),2)	
 			print(paste(X,M,Y, round(beta_X2Y,3),round(se_X2Y,3),p_X2Y, round(beta_X2M,3),round(se_X2M,3),p_X2M, round(beta_M2Y.adjX,3),round(se_M2Y.adjX,3),p_M2Y.adjX, round(beta_2step,3),round(se_2step,3),p_2step))
 		}	
 	}
