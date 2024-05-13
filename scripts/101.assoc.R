@@ -92,8 +92,8 @@ cox.fit <- coxph(surv.obj ~ X+Z+X*Z +walk_time+walk_freq +age+sex+bmi+PC1+PC2+ s
 	survminer::ggforest(cox.fit, main="", cpositions=c(0, 0.1, 0.3), fontsize=1.2, data=dat1) # 不能显示interaction值
 	cox.fit %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
 # 下面代码计算10年风险并画图
-cox.fit <- coxph(surv.obj ~ Z, data=dat1) 
-dat2 <- expand.grid(Z=levels(dat1$Z))
+cox.fit <- coxph(surv.obj ~ X+Z, data=dat1) 
+dat2 <- expand.grid(X=levels(dat1$X), Z=levels(dat1$Z))
 	surv.fit <- survfit(cox.fit, newdata=dat2)
 	surv_10y <- summary(surv.fit, times=10)
 dat2 <- dat2 %>% mutate(
