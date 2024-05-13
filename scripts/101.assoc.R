@@ -30,7 +30,7 @@ for (Y in Ys) { # 🙍‍
 		follow_years=(as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_years >0 )
 	surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
-	for (X in Xs) { # 🔪
+	for (X in Xs) { # 🍷
 		if (X==Y) next
 		print(paste("RUN", X, Y))
 		dat1$X=inormal(dat1[[X]])
