@@ -20,7 +20,7 @@ Ms <- grep("^bmi$|bb_|bc_", names(dat), value=TRUE)
 Zs <- grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
 outfile="101.assoc.tsv"; file.create(outfile); 
 #sink("101.assoc.log")
-for (Y in Ys) { # 😣
+for (Y in Ys) { # 🙍‍
 	writeLines(paste('\n\n--> Run:', Y))
 	dat1 <- dat %>%
 	mutate(
