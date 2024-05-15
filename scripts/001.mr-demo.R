@@ -1,4 +1,4 @@
-pacman::p_load(tidyverse, TwoSampleMR, MendelianRandomization, mediation, RMediation, psych, bda)
+pacman::p_load(tidyverse, TwoSampleMR, MendelianRandomization, survival, survminer, mediation, RMediation, psych, bda)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -29,12 +29,12 @@ fit.X2M <- lm(M ~ X, data=dat1); summary(fit.X2M)
 	coef.X2M <- coef(summary(fit.X2M)); coef.X2M
 	beta.X2M <- coef.X2M[2,1]; se.X2M <- coef.X2M[2,2]; p.X2M <- signif(coef.X2M[2,4],2)
 #fit.M2Y <- lm(Y ~ M+X, data=dat1); summary(fit.M2Y) # 🐖 这儿必须捎带上X。 X的BETA=0.01667，是ADE，不再显著，表明 complete mediation。
-fit.M2Y.surv <- survreg(Surv(follow_years, Y_yes) ~ M + X, data=dat1)
+fit.M2Y <- survreg(Surv(follow_years, Y_yes) ~ M + X, data=dat1)
 	coef.M2Y <- coef(summary(fit.M2Y)); coef.M2Y 
 	beta.M2Y <- coef.M2Y[2,1]; se.M2Y <- coef.M2Y[2,2]; signif(coef.M2Y[2,4],2)
 	beta.X2Y.adjM <- coef.M2Y[3,1]; se.X2Y.adjM <- coef.M2Y[3,2]; signif(coef.M2Y[3,4],2)
 #res <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M", boot=T); print(SUM <- summary(res))
-res <- mediation::mediate(fit.X2M, fit.M2Y.surv, treat="X", mediator="M"); print(SUM <- summary(res))
+res <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M"); print(SUM <- summary(res))
 	print(c(round(SUM$tau.coef,3), round(SUM$z.avg,3), round(SUM$n.avg,3))) # Total, ADE, prop
 	print(c(round(SUM$d.avg,3), round(SUM$d.avg.ci,3), signif(SUM$d.avg.p,2))) # ACME
 beta.me <- beta.X2M * beta.M2Y; beta.me # 🐕 基于summary数据做乘法Product
