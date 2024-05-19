@@ -1,5 +1,5 @@
 setwd("D:/")
-pacman::p_load(data.table, dplyr, tidyverse, lubridate, naniar)
+pacman::p_load(data.table, dplyr, tidyr, lubridate, naniar)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -13,7 +13,12 @@ fod <- readRDS("D:/data/ukb/Rdata/ukb.fod.rds")
 gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds") 
 hla <- readRDS("D:/data/ukb/Rdata/ukb.hla.rds") #hla <- hla %>% select(which(colMeans(.,na.rm=T) >=0.02))
 prs0 <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T); prs <- subset(prs0, select=grepl("^eid$|score_sum$|allele_cnt$", names(prs0)))
-dat0 = Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, pc, icd, srd, fod, gen, prs)) %>% filter(eid>0)
+dat0 <- Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, pc, icd, srd, fod, gen, prs)) %>% filter(eid>0)
+dat0 <- dat0 %>% mutate(
+		walk_pace=4 - walk_pace, across(grep("walk", names(dat0), value=T), ~factor(.x)),
+		walk_pace=factor(walk_pace, labels=c("brisk","steady", "slow")),
+		icdDate_vte2=as.Date(ifelse(!is.na(icdDate_vte), as.character(icdDate_vte), ifelse(!is.na(srdYear_vte), (paste0(srdYear_vte,"-07-01")), ifelse(!is.na(srdAge_vte) & srdAge_vte >0, paste0(birth_year+srdAge_vte,"-07-01"), NA))))
+	) 
 saveRDS(dat0, file="D:/data/ukb/Rdata/all.Rdata")
 
 

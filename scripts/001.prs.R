@@ -1,5 +1,5 @@
 setwd("D:/")
-pacman::p_load(dplyr, tidyr, ggplot2, pROC)
+pacman::p_load(data.table, dplyr, tidyr, ggplot2, survival, pROC)
 std <- function(x) (x - mean(x,na.rm=T)) / sd(x,na.rm=T)
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 
@@ -8,14 +8,14 @@ inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 # PRS-GRID
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 set.seed(12345)
-trait='t2dm'; model='glm' # lm 或 glm 或 coxph
+trait='t2dm'; model='cox' # lm 或 glm 或 cox
 races=c("EUR", "AFR", "EAS", "SAS") 
-pcs=40 # 40个 PC
+train_n=0.5
+pcs=4 # 40个 PC
 folds=10 # 10-fold cross validation
-bootstrap=100
 
 dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") 
-dat <- dat0 %>% subset(select=grepl("^eid|^age|^sex$|^ethnic|^PC|^umap|t2dm|height", names(dat0))) %>% 
+dat <- dat0 %>% subset(select=grepl("^eid|^age|^sex$|^ethnic|^PC|^umap|t2dm|height|date_attend|date_lost|date_death", names(dat0))) %>% 
 	drop_na(PC1, umap1) %>% filter(ethnic_cat %in% c("White", "Black", "Chinese", "Asian")) %>%
 	mutate(race=ifelse((PC1> -25 & PC1<25 & PC2> -25 & PC2<20), "EUR",ifelse((PC1>25 & PC1<125 & PC2> -160 & PC2< -60), "SAS", ifelse((PC1>130 & PC1<180 & PC2> -290 & PC2< -250), "EAS", ifelse((PC1>250 & PC1<425 & PC2>25 & PC2<90), "AFR", NA)))))
 # ggplot(dat, aes(PC1, PC2, color=ethnic_cat)) + geom_point(size=1) + scale_color_manual(labels = c("EUR", "SAS", "AFR", "EAS"), values = c("blue", "purple", "black", "red")) + theme_bw() + guides(color=guide_legend("race")) + 
@@ -60,22 +60,20 @@ for (r in races){
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if (model=="lm") {dat$trait=dat[[trait]]
 } else if (model=="glm") {dat$trait=ifelse(is.na(dat[[paste0('icdDate_',trait)]]), 0, 1)
-} else if (model=="glm") {
+} else if (model=="cox") {
 	dat <- dat %>% mutate(
-		Y_date = dat[[Y]], Y_yes = ifelse( is.na(Y_date), 0,1),
-		follow_end_day = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
+		Y_date = dat[[paste0('icdDate_',trait)]], Y_yes = ifelse( is.na(Y_date), 0,1),
+		follow_end_day = data.table::fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_years >0 )
 }
 for (r in races){
 	print(paste("PROCESS", r))
-	auc_C <- list()
-	auc_G <- list()
-	auc_folds_C <- numeric(folds)
-	auc_folds_G <- numeric(folds)
+	fit_C = fit_G = list()
+	fit_folds_C = fit_folds_G = numeric(folds)
 	dat_sub <- subset(dat, race==r)
 	for (i in 1:folds) { 
-		ii <- sort(sample(1:nrow(dat_sub), round(nrow(dat_sub)*0.9)) )
+		ii <- sort(sample(1:nrow(dat_sub), round(nrow(dat_sub)*train_n)) )
 		dat_sub.train <- dat_sub[ii,]
 		dat_sub.valid <- dat_sub[-ii,]
 		if (model=="lm") { 
@@ -83,35 +81,32 @@ for (r in races){
 			model_G.train <- lm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat_sub.train)
 			y_C.hat <- predict(model_C.train, dat_sub.valid)
 			y_G.hat <- predict(model_G.train, dat_sub.valid)
-			print((cor(y_C.hat, dat_sub.valid$trait, use="complete.obs"))^2)
+			fit_folds_C[i] <- (cor(y_C.hat, dat_sub.valid$trait, use="complete.obs"))^2
+			fit_folds_G[i] <- (cor(y_G.hat, dat_sub.valid$trait, use="complete.obs"))^2
 		} else if (model=="glm") {
 			model_C.train <- glm(trait ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat_sub.train)
 			model_G.train <- glm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat_sub.train)
 			y_C.hat <- predict(model_C.train, dat_sub.valid)
 			y_G.hat <- predict(model_G.train, dat_sub.valid)
-			auc_folds_C[i] <- auc(roc(dat_sub.valid$trait, y_C.hat))
-			auc_folds_G[i] <- auc(roc(dat_sub.valid$trait, y_G.hat))
-		} else if (model=="coxph") {
+			fit_folds_C[i] <- auc(roc(dat_sub.valid$trait, y_C.hat))
+			fit_folds_G[i] <- auc(roc(dat_sub.valid$trait, y_G.hat))
+		} else if (model=="cox") {
 			surv.obj <- Surv(time=dat$follow_years, event=dat$Y_yes)
-			model_C.train <- 1-summary(survfit(XXX, newdata=trainset), times=365.25*3)$surv[1,]
-			model_G.train <- 1-summary(survfit(xxx, newdata=trainset), times=365.25*3)$surv[1,]
-			library(nricens)
+			train_cox(surv.obj ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat_sub.train, newdata=JIE, trControl=NULL, parallel=FALSE, mc.cores=2, seed=12345)
 			xxx <- get.risk.coxph(xxx, 365.25*3)
 		}
 	}
-	auc_C[[r]] <- auc_folds_C
-	auc_G[[r]] <- auc_folds_G
+	print(fit_C[[r]] <- fit_folds_C)
+	print(fit_G[[r]] <- fit_folds_G)
 }
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 画图
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-auc_C <- as.data.frame(auc_C)
-auc_G <- as.data.frame(auc_G)
-auc_C$Method <- "PRS-CSx"
-auc_G$Method <- "PRS-GRID"
-combined_data <-  rbind(auc_C, auc_G)
+fit_C <- as.data.frame(fit_C); fit_C$Method <- "PRS-CSx"
+fit_G <- as.data.frame(fit_G); fit_G$Method <- "PRS-GRID"
+combined_data <- rbind(fit_C, fit_G)
 long_data <- pivot_longer(combined_data,  cols = c("EUR", "SAS", "AFR", "EAS"),   names_to = "Race", values_to = "value")
 summary_stats <- long_data %>% group_by(Race, Method) %>% summarize(mean = mean(value), sd = sd(value))
 F1 <- ggplot(summary_stats, aes(x = fct_relevel(Race, "EUR", "AFR", "SAS", "EAS"), y = mean, fill = fct_relevel(Method, "PRS-CSx", "PRS-GRID",))) +
@@ -143,4 +138,3 @@ myhist <- hist(dat$prs, breaks=20)
 	avg <- by(dat$trait, cut(dat$prs, breaks=myhist$breaks), function(x) mean(x,na.rm=T))
 	par(new=T); plot(myhist$mids, avg, pch=16, axes=F, xlab=NA, ylab=NA, cex=1.2)
 	axis(side=4); mtext(side=4, line=3, 'measured')	
-
