@@ -67,9 +67,11 @@ if (model=="lm") {dat$trait=dat[[trait]]
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_years >0 )
 }
+
+fit_C <- list()
+fit_G <- list()
 for (r in races){
 	print(paste("PROCESS", r))
-	fit_C = fit_G = list()
 	fit_folds_C = fit_folds_G = numeric(folds)
 	dat_sub <- subset(dat, race==r)
 	for (i in 1:folds) { 
@@ -91,7 +93,10 @@ for (r in races){
 			fit_folds_C[i] <- auc(roc(dat_sub.valid$trait, y_C.hat))
 			fit_folds_G[i] <- auc(roc(dat_sub.valid$trait, y_G.hat))
 		} else if (model=="cox") {
-			surv.obj <- Surv(time=dat$follow_years, event=dat$Y_yes)
+			surv.obj <- Surv(time=dat_sub.train$follow_years, event=dat_sub.train$Y_yes)
+			cox.fit <- coxph(surv.obj ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat_sub.train) 
+			dat2 <- expand.grid(X=levels(dat1$X), Z=levels(dat1$Z))
+			surv.fit <- survfit(cox.fit, newdata=dat_sub.valid)	
 			train_cox(surv.obj ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat_sub.train, newdata=JIE, trControl=NULL, parallel=FALSE, mc.cores=2, seed=12345)
 			xxx <- get.risk.coxph(xxx, 365.25*3)
 		}
