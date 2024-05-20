@@ -6,10 +6,9 @@ hardcall <- function(x) ifelse(x<0.5, 0, ifelse(x<1.5, 1, 2))
 dat0 <- readRDS(file="/work/sph-huangj/data/ukb/Rdata/all.Rdata")
 dat <- dat0 %>% mutate(bb_TEST <- runif(nrow(dat0))) %>% filter(ethnic_cat=="White")
 
-Ys <- grep("^icdDate_", names(dat), value=TRUE)
-Xs <- grep("^age_sex|age_m|^edu_score|^birth_weight|^height$|^chunk|^leg|^hippo_|^fev1fvc|^stiffness|score_sum$", names(dat), value=TRUE)
-Ms <- grep("^bmi$|bb_|bc_", names(dat), value=TRUE)
-Zs <- grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
+Ys <- "icdDate_vte2" # grep("^icdDate_", names(dat), value=TRUE)
+Xs <- "walk_pace" #grep("^age_sex|age_m|^edu_score|^birth_weight|^height$|^chunk|^leg|^hippo_|^fev1fvc|^stiffness|score_sum$", names(dat), value=TRUE)
+Ms <- grep("^bmi$|bb_|bc_", names(dat), value=TRUE) # grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
 for (Y in Ys) { # 🙍‍
 	writeLines(paste('\n\n--> Run:', Y))
 	dat1 <- dat %>%
@@ -26,7 +25,8 @@ for (Y in Ys) { # 🙍‍
 		dat1$X=dat1[[X]]
 		cox.fit <- coxph(surv.obj ~ X +age+sex +PC1+PC2+weight+smoke_status+alcohol_status, data=dat1)
 		print(res.cox <- coef(summary(cox.fit)))
-		dat1$M=inormal(dat1$M) # 🔔 这儿更改变量
+		M='M'
+		dat1$M=dat1[[M]]
 		fit.X2M <- lm(M ~ X, data=dat1)
 		fit.M2Y <- survreg(Surv(follow_years, Y_yes) ~ M + X, data=dat1) # 🐕 这儿用surveg
 		res <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M")
