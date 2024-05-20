@@ -23,7 +23,7 @@ prop.table(table(dat1$X, dat1$Y_yes),1); prop.table(table(dat1$X_Z, dat1$Y_yes),
 	aggregate(Y_yes ~ X, dat1, FUN=function(x) { paste( length(x), sum(x), round(sum(x)/length(x),3)) } )
 	coef(summary(glm(Y_yes ~ X+Z+ age+sex+smoke_status+alcohol_status +PC1+PC2, family="binomial", data=dat1)))
 surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
-km.obj <- survfit(surv.obj ~ Z, data=dat1) # KM 是不能带协变量的，Z会被作为分层变量
+	km.obj <- survfit(surv.obj ~ Z, data=dat1) # KM 是不能带协变量的，Z会被作为分层变量
 	survdiff(surv.obj ~ Z, data=dat1) # log-rank test
 	plot(km.obj, fun=function(x) 1-x)
 	survminer::ggsurvplot(km.obj, ylim=c(0,0.08), fun="event", pval=TRUE, risk.table=TRUE, risk.table.col="Z", ncensor.plot = TRUE, ggtheme = theme_bw(), palette=c("green","gray","orange"))
@@ -32,11 +32,11 @@ cox.fit <- coxph(surv.obj ~ X+Z+X*Z +walk_time+walk_freq +age+sex+bmi+PC1+PC2+ s
 	cox.fit %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
 # 计算10年风险并画图 🏮
 cox.fit <- coxph(surv.obj ~ X+Z, data=dat1) 
-dat2 <- expand.grid(X=levels(dat1$X), Z=levels(dat1$Z))
-	surv.fit <- survfit(cox.fit, newdata=dat2)
-	surv_10y <- summary(surv.fit, times=10)
+	dat2 <- expand.grid(X=levels(dat1$X), Z=levels(dat1$Z))
+	surv.pred <- survfit(cox.fit, newdata=dat2)
+	surv.10y <- summary(surv.pred, times=10)
 dat2 <- dat2 %>% mutate(
-	risk = 1-t(surv_10y$surv), ci_lower = t(1-surv_10y$upper), ci_upper = t(1-surv_10y$lower)
+	risk = 1-t(surv.10y$surv), ci_lower = t(1-surv.10y$upper), ci_upper = t(1-surv.10y$lower)
 )
 ggplot(dat2, aes(x=Z, y =risk, fill=X)) +
 	geom_bar(stat="identity", position=position_dodge(width=0.7), width=0.7) +

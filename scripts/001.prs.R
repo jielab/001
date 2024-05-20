@@ -36,9 +36,9 @@ for (i in 1:pcs) {
 }
 # dat <- dat %>% drop_na(race, trait, EUR.prs) %>% group_by(race) %>% slice_sample(n=1000) 
 for (r in races){
-	dat_sub <- subset(dat, race==r)
+	dat1 <- subset(dat, race==r)
 	for (i in 1:pcs) {
-		assign(paste0("PC", i, ".center.", r), median(dat_sub[[paste0("PC", i)]],na.rm=TRUE)) # 🐕 必须加上na.rm
+		assign(paste0("PC", i, ".center.", r), median(dat1[[paste0("PC", i)]],na.rm=TRUE)) # 🐕 必须加上na.rm
 	}
 }
 for (r in races){
@@ -67,38 +67,37 @@ if (model=="lm") {dat$trait=dat[[trait]]
 		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
 	) %>% filter( follow_years >0 )
 }
-
 fit_C <- list()
 fit_G <- list()
 for (r in races){
 	print(paste("PROCESS", r))
 	fit_folds_C = fit_folds_G = numeric(folds)
-	dat_sub <- subset(dat, race==r)
+	dat1 <- subset(dat, race==r)
 	for (i in 1:folds) { 
-		ii <- sort(sample(1:nrow(dat_sub), round(nrow(dat_sub)*train_n)) )
-		dat_sub.train <- dat_sub[ii,]
-		dat_sub.valid <- dat_sub[-ii,]
+		ii <- sort(sample(1:nrow(dat1), round(nrow(dat1)*train_n)) )
+		dat1.train <- dat1[ii,]; dat1.valid <- dat1[-ii,]
 		if (model=="lm") { 
-			model_C.train <- lm(trait ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat_sub.train)
-			model_G.train <- lm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat_sub.train)
-			y_C.hat <- predict(model_C.train, dat_sub.valid)
-			y_G.hat <- predict(model_G.train, dat_sub.valid)
-			fit_folds_C[i] <- (cor(y_C.hat, dat_sub.valid$trait, use="complete.obs"))^2
-			fit_folds_G[i] <- (cor(y_G.hat, dat_sub.valid$trait, use="complete.obs"))^2
+			model_C.train <- lm(trait ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat1.train)
+			model_G.train <- lm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat1.train)
+			y_C.hat <- predict(model_C.train, dat1.valid)
+			y_G.hat <- predict(model_G.train, dat1.valid)
+			fit_folds_C[i] <- (cor(y_C.hat, dat1.valid$trait, use="complete.obs"))^2
+			fit_folds_G[i] <- (cor(y_G.hat, dat1.valid$trait, use="complete.obs"))^2
 		} else if (model=="glm") {
-			model_C.train <- glm(trait ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat_sub.train)
-			model_G.train <- glm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat_sub.train)
-			y_C.hat <- predict(model_C.train, dat_sub.valid)
-			y_G.hat <- predict(model_G.train, dat_sub.valid)
-			fit_folds_C[i] <- auc(roc(dat_sub.valid$trait, y_C.hat))
-			fit_folds_G[i] <- auc(roc(dat_sub.valid$trait, y_G.hat))
+			model_C.train <- glm(trait ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat1.train)
+			model_G.train <- glm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat1.train)
+			y_C.hat <- predict(model_C.train, dat1.valid)
+			y_G.hat <- predict(model_G.train, dat1.valid)
+			fit_folds_C[i] <- auc(roc(dat1.valid$trait, y_C.hat))
+			fit_folds_G[i] <- auc(roc(dat1.valid$trait, y_G.hat))
 		} else if (model=="cox") {
-			surv.obj <- Surv(time=dat_sub.train$follow_years, event=dat_sub.train$Y_yes)
-			cox.fit <- coxph(surv.obj ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat_sub.train) 
-			dat2 <- expand.grid(X=levels(dat1$X), Z=levels(dat1$Z))
-			surv.fit <- survfit(cox.fit, newdata=dat_sub.valid)	
-			train_cox(surv.obj ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat_sub.train, newdata=JIE, trControl=NULL, parallel=FALSE, mc.cores=2, seed=12345)
-			xxx <- get.risk.coxph(xxx, 365.25*3)
+			surv.obj <- Surv(time=dat1.train$follow_years, event=dat1.train$Y_yes)
+			cox.fit <- coxph(surv.obj ~ AFR.prs+EAS.prs+EUR.prs+SAS.prs +age+sex, data=dat1.train) 
+			surv.pred <- survfit(cox.fit, newdata=dat1.valid)
+			summary(surv.pred)$table[,median]
+			# ipred::sbrier(cox.fit, surv.pred) 
+			# train_cox(r)
+			# get.risk.coxph(xxx, 365.25*3)
 		}
 	}
 	print(fit_C[[r]] <- fit_folds_C)
