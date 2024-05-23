@@ -91,10 +91,18 @@ for (r in races){
 			fit_folds_C[i] <- auc(roc(dat1.valid$trait, y_C.hat))
 			fit_folds_G[i] <- auc(roc(dat1.valid$trait, y_G.hat))
 		} else if (model=="cox") {
-			surv.obj <- Surv(time=dat1.train$follow_years, event=dat1.train$Y_yes)
-			cox.fit <- coxph(surv.obj ~ AFR.prs+EAS.prs+EUR.prs+SAS.prs +age+sex, data=dat1.train) 
-			surv.pred <- survfit(cox.fit, newdata=dat1.valid)
-			summary(surv.pred)$table[,median]
+			surv.obj <- Surv(time=dat1.train$follow_years, 
+				event=dat1.train$Y_yes)
+			cox.fit <- coxph(surv.obj ~ AFR.prs+EAS.prs+EUR.prs+SAS.prs +age+sex, 
+				data=dat1.train) 
+			dat1.valid$risk_score <- predict(cox.fit, type="risk", 
+				newdata=dat1.valid)
+			c_index <- pec::cindex(object=list(model=cox.fit), 
+				formula=surv.obj~1, data=dat1.valid, 
+				eval.times=max(dat1.valid$time))
+
+
+			#cox.pred <- survfit(cox.fit, newdata=dat1.valid); summary(surv.pred)$table[,median]
 			# ipred::sbrier(cox.fit, surv.pred) 
 			# train_cox(r)
 			# get.risk.coxph(xxx, 365.25*3)
