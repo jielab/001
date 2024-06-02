@@ -155,7 +155,7 @@ python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA
 
 
 ## #4.3. 因果分析 Mendelian Randomization
-> 如果有个体数据，可以 [OneSampleMR] (https://cran.r-project.org/web/packages/OneSampleMR/index.html)包。如果只有已发表的summary数据，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/8-449)。
+> 如果有个体数据，可以用 [OneSampleMR包](https://cran.r-project.org/web/packages/OneSampleMR/index.html)。如果只有已发表的summary数据，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/8-449)。
 > 如果工具变量太多，存在LD问题，TwoSampleMR包有clump()的功能。西湖大学杨剑开发的[GSMR](https://cnsgenomics.com/software/gcta/#GSMR)，参考[GSMR 文章](https://www.nature.com/articles/s41467-017-02317-2) 也可以应对LD问题。 
 <br/>
 <br/>
