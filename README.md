@@ -14,6 +14,11 @@
 > 文件名字里面有 "b36"，现在一般都用 b37（比如 UK Biobank），甚至有的用 b38，
 > 所以下载后解压后需要将那个 .map 文件先用 liftOver 转化为 b37 格式，然后用 PLINK 生成 bed/bim/fam 文件。
 > 这个基因数据可供 LDSC 和 GSMR 等软件使用。
+> 通过LD的计算来找到GWAS数据里面的independent top hits，计算量很大。如果不考虑 SNP之间的LD，只考虑距离，假设GWAS的第1，2，3 列分别是 SNP, CHR, POS，最后一列是P，可以用下面这个简单的代码来寻找GWAS数据里面每1MB区间的top SNP。
+```
+zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2,$3,$NF,b}' | \
+	sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $0; arr[$NF] ="Y"}' 
+```
 <br/>
 
 ## #1.2. 1000 genomes (千人基因组) genotype 数据， 一般作为 imputation 的 reference panel.
@@ -118,12 +123,6 @@ dat=XXX.gz
 ```
 python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d files/dbsnp/rsids-v154-hg19.tsv.gz -o out.tsv
 ```
-> 通过LD的计算来找到GWAS数据里面的independent top hits，也有一些问题。比如，g1k的LD不是金标准，r2也不是最合理的筛选办法，并且计算量很大。如果不考虑 SNP之间的LD，只考虑距离，假设GWAS的第1，2，3 列分别是 SNP, CHR, POS，最后一列是P，可以用下面这个简单的代码来寻找GWAS数据里面每1MB区间的top SNP。
-```
-zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2,$3,$NF,b}' | \
-	sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $0; arr[$NF] ="Y"}' 
-```
-> 要把上述得到的显著区域跟已发表的文章中的SNP进行比较，看是不是有重叠（1MB范围之内的重叠都算），可以用 bedtools。
 > ![compareB](./images/T2D.Z.png) 
 <br/>
 
