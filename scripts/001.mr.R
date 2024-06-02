@@ -1,14 +1,15 @@
 setwd("C:/Users/jiehu/Desktop")
-pacman::p_load(dplyr, tidyr, TwoSampleMR, MendelianRandomization, MVMR)
+pacman::p_load(dplyr, tidyr, TwoSampleMR, MendelianRandomization, psych, bda)
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 基于individual数据的MR
+# MR：从个体数据到summary数据
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MR的关键词是 genetically determined X。
 # 对于一个很强的SNP或PRS，它基本就可代表“X本身”；但对于一个很弱的，它所决定的X，跟X本身差别很大。
 library(OneSampleMR)
 dat0 <- readRDS(file="D:/data/ukb/Rdata/all.Rdata")
-dat <- dat0 %>% filter(ethnic_cat=="White") %>% rename(G=vte.EUR.score_sum)
+dat <- dat0 %>% filter(ethnic_cat=="White") %>% rename(G=walk_pace.score_sum)
 dat1$X.pred = predict.lm( lm( X ~ G, data=dat1)) 
 summary(lm(Y ~ X.pred, dat1))
 fit1 <- ivreg::ivreg(Y ~ X | G, data = dat1); summary(fit1) # 跟上面的结果一样。 Z可以是 G1+G2+G3
@@ -20,8 +21,6 @@ fit1 <- ivreg::ivreg(Y ~ X | G, data = dat1); summary(fit1) # 跟上面的结果
 	beta_wald = beta_G2Y / beta_G2X; beta_wald
 	se_wald = se_G2Y / beta_G2X; se_wald
 	signif(2*pnorm(-abs(beta_wald/se_wald)), 2)
-
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TwoSampleMR最简单的方法
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,3 +41,45 @@ mr_scatter_plot(res, dat)[[1]]
 bsmr_dat <- dat_to_MRInput(dat); bsmr_dat <- bsmr_dat[[1]]
 	mr_plot(bsmr_dat, interactive=F)
 	mr_forest(bsmr_dat, snp_estimates=F, methods=c("ivw", "median", "wmedian", "egger", "maxlik", "conmix")) + scale_colour_manual(values = c("IVW estimate"="red")) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=10, face="bold"), axis.text.x=element_text(size=10, face="bold"), axis.text.y=element_text(size=15, face="bold"))
+	
+	
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# mediation：从个体数据到summary数据
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#示例原文出处：https://rpubs.com/MichaelGilbertUCR/732775
+set.seed(12334) 
+dat1 <- iris %>% rename(X=Sepal.Length) %>% 
+	mutate(
+		X.qt = cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
+		X.qt = factor(ifelse(X.qt=="q1", "low", ifelse(X.qt=="q5", "high", "middle")), levels=c("low", "middle", "high")),
+		random1 = runif(nrow(iris), min=min(X), max=max(X)),
+		M = X*0.35+random1*0.65,
+		random2 = runif(nrow(iris), min=min(M), max=max(M)),
+		Y = M*0.35 + random2*.65,
+		Y_yes = c(rep(c(0,0,1),15), rep(0:1,30), rep(c(1,1,0),15)),
+		follow_years=X*10 -40,
+		G1 = ifelse(X > quantile(X, probs=0.80), 2, ifelse(X < quantile(X, probs=0.20), 0, 1)), # a strong SNP
+		G2 = ifelse(X > quantile(X, probs=0.98), 2, ifelse(X < quantile(X, probs=0.02), 0, 1))  # a weak SNP		
+) %>% dplyr::select(X, M, Y, Y_yes, follow_years, G1, G2) 
+	dat1 %>% psych::pairs.panels()
+	psych::mediate(y="Y", x="X", m="M", data=dat1, n.iter=1000) %>% print(short=FALSE)
+	bda::mediation.test(dat1$M, dat1$X, dat1$Y)
+fit.X2Y <- lm(Y ~ X, data=dat1); summary(fit.X2Y)
+	coef.X2Y <- coef(summary(fit.X2Y)); coef.X2Y 
+	beta.X2Y <- coef.X2Y[2,1]; se.X2Y <- coef.X2Y[2,2]; p.X2Y <- signif(coef.X2Y[2,4],2)
+fit.X2M <- lm(M ~ X, data=dat1); summary(fit.X2M)
+	coef.X2M <- coef(summary(fit.X2M)); coef.X2M
+	beta.X2M <- coef.X2M[2,1]; se.X2M <- coef.X2M[2,2]; p.X2M <- signif(coef.X2M[2,4],2)
+#fit.M2Y <- lm(Y ~ M+X, data=dat1); summary(fit.M2Y) # 🐖 这儿必须捎带上X。 X的BETA=0.01667，是ADE，不再显著，表明 complete mediation。
+fit.M2Y <- survreg(Surv(follow_years, Y_yes) ~ M + X, data=dat1)
+	coef.M2Y <- coef(summary(fit.M2Y)); coef.M2Y 
+	beta.M2Y <- coef.M2Y[2,1]; se.M2Y <- coef.M2Y[2,2]; signif(coef.M2Y[2,4],2)
+	beta.X2Y.adjM <- coef.M2Y[3,1]; se.X2Y.adjM <- coef.M2Y[3,2]; signif(coef.M2Y[3,4],2)
+#res <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M", boot=T); print(SUM <- summary(res))
+res <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M"); print(SUM <- summary(res))
+	print(c(round(SUM$tau.coef,3), round(SUM$z.avg,3), round(SUM$n.avg,3))) # Total, ADE, prop
+	print(c(round(SUM$d.avg,3), round(SUM$d.avg.ci,3), signif(SUM$d.avg.p,2))) # ACME
+beta.me <- beta.X2M * beta.M2Y; beta.me # 🐕 基于summary数据做乘法Product
+# beta.me <- beta.X2Y - beta.X2Y.adjM; beta.me # 🐕 基于summary数据做减法Difference
+	se.me <- sqrt(beta.X2M^2 * se.X2M^2 + beta.M2Y^2 * se.M2Y^2); se.me # 🐕 POE法，也称Delta法 
+	signif(2*pnorm(-abs(beta.me/se.me)),2)	
