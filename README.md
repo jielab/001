@@ -101,7 +101,7 @@ p  = 2*pnorm(-abs(b/se))
 > 本课题组建议采用一下代码将GWAS的column名字统一起来。
 ```
 Arr1=("SNP" "CHR" "POS" "EA" "NEA" "EAF" "N" "BETA" "SE" "P")
-Arr2=("snp|rsid|variant_id" "chr|chrom|chromosome" "pos|bp|base_pair" "alt|ea|eff.allele|effect_allele|a1|allele1" "ref|nea|ref.allele|other_allele|a2|allele0" "eaf|a1freq|effect_allele_freq" "n|Neff" "beta" "se|standard_error" "p|pval|p_bolt_lmm")
+Arr2=("snp|rsid|variant_id" "chr|chrom|chromosome" "pos|bp|base_pair" "ea|alt|eff.allele|effect_allele|a1|allele1" "nea|ref|allele0|a2|other_allele|" "eaf|a1freq|effect_allele_freq" "n|Neff" "beta" "se|standard_error" "p|pval|p_bolt_lmm")
 dat=XXX.gz
 	head_row=`zcat $dat.gz | head -1 | sed 's/\t/ /g'`; 
 	snp=""; chr=""; pos=""; ea=""; nea=""; eaf=""; n=""; beta=""; se=""; p="" 
@@ -114,7 +114,7 @@ dat=XXX.gz
 ```
 在R里面可以下来类似的代码。
 ```
-pattern=c('^snp$|^rsid$|variant_id', '^chr$|^chrom', '^bp$|^pos$|^position|^base_pair', '^ea$|^alt$|^a1$|^effect_allele$', '^eaf$|a1freq|effect_allele_freq', '^n$|Neff', '^beta$|^effect$', '^se$|standard_error', '^p$|^pval$|^p_bolt_lmm')
+pattern=c('^snp$|^rsid$|variant_id', '^chr$|^chrom', '^bp$|^pos$|^position|^base_pair', '^ea$|^alt$|^a1$|^effect_allele$', '^nea$|^ref|^allele0$|^a2$|^other_allele', '^eaf$|a1freq|effect_allele_freq', '^n$|Neff', '^beta$|^effect$', '^se$|standard_error', '^p$|^pval$|^p_bolt_lmm')
 replacement=c('SNP', 'CHR', 'POS','EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P') 
 names(dat) <- stri_replace_all_regex(names(dat), pattern=pattern, replacement=replacement, vectorize=FALSE)
 ```
