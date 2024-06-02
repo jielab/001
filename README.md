@@ -93,6 +93,20 @@ se = (CI_upper - CI_lower)/(1.96*2)
 p  = 2*pnorm(-abs(b/se))
 ```
 
+> 本课题组建议采用一下代码将GWAS的column名字统一起来。
+```
+Arr1=("SNP" "CHR" "POS" "EA" "NEA" "EAF" "N" "BETA" "SE" "P")
+Arr2=("snp|rsid|variant_id" "chr|chrom|chromosome" "pos|bp|base_pair" "alt|ea|eff.allele|effect_allele|a1|allele1" "ref|nea|ref.allele|other_allele|a2|allele0" "eaf|a1freq|effect_allele_freq" "n|Neff" "beta" "se|standard_error" "p|pval|p_bolt_lmm")
+dat=XXX.gz
+	head_row=`zcat $dat.gz | head -1 | sed 's/\t/ /g'`; 
+	snp=""; chr=""; pos=""; ea=""; nea=""; eaf=""; n=""; beta=""; se=""; p="" 
+	for i in ${!Arr1[@]}; do
+		eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
+	done
+	echo snp $snp, chr $chr, pos $pos, ea $ea, nea $nea, eaf $eaf, n $n, beta $beta, se $se, p $p
+	zcat $dat.gz | awk '{if ($p_col<1e-300) $p_col=1e-300; if (NR==1) print \"SNP CHR POS EA NEA EAF N BETA SE P\"; else print $snp,$chrom,$pos, toupper($ea), toupper($nea),$eaf,$n, $beta,$se,$p}' | sort -k 2,2V -k 3,3n | gzip -f > $dat.gz
+```
+
 > 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
 > Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。。
 ```
