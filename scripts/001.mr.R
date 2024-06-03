@@ -21,6 +21,8 @@ fit1 <- ivreg::ivreg(Y ~ X | G, data = dat1); summary(fit1) # 跟上面的结果
 	beta_wald = beta_G2Y / beta_G2X; beta_wald
 	se_wald = se_G2Y / beta_G2X; se_wald
 	signif(2*pnorm(-abs(beta_wald/se_wald)), 2)
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TwoSampleMR最简单的方法
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,7 +64,8 @@ dat1 <- iris %>% rename(X=Sepal.Length) %>%
 		G2 = ifelse(X > quantile(X, probs=0.98), 2, ifelse(X < quantile(X, probs=0.02), 0, 1))  # a weak SNP		
 ) %>% dplyr::select(X, M, Y, Y_yes, follow_years, G1, G2) 
 	dat1 %>% psych::pairs.panels()
-	psych::mediate(y="Y", x="X", m="M", data=dat1, n.iter=1000) %>% print(short=FALSE)
+	psych::mediate(y="Y", x="X", m="M", data=dat1, n.iter=1000) %>% 
+		print(short=FALSE) # 🎉 其实，这一行代码就可以了。
 	bda::mediation.test(dat1$M, dat1$X, dat1$Y)
 fit.X2Y <- lm(Y ~ X, data=dat1); summary(fit.X2Y)
 	coef.X2Y <- coef(summary(fit.X2Y)); coef.X2Y 
@@ -70,16 +73,15 @@ fit.X2Y <- lm(Y ~ X, data=dat1); summary(fit.X2Y)
 fit.X2M <- lm(M ~ X, data=dat1); summary(fit.X2M)
 	coef.X2M <- coef(summary(fit.X2M)); coef.X2M
 	beta.X2M <- coef.X2M[2,1]; se.X2M <- coef.X2M[2,2]; p.X2M <- signif(coef.X2M[2,4],2)
-#fit.M2Y <- lm(Y ~ M+X, data=dat1); summary(fit.M2Y) # 🐖 这儿必须捎带上X。 X的BETA=0.01667，是ADE，不再显著，表明 complete mediation。
-fit.M2Y <- survreg(Surv(follow_years, Y_yes) ~ M + X, data=dat1)
+fit.M2Y <- lm(Y ~ M+X, data=dat1); summary(fit.M2Y) # 🐖 这儿必须捎带上X。 X的BETA=0.01667，是ADE，不再显著，表明 complete mediation。
+#fit.M2Y <- survreg(Surv(follow_years, Y_yes) ~ M + X, data=dat1)
 	coef.M2Y <- coef(summary(fit.M2Y)); coef.M2Y 
 	beta.M2Y <- coef.M2Y[2,1]; se.M2Y <- coef.M2Y[2,2]; signif(coef.M2Y[2,4],2)
 	beta.X2Y.adjM <- coef.M2Y[3,1]; se.X2Y.adjM <- coef.M2Y[3,2]; signif(coef.M2Y[3,4],2)
-#res <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M", boot=T); print(SUM <- summary(res))
-res <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M"); print(SUM <- summary(res))
+res <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M", boot=T); print(SUM <- summary(res))
 	print(c(round(SUM$tau.coef,3), round(SUM$z.avg,3), round(SUM$n.avg,3))) # Total, ADE, prop
 	print(c(round(SUM$d.avg,3), round(SUM$d.avg.ci,3), signif(SUM$d.avg.p,2))) # ACME
-beta.me <- beta.X2M * beta.M2Y; beta.me # 🐕 基于summary数据做乘法Product
-# beta.me <- beta.X2Y - beta.X2Y.adjM; beta.me # 🐕 基于summary数据做减法Difference
+	beta.me <- beta.X2M * beta.M2Y; beta.me; beta.me / beta.X2Y # 🐕 基于summary数据做乘法Product
+	# beta.me <- beta.X2Y - beta.X2Y.adjM; beta.me # 🐕 基于summary数据做减法Difference
 	se.me <- sqrt(beta.X2M^2 * se.X2M^2 + beta.M2Y^2 * se.M2Y^2); se.me # 🐕 POE法，也称Delta法 
 	signif(2*pnorm(-abs(beta.me/se.me)),2)	

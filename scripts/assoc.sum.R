@@ -1,13 +1,13 @@
 pacman::p_load(data.table, stringi, tidyr, TwoSampleMR, MendelianRandomization, survival, survminer)
 
-pattern=c('^snp$|^rsid$|variant_id', '^chr$|^chrom', '^bp$|^pos$|^position|^base_pair', '^ea$|^alt$|^a1$|^effect_allele$', '^nea$|^ref|^allele0$|^a2$|^other_allele', '^eaf$|^a1freq$|^effect_allele_freq', '^n$|^Neff$', '^beta$|^effect$', '^se$|^standard_error', '^p$|^pval$|^p_bolt_lmm')
+pattern=c('^snp$|^rsid$|variant_id', '^chr$|^chrom', '^bp$|^pos$|^position|^base_pair', '^ea$|^alt$|^a1$|^effect_allele$', '^nea$|^ref|^allele0$|^a2$|^other_allele$', '^eaf$|^a1freq$|^effect_allele_freq', '^n$|^Neff$', '^beta$|^effect$', '^se$|^standard_error', '^p$|^pval$|^p_value$')
 replacement=c('SNP', 'CHR', 'POS','EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P')
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 基于MR的mediation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dir.Y = dir.X = '/data/sph-huangj/data/gwas/main'
-dir.M = '/data/sph-huangj/data/gwas/bb'
+dir.M = '/data/sph-huangj/data/gwas/?'
 Xs = '?'
 Ys = '?' 
 Ms = gsub('.gz', '', list.files(path=dir.M, pattern='.gz$')); Ms
@@ -68,10 +68,11 @@ for (Y in Ys) {
 			beta.M2Y <- res.mvmr$Estimate[["Bx1"]]; se.M2Y <- res.mvmr$StdError[["Bx1"]] ; p.M2Y <- res.mvmr$Pvalue[["Bx1"]]
 			
 			# Mediation
-			beta.me <- beta.X2M * beta.M2Y # 🐕 乘法 
+			beta.me <- beta.X2M * beta.M2Y # 🐕 乘法
+			prop.me <- beta.me / beta.X2Y
 			se.me <- sqrt(beta.X2M^2 * se.X2M^2 + beta.M2Y^2 * se.M2Y^2) # 🐕 POE法，也称Delta法 
 			p.me <- 2*pnorm(-abs(beta.me/se.me))
-			print(paste("RES:", X,M,Y, round(beta.X2Y,3),round(se.X2Y,3),p.X2Y, round(beta.X2M,3),round(se.X2M,3),p.X2M, round(beta.M2Y,3),round(se.M2Y,3),signif(p.M2Y,2), round(beta.me,3),round(se.me,3),signif(p.me,2)))
+			print(paste("RES:", X,M,Y, round(beta.X2Y,3),round(se.X2Y,3),p.X2Y, round(beta.X2M,3),round(se.X2M,3),p.X2M, round(beta.M2Y,3),round(se.M2Y,3),signif(p.M2Y,2), "|", round(prop.me,3),round(beta.me,3),round(se.me,3),signif(p.me,2)))
 
 		}	
 	}
