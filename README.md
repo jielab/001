@@ -19,7 +19,7 @@
 zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e6); print $1,$2,$3,$NF,b}' | \
 	sort -k 2,2n -k 5,5n -k 4,4g | awk '{if (arr[$NF] !="Y") print $0; arr[$NF] ="Y"}' 
 ```
-> 对应的R代码如下：
+> 对应的R代码如下🔔🏮
 ```
 dat <- read.table("GWAS.gz", header=T) %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+06))
 dat %>% group_by(mb) %>% slice(which.min(P))
@@ -74,9 +74,7 @@ for chr in {1..22}; do
   plink2 --memory 12000 --threads 16 --pfile chr$chr --extract ukb.chr$chr.good.snps --pheno cvd.EUR.pheno --no-psam-pheno --pheno-name XXX --1 --glm cols=+ax,+a1freq,+a1freqcc,+a1count,+a1countcc,+beta,+orbeta,+nobs hide-covar no-x-sex --covar pheno/ukb.cov --covar-name age,sex,PC1-PC10 --out chr$chr   
 done
 ```
-
 > 上述命令顺利跑完后，确认生成的文件没有问题后，可以把所有的染色体的数据串到一起，形成一个单一的 XXX.gwas.gz 文件。
-最终合并成的 XXX.gwas.gz 文件用 TAB 分割，CHR:POS 排好序，要不然 LocusZoom 那样的软件不能处理。也可以用 tabix -f -S 1 -s 1 -b 2 -e 2 XXX.gwas.gz 对数据进行索引，便于 LocalZoom 那样的软件去处理。
 <br/>
 
 ## #3.2. 公开的GWAS数据进行练手，或对比
@@ -94,16 +92,19 @@ done
 
 
 ## #3.3. GWAS的管理、 QC、 注释
-> 如果GWAS数据的BETA, SE, P 出现“三缺一” 的情况，可以下面的R代码去寻找“第三者”。
-> 此外，GWAS文件必须按照CHR和POS排好序，可用sort -k 1,1V -k 2,2n来实现，-V是为了把chrX和chrY排到最后，但是需要把第一行先写到新文件里。
+> 对每一个GWAS，首先进行以下“三点”检查：
 ```
-b  = se * qnorm(p/2)
-se = abs(b/qnorm(p/2))
-se = (CI_upper - CI_lower)/(1.96*2)
-p  = 2*pnorm(-abs(b/se))
+1. 用 zcat GWAS.gz | awk '{print NF}' | sort -nu 文件每一行的列数目是一样的📕。 可用 sed -e 's/\t\t/\tNA\t/g' -e 's/\t\t/\tNA\t/g' -e 's/\t$/\tNA/' 解决。
+2. 如果文件不是按照CHR和POS排序🏮，pheweb 会报错，可用sort -k 1,1V -k 2,2n。 -V是为了把chrX和chrY排到最后，但是需要把第一行先写到新文件里。
+3. GWAS数据本身的问题：
+   (1). Allele 最好是大写，awk 和 R 都有 toupper()功能。
+   (2). P值最好不要小于1e-312。 要不然，awk 会把其当成0，有一些软件（比如LDSC）也会报错，这个时候要么用Z值，要么人为将这些P值设为1e-300。
+   (3). BETA|SE|P出现“三缺一” 的情况，可用： b = se * qnorm(p/2); se = abs(b/qnorm(p/2)); se = (CI_upper - CI_lower)/(1.96*2); p = 2*pnorm(-abs(b/se))
 ```
 
-> 本课题组建议采用一下代码将GWAS的column名字统一起来。
+> 经过QC后的GWAS数据，可用 tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz 生成索引文件。
+> 本课题组建议用如下标准的column名称：🦁SNP CHRPOS CHR POS EA NEA EAF N BETA SE Z P🦁。
+可用下面的 bash 代码实现：
 ```
 Arr1=("SNP" "CHR" "POS" "EA" "NEA" "EAF" "N" "BETA" "SE" "P")
 Arr2=("snp|rsid|variant_id" "chr|chrom|chromosome" "pos|bp|base_pair" "ea|alt|eff.allele|effect_allele|a1|allele1" "nea|ref|allele0|a2|other_allele|" "eaf|a1freq|effect_allele_freq" "n|Neff" "beta" "se|standard_error" "p|pval|p_bolt_lmm")
@@ -114,18 +115,15 @@ dat=XXX.gz
 		eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
 	done
 	echo snp $snp, chr $chr, pos $pos, ea $ea, nea $nea, eaf $eaf, n $n, beta $beta, se $se, p $p
-	zcat $dat.gz | awk '{if ($p_col<1e-300) $p_col=1e-300; if (NR==1) print \"SNP CHR POS EA NEA EAF N BETA SE P\"; else print $snp,$chrom,$pos, toupper($ea), toupper($nea),$eaf,$n, $beta,$se,$p}' | sort -k 2,2V -k 3,3n | gzip -f > $dat.gz
-
 ```
-在R里面可以下来类似的代码。
+对应的R代码如下：
 ```
 pattern=c('^snp$|^rsid$|variant_id', '^chr$|^chrom', '^bp$|^pos$|^position|^base_pair', '^ea$|^alt$|^a1$|^effect_allele$', '^nea$|^ref|^allele0$|^a2$|^other_allele', '^eaf$|a1freq|effect_allele_freq', '^n$|Neff', '^beta$|^effect$', '^se$|standard_error', '^p$|^pval$|^p_bolt_lmm')
 replacement=c('SNP', 'CHR', 'POS','EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P') 
 names(dat) <- stringi::stri_replace_all_regex(toupper(names(dat)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
 
 ```
-
-> 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 流水线作业。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
+> 最后，可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 实现可视化⚡⚡。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
 > Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。。
 ```
 修改前：rsids = [rsid['rsid'] for rsid in rsid_group if cpra['ref'] == rsid['ref'] and are_match(cpra['alt'], rsid['alt'])]
