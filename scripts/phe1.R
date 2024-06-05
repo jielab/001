@@ -1,5 +1,5 @@
 setwd("D:/")
-pacman::p_load(data.table, dplyr, tidyverse, crosswalkr, lubridate)
+pacman::p_load(data.table, stringr, dplyr, tidyr, crosswalkr, lubridate)
 indir="D:/data/ukb/phe/"
 dates_bad=as.Date(c("1900-01-01", "1901-01-01", "1902-02-02", "1903-03-03", "1999-01-01", "2037-07-07"))
 
@@ -18,7 +18,7 @@ phe0 <- phe0 %>%
 vip <- read.table(paste0(indir,"common/ukb.vip.dat"), header=FALSE, flush=TRUE)
 	vip$V1[duplicated(vip$V1)]; vip$V2[duplicated(vip$V2)] #check duplication
 	fid <- as.data.frame(names(phe0)[-1]); names(fid)="id1"
-	fid[c('f0','f1','f2')] <- str_split_fixed(fid$id1, "\\.", 3)
+	fid[c('f0','f1','f2')] <- stringr::str_split_fixed(fid$id1, "\\.", 3)
 	fid <- merge(fid, vip, by.x="f1", by.y="V1", all.x=TRUE) %>% mutate(id2 = ifelse(f2=="0.0", V2, paste0(V2,".",f2))) 
 phe0 <- phe0 %>% crosswalkr::renamefrom(fid, id1, id2, drop_extra=F) %>% 
 	filter(eid>0) %>% rename(chunk=height_sitting) 
@@ -52,6 +52,7 @@ phe <- phe0 %>%
 		birth_year = ifelse((birth_year<1936 | birth_year>1970), NA, birth_year), # 1934年1个，1971年2个，去掉
 		birth_5year = cut(birth_year, breaks=seq(1935,1970,5)),
 		age_2021 = 2021-birth_year, age_2021 = ifelse(is.na(date_lost) & is.na(date_death), age_2021, NA),
+		facial_age = factor(facial_age, labels=c("young", "old", "normal")),
 		lifespan = year(date_death) - birth_year
 	)
 saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")

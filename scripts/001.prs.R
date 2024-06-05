@@ -1,5 +1,5 @@
 setwd("D:/")
-pacman::p_load(data.table, dplyr, tidyr, ggplot2, survival, pROC)
+pacman::p_load(data.table, dplyr, tidyr, ggplot2, sampling, survival, survminer, survivalmodels, pROC)
 std <- function(x) (x - mean(x,na.rm=T)) / sd(x,na.rm=T)
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 
@@ -71,7 +71,7 @@ fit_C <- list()
 fit_G <- list()
 for (r in races){
 	print(paste("PROCESS", r))
-	fit_folds_C = fit_folds_G = numeric(folds)
+	fit_C.n = fit_G.n = numeric(folds)
 	dat1 <- subset(dat, race==r)
 	for (i in 1:folds) { 
 		ii <- sort(sample(1:nrow(dat1), round(nrow(dat1)*train_n)) )
@@ -81,35 +81,31 @@ for (r in races){
 			model_G.train <- lm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat1.train)
 			y_C.hat <- predict(model_C.train, dat1.valid)
 			y_G.hat <- predict(model_G.train, dat1.valid)
-			fit_folds_C[i] <- (cor(y_C.hat, dat1.valid$trait, use="complete.obs"))^2
-			fit_folds_G[i] <- (cor(y_G.hat, dat1.valid$trait, use="complete.obs"))^2
+			fit_C.n[i] <- (cor(y_C.hat, dat1.valid$trait, use="complete.obs"))^2
+			fit_G.n[i] <- (cor(y_G.hat, dat1.valid$trait, use="complete.obs"))^2
 		} else if (model=="glm") {
-			model_C.train <- glm(trait ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat1.train)
-			model_G.train <- glm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat1.train)
+			model_C.train <- glm(trait ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, family="binomial", data=dat1.train)
+			model_G.train <- glm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, family="binomial", data=dat1.train)
+			concordance(model_C.train) #??
 			y_C.hat <- predict(model_C.train, dat1.valid)
 			y_G.hat <- predict(model_G.train, dat1.valid)
-			fit_folds_C[i] <- auc(roc(dat1.valid$trait, y_C.hat))
-			fit_folds_G[i] <- auc(roc(dat1.valid$trait, y_G.hat))
+			fit_C.n[i] <- auc(roc(dat1.valid$trait, y_C.hat))
+			fit_G.n[i] <- auc(roc(dat1.valid$trait, y_G.hat))
 		} else if (model=="cox") {
-			surv.obj <- Surv(time=dat1.train$follow_years, 
-				event=dat1.train$Y_yes)
-			cox.fit <- coxph(surv.obj ~ AFR.prs+EAS.prs+EUR.prs+SAS.prs +age+sex, 
-				data=dat1.train) 
-			dat1.valid$risk_score <- predict(cox.fit, type="risk", 
-				newdata=dat1.valid)
-			c_index <- pec::cindex(object=list(model=cox.fit), 
-				formula=surv.obj~1, data=dat1.valid, 
-				eval.times=max(dat1.valid$time))
-
-
-			#cox.pred <- survfit(cox.fit, newdata=dat1.valid); summary(surv.pred)$table[,median]
-			# ipred::sbrier(cox.fit, surv.pred) 
-			# train_cox(r)
-			# get.risk.coxph(xxx, 365.25*3)
+			surv.obj <- Surv(time=dat1.train$follow_years, event=dat1.train$Y_yes)
+			cox.fit <- coxph(surv.obj ~ AFR.prs+EAS.prs+EUR.prs+SAS.prs +age+sex, data=dat1.train) # deepsurv 🐂
+			y_C.hat <- predict(cox.fit, type="risk", newdata=dat1.valid)
+			survival::concordance(cox.fit, )
+			survivalmodels::cindex(risk=y_C.hat, truth=dat1.valid[,"follow_years"]) # 
+			fit_C.n[i] <- concordance(cox_model, newdata = test_data)
+		#	cox.pred <- survfit(cox.fit, newdata=dat1.valid); summary(surv.pred)$table[,median]
+		#	ipred::sbrier(cox.fit, surv.pred) 
+		#	train_cox(r)
+		#	get.risk.coxph(xxx, 365.25*3)
 		}
 	}
-	print(fit_C[[r]] <- fit_folds_C)
-	print(fit_G[[r]] <- fit_folds_G)
+	print(fit_C[[r]] <- fit_C.n)
+	print(fit_G[[r]] <- fit_G.n)
 }
 
 
