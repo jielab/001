@@ -1,5 +1,5 @@
 setwd("D:/")
-pacman::p_load(data.table, dplyr, tidyr, ggplot2, sampling, survival, survminer, survcomp, survivalmodels, pROC)
+pacman::p_load(data.table, dplyr, tidyr, ggplot2, sampling, survival, survcomp, pROC, e1071)
 std <- function(x) (x - mean(x,na.rm=T)) / sd(x,na.rm=T)
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 
@@ -22,19 +22,32 @@ dat <- dat0 %>% subset(select=grepl("^eid|^age|^sex$|^ethnic|^PC|^umap|t2dm|heig
 	# geom_rect(aes(xmin=-25, xmax=25, ymin=-25, ymax=20), linetype=5, fill="transparent", color="blue", size=1) +geom_rect(aes(xmin=25, xmax=125, ymin=-160, ymax=-60), linetype=5, fill="transparent", color="purple", size=1) +
 	# geom_rect(aes(xmin=130, xmax=180, ymin=-290, ymax=-250), linetype=5, fill="transparent", color="red", size=1) +geom_rect(aes(xmin=250, xmax=425, ymin=25, ymax=90), linetype=5, fill="transparent", color="black", size=1)
 	# km = kmeans(subset(dat, select=c("PC1","PC2")), centers=4, nstart=50); fviz_cluster(km, data=dat)	
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 处理PC & 计算d
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 for (r in races){
-	dat[[paste0(r, '.prs')]] = std(dat[[paste0(trait, '.', r, '.score_sum')]]) # 可尝试去掉std()
+	dat[[paste0('prs.', r)]] = std(dat[[paste0(trait, '.', r, '.score_sum')]]) # 可尝试去掉std()
 }
+if (model=="lm") {
+	dat$trait=dat[[trait]]
+} else if (model=="glm") {
+	dat$trait=ifelse(is.na(dat[[paste0('icdDate_',trait)]]), 0, 1)
+} else if (model=="cox") {
+	dat <- dat %>% mutate(
+		Y_date = dat[[paste0('icdDate_',trait)]], 
+		Y_yes = ifelse( is.na(Y_date), 0,1), trait=Y_yes,
+		follow_end_day = data.table::fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
+		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
+	) %>% filter( follow_years >0 )
+}
+dat <- dat %>% drop_na(trait, race, prs.EUR, prs.AFR, prs.EAS, prs.SAS) 
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 计算到人群中心的⚪距离
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 for (i in 1:pcs) {
   PCi <- paste0("PC", i)
-  dat[[PCi]] <- std(residuals(lm(as.formula(paste0(PCi, " ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs + age + sex")), na.action=na.exclude, data=dat)))
+  dat[[PCi]] <- std(residuals(lm(as.formula(paste0(PCi, " ~ prs.AFR + prs.EAS + prs.EUR + prs.SAS + age + sex")), na.action=na.exclude, data=dat)))
 }
-# dat <- dat %>% drop_na(race, trait, EUR.prs) %>% group_by(race) %>% slice_sample(n=1000) 
+# dat <- dat %>% group_by(race) %>% slice_sample(n=1000) 
 for (r in races){
 	dat1 <- subset(dat, race==r)
 	for (i in 1:pcs) {
@@ -51,22 +64,33 @@ for (r in races){
 }
 dat$dtot <- dat$d2inv.AFR + dat$d2inv.EAS + dat$d2inv.EUR + dat$d2inv.SAS
 for (r in races){
-	eval(parse(text=paste0( 'dat$', r, '.prs_adj <- dat$d2inv.', r, ' / dat$dtot * dat$', r, '.prs' )))
+	eval(parse(text=paste0( 'dat$prs_adj.', r, ' <- dat$d2inv.', r, ' / dat$dtot * dat$prs.'r)))
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 计算到人群边界的⚡距离
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+for (race1 in races) {
+	for (race2 in races) {
+		dat.tmp <- subset(dat, race %in% c(race1, race2))
+		if (race1==race2) {
+			#dat1$d <- abs(EAFR$DST.EUR)+ abs(EAFR$DST.EAS) + abs(EAFR$DST.SAS)
+		} else {
+			svm_model <- svm(factor(race) ~ PC1+PC2+PC3+PC4, dat.tmp, kernel = "linear")
+			d <- predict(svm_model, data=dat.tmp, decision.values=TRUE)
+			dat.tmp[[paste0("hyperplane.", race2)]] <- attr(d, "decision.values")
+			assign(paste0("dat.", race2), dat.tmp)
+		}
+	}
+for (r in races) {
+	prs_adj.XXX <- ???
 }
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 进行拟合 regression
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-if (model=="lm") {dat$trait=dat[[trait]]
-} else if (model=="glm") {dat$trait=ifelse(is.na(dat[[paste0('icdDate_',trait)]]), 0, 1)
-} else if (model=="cox") {
-	dat <- dat %>% mutate(
-		Y_date = dat[[paste0('icdDate_',trait)]], Y_yes = ifelse( is.na(Y_date), 0,1),
-		follow_end_day = data.table::fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
-		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
-	) %>% filter( follow_years >0 )
-}
 fit_C <- list()
 fit_G <- list()
 for (r in races){
@@ -77,23 +101,23 @@ for (r in races){
 		ii <- sort(sample(1:nrow(dat1), round(nrow(dat1)*train_n)) )
 		dat1.train <- dat1[ii,]; dat1.valid <- dat1[-ii,]
 		if (model=="lm") { 
-			model_C.train <- lm(trait ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat1.train)
-			model_G.train <- lm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat1.train)
+			model_C.train <- lm(trait ~ prs.AFR + prs.EAS + prs.EUR + prs.SAS +age+sex, data=dat1.train)
+			model_G.train <- lm(trait ~ prs_adj.AFR + prs_adj.EAS + prs_adj.EUR + prs_adj.SAS +age+sex, data=dat1.train)
 			y_C.hat <- predict(model_C.train, dat1.valid)
 			y_G.hat <- predict(model_G.train, dat1.valid)
 			fit_C.n[i] <- (cor(y_C.hat, dat1.valid$trait, use="complete.obs"))^2
 			fit_G.n[i] <- (cor(y_G.hat, dat1.valid$trait, use="complete.obs"))^2
 		} else if (model=="glm") {
-			model_C.train <- glm(trait ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, family="binomial", data=dat1.train)
-			model_G.train <- glm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, family="binomial", data=dat1.train)
+			model_C.train <- glm(trait ~ prs.AFR + prs.EAS + prs.EUR + prs.SAS  +age+sex, family="binomial", data=dat1.train)
+			model_G.train <- glm(trait ~ prs_adj.AFR + prs_adj.EAS + prs_adj.EUR + prs_adj.SAS +age+sex, family="binomial", data=dat1.train)
 			y_C.hat <- predict(model_C.train, dat1.valid)
 			y_G.hat <- predict(model_G.train, dat1.valid)
 			fit_C.n[i] <- auc(roc(dat1.valid$trait, y_C.hat))
 			fit_G.n[i] <- auc(roc(dat1.valid$trait, y_G.hat))
 		} else if (model=="cox") {
 			surv.obj <- Surv(time=dat1.train$follow_years, event=dat1.train$Y_yes)
-			model_C.train <- coxph(surv.obj ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat1.train) # deepsurv 🐂
-			model_G.train <- coxph(surv.obj ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat1.train) # deepsurv 🐂
+			model_C.train <- coxph(surv.obj ~ prs.AFR + prs.EAS + prs.EUR + prs.SAS +age+sex, data=dat1.train) # deepsurv 🐂
+			model_G.train <- coxph(surv.obj ~ prs_adj.AFR + prs_adj.EAS + prs_adj.EUR + prs_adj.SAS +age+sex, data=dat1.train) # deepsurv 🐂
 			y_C.hat <- predict(model_C.train, type="risk", newdata=dat1.valid) # 🏮与 survfit()的区别是？？
 			y_G.hat <- predict(model_G.train, type="risk", newdata=dat1.valid)
 			survcomp::concordance.index(y_C.hat, surv.time=dat1.valid$follow_years, surv.event=dat1.valid$Y_yes, method="noether")$c.index
