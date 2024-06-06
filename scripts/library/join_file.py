@@ -1,16 +1,26 @@
 # coding=utf-8
 import argparse
 from collections import OrderedDict
-	
-sep = { 'COMMA' : ',' , "SPACE" : ' ','TAB' : '\t'}
-	
+from gzip import open as gzip_open
+
+
+sep = {'COMMA': ',', "SPACE": ' ', 'TAB': '\t'}
+
+
+def open_(file: str, mode: str = 'rb', **kwargs):
+    if file.split('.')[-1] == 'gz':
+        return gzip_open(file, mode=mode, **kwargs)
+    else:
+        return open(file, mode=mode, **kwargs)
+
+
 # Parse all of our file
-usage = 'python mergeFile.py -i "file1,SEP1,col1 file2,SEP,col2[ file3,SEP3,col3]" -o outFile'
+usage = 'python3 join_file.py -i "file1,SEP1,col1 file2,SEP,col2[ file3,SEP3,col3]" -o outFile'
 parser = argparse.ArgumentParser(description=usage)
 parser.add_argument("-i", dest = "input", help='file format')
 parser.add_argument('-o', dest = 'out', help = 'output file name')
 args = parser.parse_args()
-	
+
 try:
 	# input parser
 	input = (args.input).split(' ')
@@ -41,13 +51,13 @@ except:
 def build_hash(input):
 	item = OrderedDict()
 	c = 0
-	line_count = 0;
-	with open(input[0]) as fp2:
+	line_count = 0
+	with open_(input[0], 'rb') as fp2:
 		for line in fp2.readlines():
 			line = line.strip()
-			line = line.strip(input[1])
+			line = line.strip(input[1].encode())
 			line_count = line_count + 1
-			line_list = line.split(input[1])
+			line_list = line.split(input[1].encode())
 			if c == 0:
 				c = len(line_list)
 			else:
@@ -59,17 +69,14 @@ def build_hash(input):
 					return True
 				if not test(line_list):
 					print(line_list)
-					return False,line_count
-			tmp = ' '.join(line_list)
+					return False, line_count
+			tmp = b' '.join(line_list)
 			item[line_list[input[2]]] = tmp
-	cnt = ''
-	for i in range(c - 1):
-		cnt = cnt + 'NA '
-	cnt  = cnt + 'NA'
+	cnt = b' '.join([b'NA'] * c)
 	return item, cnt
 	
 
-hash_file1,cnt =  build_hash(input_list[0])
+hash_file1, cnt = build_hash(input_list[0])
 #print(hash_file1)
 #print(cnt)
 if (isinstance(hash_file1, bool)):
@@ -79,25 +86,25 @@ del hash_file1
 	
 hash_file_list = []	
 for i in range(len(input_list) - 1):
-	hash_file,cont  =  build_hash(input_list[i + 1])
+	hash_file, cont = build_hash(input_list[i + 1])
 	if isinstance(hash_file, bool):
 		print('file %s has inconsistent field numbers in line %d' % (input_list[i + 1][0], cont))
 		exit()
-	hash_file_list.append((hash_file,cont))
+	hash_file_list.append((hash_file, cont))
 
 	
-with open(input_list[0][0]) as fp_in:
+with open_(input_list[0][0], 'rb') as fp_in:
 	sep = input_list[0][1]
 	col = input_list[0][2]
-	with open(out, 'w') as fp_out:
+	with open_(out, 'wb') as fp_out:
 		for line in fp_in.readlines():
-			line =  line.strip()
-			line = line.strip(sep)
-			line_list = line.split(sep)
+			line = line.strip()
+			line = line.strip(sep.encode())
+			line_list = line.split(sep.encode())
 			for hash_file in hash_file_list:
 				if line_list[col] in hash_file[0]:
-					line =  line + ' ' + hash_file[0][line_list[col]]
+					line = b' '.join(line_list) + b' ' + hash_file[0][line_list[col]]
 				else:
-					line = line + ' ' + hash_file[1]
-			line = line + '\n'
+					line = b' '.join(line_list) + b' ' + hash_file[1]
+			line = line + b'\n'
 			fp_out.write(line)

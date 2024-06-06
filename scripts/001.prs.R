@@ -1,5 +1,5 @@
 setwd("D:/")
-pacman::p_load(data.table, dplyr, tidyr, ggplot2, sampling, survival, survminer, survivalmodels, pROC)
+pacman::p_load(data.table, dplyr, tidyr, ggplot2, sampling, survival, survminer, survcomp, survivalmodels, pROC)
 std <- function(x) (x - mean(x,na.rm=T)) / sd(x,na.rm=T)
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 
@@ -8,7 +8,7 @@ inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 # PRS-GRID
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 set.seed(12345)
-trait='t2dm'; model='cox' # lm 或 glm 或 cox
+trait='t2dm'; model='glm' # lm 或 glm 或 cox
 races=c("EUR", "AFR", "EAS", "SAS") 
 train_n=0.5
 pcs=4 # 40个 PC
@@ -86,22 +86,18 @@ for (r in races){
 		} else if (model=="glm") {
 			model_C.train <- glm(trait ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, family="binomial", data=dat1.train)
 			model_G.train <- glm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, family="binomial", data=dat1.train)
-			concordance(model_C.train) #??
 			y_C.hat <- predict(model_C.train, dat1.valid)
 			y_G.hat <- predict(model_G.train, dat1.valid)
 			fit_C.n[i] <- auc(roc(dat1.valid$trait, y_C.hat))
 			fit_G.n[i] <- auc(roc(dat1.valid$trait, y_G.hat))
 		} else if (model=="cox") {
 			surv.obj <- Surv(time=dat1.train$follow_years, event=dat1.train$Y_yes)
-			cox.fit <- coxph(surv.obj ~ AFR.prs+EAS.prs+EUR.prs+SAS.prs +age+sex, data=dat1.train) # deepsurv 🐂
-			y_C.hat <- predict(cox.fit, type="risk", newdata=dat1.valid)
-			survival::concordance(cox.fit, )
-			survivalmodels::cindex(risk=y_C.hat, truth=dat1.valid[,"follow_years"]) # 
-			fit_C.n[i] <- concordance(cox_model, newdata = test_data)
-		#	cox.pred <- survfit(cox.fit, newdata=dat1.valid); summary(surv.pred)$table[,median]
-		#	ipred::sbrier(cox.fit, surv.pred) 
-		#	train_cox(r)
-		#	get.risk.coxph(xxx, 365.25*3)
+			model_C.train <- coxph(surv.obj ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat1.train) # deepsurv 🐂
+			model_G.train <- coxph(surv.obj ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat1.train) # deepsurv 🐂
+			y_C.hat <- predict(model_C.train, type="risk", newdata=dat1.valid) # 🏮与 survfit()的区别是？？
+			y_G.hat <- predict(model_G.train, type="risk", newdata=dat1.valid)
+			survcomp::concordance.index(y_C.hat, surv.time=dat1.valid$follow_years, surv.event=dat1.valid$Y_yes, method="noether")$c.index
+			survcomp::concordance.index(y_G.hat, surv.time=dat1.valid$follow_years, surv.event=dat1.valid$Y_yes, method="noether")$c.index
 		}
 	}
 	print(fit_C[[r]] <- fit_C.n)
@@ -115,7 +111,7 @@ for (r in races){
 fit_C <- as.data.frame(fit_C); fit_C$Method <- "PRS-CSx"
 fit_G <- as.data.frame(fit_G); fit_G$Method <- "PRS-GRID"
 combined_data <- rbind(fit_C, fit_G)
-long_data <- pivot_longer(combined_data,  cols = c("EUR", "SAS", "AFR", "EAS"),   names_to = "Race", values_to = "value")
+long_data <- pivot_longer(combined_data, cols=c("EUR", "SAS", "AFR", "EAS"), names_to="Race", values_to="value")
 summary_stats <- long_data %>% group_by(Race, Method) %>% summarize(mean = mean(value), sd = sd(value))
 F1 <- ggplot(summary_stats, aes(x = fct_relevel(Race, "EUR", "AFR", "SAS", "EAS"), y = mean, fill = fct_relevel(Method, "PRS-CSx", "PRS-GRID",))) +
 	geom_bar(stat = "identity", position = position_dodge(), linewidth = 0.8, color = "white", alpha = 0.8) +
