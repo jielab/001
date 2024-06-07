@@ -5,8 +5,8 @@ pacman::p_load(dplyr, tidyr, TwoSampleMR, MendelianRandomization, RadialMR, psyc
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TwoSampleMR最简单的方法
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iv.snp <- read.table('D:/data/gwas/main/walk_pace_adj.top.snp', header=T)
-dat.X <- read.table('D:/data/gwas/main/walk_pace_adj.gz', header=T) %>% merge(iv.snp, by="SNP") %>% 
+iv.snp <- read.table('D:/data/gwas/main/walk_pace.top.snp', header=T)
+dat.X <- read.table('D:/data/gwas/main/walk_pace.gz', header=T) %>% merge(iv.snp, by="SNP") %>% 
 	format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
 dat.Y <- read.table('D:/data/gwas/main/y.vte.gz', header=T) %>%
 	merge(iv.snp, by="SNP") %>% 
@@ -41,13 +41,13 @@ dat1$X.pred = predict.lm( lm( X ~ G, data=dat1))
 summary(lm(Y ~ X.pred, dat1))
 fit1 <- ivreg::ivreg(Y ~ X | G, data = dat1); summary(fit1) # 跟上面的结果一样。 Z可以是 G1+G2+G3
 #下面展示基于summary数据的方法，所得结果也是一样
-	beta_G2X = summary(lm( X ~ G, data=dat1))$coef[2,1]
-	beta_G2Y = summary(lm( Y ~ G, data=dat1))$coef[2,1]
-	se_G2X = summary(lm( X ~ G, data=dat1))$coef[2,2]
-	se_G2Y = summary(lm( Y ~ G, data=dat1))$coef[2,2]
-	beta_wald = beta_G2Y / beta_G2X; beta_wald
-	se_wald = se_G2Y / beta_G2X; se_wald
-	signif(2*pnorm(-abs(beta_wald/se_wald)), 2)
+	beta.G2X = summary(lm( X ~ G, data=dat1))$coef[2,1]
+	beta.G2Y = summary(lm( Y ~ G, data=dat1))$coef[2,1]
+	se.G2X = summary(lm( X ~ G, data=dat1))$coef[2,2]
+	se.G2Y = summary(lm( Y ~ G, data=dat1))$coef[2,2]
+	beta.wald = beta.G2Y / beta.G2X; beta.wald
+	se.wald = se.G2Y / beta.G2X; se.wald
+	signif(2*pnorm(-abs(beta.wald/se.wald)), 2)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
