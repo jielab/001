@@ -5,14 +5,20 @@ pacman::p_load(dplyr, tidyr, TwoSampleMR, MendelianRandomization, RadialMR, psyc
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TwoSampleMR最简单的方法
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iv.snp <- read.table('D:/data/gwas/main/walk_pace.top.snp', header=T)
-dat.X <- read.table('D:/data/gwas/main/walk_pace.gz', header=T) %>% merge(iv.snp, by="SNP") %>% 
-	format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
-dat.Y <- read.table('D:/data/gwas/main/y.vte.gz', header=T) %>%
-	merge(iv.snp, by="SNP") %>% 
-	format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
+dat.X.raw <- read.table('D:/data/gwas/ppp/ABO.gz', header=T)
+	dat.X.sig <- dat.X.raw %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+05))
+	dat.X.iv <- dat.X.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
+	dat.X <- dat.X.raw %>% merge(dat.X.iv, by="SNP") %>% 
+	format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', beta_col='BETA', se_col='SE', pval_col='P') 
+dat.Y.raw <- read.table('D:/data/gwas/main/y.cad.gz', header=T) 
+	dat.Y <- dat.Y.raw %>% merge(dat.X.iv, by="SNP") %>% 
+	format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', eaf_col='A1FREQ', beta_col='BETA', se_col='SE', pval_col='P') 
 dat <- harmonise_data(dat.X, dat.Y, action=1) 
-res <- mr(dat); res; generate_odds_ratios(res) #置信区间
+dat.radial <- format_radial(dat$beta.exposure, dat$beta.outcome, dat$se.exposure, dat$se.outcome, dat$SNP)
+	ivw.radial <- ivw_radial(dat.radial, 0.05/nrow(dat.radial), 3, 0.0001)
+	egg.radial <- egger_radial(dat.radial, 0.05/nrow(dat.radial), 3); egg.radial$outliers
+	plot_radial(c(ivw.radial, egg.radial), T, F, F)
+res <- mr(dat); res; # generate_odds_ratios(res) # 置信区间
 	mr(dat, method_list = c("mr_ivw", "mr_egger_regression", "mr_egger_regression_bootstrap"))
 	mr_pleiotropy_test(dat); mr_heterogeneity(dat)
 	mr_scatter_plot(res, dat)[[1]]
@@ -22,11 +28,6 @@ res <- mr(dat); res; generate_odds_ratios(res) #置信区间
 dat.bsmr <- dat_to_MRInput(dat); dat.bsmr <- dat.bsmr[[1]]
 	mr_plot(dat.bsmr, interactive=F)
 	mr_forest(dat.bsmr, snp_estimates=F, methods=c("ivw", "median", "wmedian", "egger", "maxlik", "conmix")) + scale_colour_manual(values = c("IVW estimate"="red")) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=10, face="bold"), axis.text.x=element_text(size=10, face="bold"), axis.text.y=element_text(size=15, face="bold"))
-dat.radial <- format_radial(dat$beta.exposure, dat$beta.outcome, dat$se.exposure, dat$se.outcome, dat$SNP)
-	ivw.radial <- ivw_radial(dat.radial, 0.05/nrow(dat.radial), 3, 0.0001)
-	egg.radial <- egger_radial(dat.radial, 0.05/nrow(dat.radial), 3); egg.radial$outliers
-	plot_radial(ivw.radial); plotly_radial(ivw.radial)
-	plot_radial(c(ivw.radial, egg.radial), T, F, F)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -14,7 +14,7 @@ Ms = gsub('.gz', '', list.files(path=dir.M, pattern='.gz$')); Ms
 sink("?.log")
 
 for (Y in Ys) { # 🙍
-	writeLines(paste('\n\n-->Run:', Y))
+#	writeLines(paste('\n\n-->Run:', Y))
 	dat.Y.raw <- read.table(paste0(dir.Y, '/', Y, '.gz'), header=T)
 	names(dat.Y.raw) <- stri_replace_all_regex(toupper(names(dat.Y.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
 
@@ -28,6 +28,7 @@ for (Y in Ys) { # 🙍
 			dat.X.iv <- dat.X.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
 		}
 		dat.X <- dat.X.raw %>% merge(dat.X.iv) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
+		dat.Y <- dat.Y.raw %>% merge(dat.X.iv, by="SNP") %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)		
 		# Total effect
 		dat.XY <- harmonise_data(dat.X, dat.Y, action=1) 
 		res.X2Y <- mr(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw")); res.X2Y 
@@ -35,7 +36,6 @@ for (Y in Ys) { # 🙍
 		if(p.X2Y >0.05) {print(paste("RES: XY不显著|", X,Y)); next} # 🛑
 
 		for (M in Ms) { # 🐎
-			writeLines(paste('\n\tRun:', Y, X, M))
 			dat.M.raw <- read.table(paste0(dir.M, '/', M, '.gz'), header=T)
 			names(dat.M.raw) <- stri_replace_all_regex(toupper(names(dat.M.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
 			if (file.exists(paste0(dir.M, '/', M, '.top.snp'))) {
@@ -56,8 +56,8 @@ for (Y in Ys) { # 🙍
 			beta.X2M <- res.X2M$b; se.X2M <- res.X2M$se; p.X2M <- signif(res.X2M$pval,2)
 	
 			# 合并 dat.X 和 dat.M 和 dat.Y
-			dat.Y <- merge(dat.Y.raw, dat.XnM.iv, by="SNP") %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)		
-			dat.XY.mv <- harmonise_data(dat.X.mv, dat.Y, action=1)
+			dat.Y.mv <- merge(dat.Y.raw, dat.XnM.iv, by="SNP") %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)		
+			dat.XY.mv <- harmonise_data(dat.X.mv, dat.Y.mv, action=1)
 			dat <- merge(dat.XM.mv, dat.XY.mv, by="SNP")
 			bad_row <- subset(dat, effect_allele.exposure.x != effect_allele.exposure.y) %>% nrow()
 			if (bad_row !=0) {print(paste("ERROR:", X, Y, M, "dat.XM与dat.XY中的 effect_allele.exposure不同")); next}
