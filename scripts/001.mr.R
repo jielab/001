@@ -9,13 +9,13 @@ replacement=c('SNP', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P')
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iv.file <- 'D:/data/gwas/main/ppp_ABO.top.snp'
 dat.X.file <- 'D:/data/gwas/main/ppp_ABO.gz'
-dat.Y.file <- 'D:/data/gwas/main/covid_A2.EUR.gz'
+dat.Y.file <- 'D:/data/gwas/main/covid_B2.EUR.gz'
 dat.X.raw <- read.table(dat.X.file, header=T)
 	names(dat.X.raw) <- stri_replace_all_regex(toupper(names(dat.X.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
 	if (file.exists(iv.file)) {
 		dat.X.iv <- read.table(iv.file, header=T); names(dat.X.iv) <- "SNP" 
 	} else {
-		dat.X.sig <- dat.X.raw %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+06))
+		dat.X.sig <- dat.X.raw %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+05))
 		dat.X.iv <- dat.X.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
 	}
 	dat.X <- dat.X.raw %>% merge(dat.X.iv, by="SNP") %>% 
