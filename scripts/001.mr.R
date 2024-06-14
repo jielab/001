@@ -1,23 +1,29 @@
 setwd("C:/Users/jiehu/Desktop")
-pacman::p_load(dplyr, tidyr, TwoSampleMR, MendelianRandomization, RadialMR, psych, bda)
+pacman::p_load(data.table, stringi, dplyr, tidyr, TwoSampleMR, MendelianRandomization, RadialMR, psych, bda)
 
+pattern=c('^snp$|^rsid$', '^chr$|^chrom$|^chromosome$', '^bp$|^pos$|^position$|^base_pair_location$', '^ea$|^alt$|^a1$|^effect_allele$', '^nea$|^ref|^allele0$|^a2$|^other_allele$', '^eaf$|^a1freq$|^effect_allele_frequency$', '^n$|^Neff$', '^beta$|^effect$', '^se$|^standard_error', '^p$|^pval$|^p_value$')
+replacement=c('SNP', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P')
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TwoSampleMR最简单的方法
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iv.file <- 'D:/data/gwas/main/walk_pace.top.snp'
-dat.X.raw <- read.table('D:/data/gwas/main/walk_pace.gz', header=T)
-	if (file.exists(iv.file))) {
+iv.file <- 'D:/data/gwas/main/ppp_ABO.top.snp'
+dat.X.file <- 'D:/data/gwas/main/ppp_ABO.gz'
+dat.Y.file <- 'D:/data/gwas/main/covid_A2.EUR.gz'
+dat.X.raw <- read.table(dat.X.file, header=T)
+	names(dat.X.raw) <- stri_replace_all_regex(toupper(names(dat.X.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
+	if (file.exists(iv.file)) {
 		dat.X.iv <- read.table(iv.file, header=T); names(dat.X.iv) <- "SNP" 
 	} else {
 		dat.X.sig <- dat.X.raw %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+06))
 		dat.X.iv <- dat.X.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
 	}
 	dat.X <- dat.X.raw %>% merge(dat.X.iv, by="SNP") %>% 
-	format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', beta_col='BETA', se_col='SE', pval_col='P') 
-dat.Y.raw <- read.table('D:/data/gwas/main/y.vte.gz', header=T) 
-	dat.Y <- dat.Y.raw %>% merge(dat.X.iv, by="SNP") %>% 
-	format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', eaf_col='A1FREQ', beta_col='BETA', se_col='SE', pval_col='P') 
+	format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
+dat.Y.raw <- read.table(dat.Y.file, header=T)
+	names(dat.Y.raw) <- stri_replace_all_regex(toupper(names(dat.Y.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
+ 	dat.Y <- dat.Y.raw %>% merge(dat.X.iv, by="SNP") %>% 
+	format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
 dat <- harmonise_data(dat.X, dat.Y, action=1) 
 dat.radial <- format_radial(dat$beta.exposure, dat$beta.outcome, dat$se.exposure, dat$se.outcome, dat$SNP)
 	ivw.radial <- ivw_radial(dat.radial, 0.05/nrow(dat.radial), 3, 0.0001)
