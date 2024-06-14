@@ -1,5 +1,5 @@
 setwd("D:/")
-pacman::p_load(data.table, dplyr, tidyr, ggplot2, sampling, survival, survminer, survcomp, survivalmodels, pROC)
+pacman::p_load(data.table, dplyr, tidyr, ggplot2, sampling, survival, survminer, survcomp, survivalmodels, e1071, caret, pROC)
 std <- function(x) (x - mean(x,na.rm=T)) / sd(x,na.rm=T)
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 
@@ -9,11 +9,10 @@ inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 set.seed(12345)
 trait='t2dm'; model='glm' # lm 或 glm 或 cox
-races=c("EUR", "AFR", "EAS", "SAS") 
+races=c("AFR", "EUR", "EAS", "SAS") 
 train_n=0.5
-pcs=4 # 40个 PC
+pcs=40 # 40个 PC
 folds=10 # 10-fold cross validation
-
 dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata") 
 dat <- dat0 %>% subset(select=grepl("^eid|^age|^sex$|^ethnic|^PC|^umap|t2dm|height|date_attend|date_lost|date_death", names(dat0))) %>% 
 	drop_na(PC1, umap1) %>% filter(ethnic_cat %in% c("White", "Black", "Chinese", "Asian")) %>%
@@ -22,19 +21,28 @@ dat <- dat0 %>% subset(select=grepl("^eid|^age|^sex$|^ethnic|^PC|^umap|t2dm|heig
 	# geom_rect(aes(xmin=-25, xmax=25, ymin=-25, ymax=20), linetype=5, fill="transparent", color="blue", size=1) +geom_rect(aes(xmin=25, xmax=125, ymin=-160, ymax=-60), linetype=5, fill="transparent", color="purple", size=1) +
 	# geom_rect(aes(xmin=130, xmax=180, ymin=-290, ymax=-250), linetype=5, fill="transparent", color="red", size=1) +geom_rect(aes(xmin=250, xmax=425, ymin=25, ymax=90), linetype=5, fill="transparent", color="black", size=1)
 	# km = kmeans(subset(dat, select=c("PC1","PC2")), centers=4, nstart=50); fviz_cluster(km, data=dat)	
+if (model=="lm") {dat$trait=dat[[trait]]
+} else if (model=="glm") {dat$trait=ifelse(is.na(dat[[paste0('icdDate_',trait)]]), 0, 1)
+} else if (model=="cox") {
+	dat <- dat %>% mutate(
+		Y_date = dat[[paste0('icdDate_',trait)]], Y_yes = ifelse( is.na(Y_date), 0,1),
+		follow_end_day = data.table::fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
+		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
+	) %>% filter( follow_years >0 )
+}
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 处理PC & 计算d
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 for (r in races){
-	dat[[paste0(r, '.prs')]] = std(dat[[paste0(trait, '.', r, '.score_sum')]]) # 可尝试去掉std()
+	dat[[paste0('prs.',r)]] = std(dat[[paste0(trait, '.', r, '.score_sum')]]) # 可尝试去掉std()
 }
 for (i in 1:pcs) {
   PCi <- paste0("PC", i)
-  dat[[PCi]] <- std(residuals(lm(as.formula(paste0(PCi, " ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs + age + sex")), na.action=na.exclude, data=dat)))
+  dat[[PCi]] <- std(residuals(lm(as.formula(paste0(PCi, " ~ prs.AFR + prs.EAS + prs.EUR + prs.SAS + age + sex")), na.action=na.exclude, data=dat)))
 }
-# dat <- dat %>% drop_na(race, trait, EUR.prs) %>% group_by(race) %>% slice_sample(n=1000) 
+# dat <- dat %>% drop_na(race, trait, prs.EUR) %>% group_by(race) %>% slice_sample(n=1000) 
 for (r in races){
 	dat1 <- subset(dat, race==r)
 	for (i in 1:pcs) {
@@ -51,49 +59,74 @@ for (r in races){
 }
 dat$dtot <- dat$d2inv.AFR + dat$d2inv.EAS + dat$d2inv.EUR + dat$d2inv.SAS
 for (r in races){
-	eval(parse(text=paste0( 'dat$', r, '.prs_adj <- dat$d2inv.', r, ' / dat$dtot * dat$', r, '.prs' )))
+	eval(parse(text=paste0( 'dat$prs_adj.', r, ' <- dat$d2inv.', r, ' / dat$dtot * dat$prs.', r)))
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 新方法？？
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+r1 <- "AFR"
+oth <- races[races != r1]
+dat1 <- dat[, c("race", paste0("PC", 1:40), "age", "sex","trait", "prs.EUR","prs.AFR", "prs.SAS","prs.EAS")] %>% na.omit()
+dat1$trait <- factor(dat1$trait)
+assign(paste0("SUB.", r1),subset(dat1, race == r1))
+for (r in oth) {
+	subset_data <- subset(dat1, race == r1 | race == r)
+	subset_data$race <- factor(subset_data$race)
+	svm_model <- svm(race ~ ., data = subset_data[, c("race", paste0("PC", 1:40))], cost = 1, kernel = "linear", type = "C-classification", probability = FALSE)
+	d <- predict(svm_model, subset_data, decision.values = TRUE)
+	col_name <- paste0("DST.", r)
+	subset_data[[col_name]] <- attr(d, "decision.values")
+	SUB_tr <- get(paste0("SUB.", r1))
+	SUB_tr[[col_name]] <- subset(subset_data, race == r1, select = col_name)[[col_name]]
+	assign(paste0("SUB.", r1), SUB_tr)
+}  
+temp <- get(paste0("SUB.", r1))
+temp[[paste0("DST.", r1)]] <- rowSums(abs(temp[paste0("DST.", oth)]))
+temp[[paste0("DST.OTH")]] <- rowSums(1/abs(temp[paste0("DST.", oth)]))
+assign(paste0("SUB.", r1), temp)
+for (r in races) {
+	temp <- get(paste0("SUB.", r1))
+	ifelse(r==r1,
+         temp[paste0("prs_adj.",r)] <- get(paste0("SUB.", r1))[paste0("prs.",r)] * ((temp[[paste0("DST.", r)]]/temp[[paste0("DST.OTH")]]+temp[[paste0("DST.", r1)]])),
+         temp[paste0("prs_adj.",r)] <- get(paste0("SUB.", r1))[paste0("prs.",r)] * (((1/abs(temp[[paste0("DST.", r)]]))/temp[[paste0("DST.OTH")]])+temp[[paste0("DST.", r1)]]))
+	assign(paste0("SUB.", r1), temp)
 }
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 进行拟合 regression
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-if (model=="lm") {dat$trait=dat[[trait]]
-} else if (model=="glm") {dat$trait=ifelse(is.na(dat[[paste0('icdDate_',trait)]]), 0, 1)
-} else if (model=="cox") {
-	dat <- dat %>% mutate(
-		Y_date = dat[[paste0('icdDate_',trait)]], Y_yes = ifelse( is.na(Y_date), 0,1),
-		follow_end_day = data.table::fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
-		follow_years = (as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25,
-	) %>% filter( follow_years >0 )
-}
 fit_C <- list()
 fit_G <- list()
 for (r in races){
 	print(paste("PROCESS", r))
 	fit_C.n = fit_G.n = numeric(folds)
-	dat1 <- subset(dat, race==r)
+	dat1 <- SUB.AFR ####
 	for (i in 1:folds) { 
-		ii <- sort(sample(1:nrow(dat1), round(nrow(dat1)*train_n)) )
-		dat1.train <- dat1[ii,]; dat1.valid <- dat1[-ii,]
+	#	ii <- sort(sample(1:nrow(dat1), round(nrow(dat1)*train_n)) )
+	#	dat1.train <- dat1[ii,]; dat1.valid <- dat1[-ii,]
+		sub.fold <- createFolds(dat1$trait, k=folds)
+		dat1.train <- dat1[sub.fold[[i]], ]; dat1.valid <- dat1[-sub.fold[[i]], ]
 		if (model=="lm") { 
-			model_C.train <- lm(trait ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat1.train)
-			model_G.train <- lm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat1.train)
+			model_C.train <- lm(trait ~ prs.AFR + prs.EAS + prs.EUR + prs.SAS +age+sex, data=dat1.train)
+			model_G.train <- lm(trait ~ prs_adj.AFR + prs_adj.EAS + prs_adj.EUR + prs_adj.SAS +age+sex, data=dat1.train)
 			y_C.hat <- predict(model_C.train, dat1.valid)
 			y_G.hat <- predict(model_G.train, dat1.valid)
 			fit_C.n[i] <- (cor(y_C.hat, dat1.valid$trait, use="complete.obs"))^2
 			fit_G.n[i] <- (cor(y_G.hat, dat1.valid$trait, use="complete.obs"))^2
 		} else if (model=="glm") {
-			model_C.train <- glm(trait ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, family="binomial", data=dat1.train)
-			model_G.train <- glm(trait ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, family="binomial", data=dat1.train)
+			model_C.train <- glm(trait ~ prs.AFR + prs.EAS + prs.EUR + prs.SAS +age+sex, family="binomial", data=dat1.train)
+			model_G.train <- glm(trait ~ prs_adj.AFR + prs_adj.EAS + prs_adj.EUR + prs_adj.SAS +age+sex, family="binomial", data=dat1.train)
 			y_C.hat <- predict(model_C.train, dat1.valid)
 			y_G.hat <- predict(model_G.train, dat1.valid)
 			fit_C.n[i] <- auc(roc(dat1.valid$trait, y_C.hat))
 			fit_G.n[i] <- auc(roc(dat1.valid$trait, y_G.hat))
 		} else if (model=="cox") {
 			surv.obj <- Surv(time=dat1.train$follow_years, event=dat1.train$Y_yes)
-			model_C.train <- coxph(surv.obj ~ AFR.prs + EAS.prs + EUR.prs + SAS.prs +age+sex, data=dat1.train) # deepsurv 🐂
-			model_G.train <- coxph(surv.obj ~ AFR.prs_adj + EAS.prs_adj + EUR.prs_adj + SAS.prs_adj +age+sex, data=dat1.train) # deepsurv 🐂
+			model_C.train <- coxph(surv.obj ~ prs.AFR + prs.EAS + prs.EUR + prs.SAS +age+sex, data=dat1.train) # deepsurv 🐂
+			model_G.train <- coxph(surv.obj ~ prs_adj.AFR + prs_adj.EAS + prs_adj.EUR + prs_adj.SAS +age+sex, data=dat1.train) # deepsurv 🐂
 			y_C.hat <- predict(model_C.train, type="risk", newdata=dat1.valid) # 🏮与 survfit()的区别是？？
 			y_G.hat <- predict(model_G.train, type="risk", newdata=dat1.valid)
 			survcomp::concordance.index(y_C.hat, surv.time=dat1.valid$follow_years, surv.event=dat1.valid$Y_yes, method="noether")$c.index
@@ -105,6 +138,18 @@ for (r in races){
 }
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 画图？？？
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+dev_train <- roc(Survived~pred,data=train)
+auc <- round(auc(dev_train),2)
+roc.test(dev_train,dev_test)
+plot(dev_train, print.auc=F, auc.polygon=TRUE, auc.polygon.col="white", grid=c(0.5, 0.2), grid.col=c("black", "black"), print.thres=F, main="训练集和验证集的ROC", col="blue",legacy.axes=TRUE)
+plot.roc(dev_test, add=TRUE, col="red") 
+text <- c(paste0("train ",auc,"(95%IC,",ci,")"), paste0("test ",auc1,"(95%IC,",ci1,")"))
+legend(0.75, 0.3, bty = "n",legend=text,col=c("blue","red"),  lwd=1, cex = 0.5)
+	   
+	   
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 画图
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
