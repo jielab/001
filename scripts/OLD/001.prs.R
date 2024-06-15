@@ -36,7 +36,7 @@ if (model=="lm") {dat$trait=dat[[trait]]
 # 处理PC & 计算d
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 for (r in races){
-	dat[[paste0('prs.',r)]] = dat[[paste0(trait, '.', r, '.score_sum')]] # 可尝试用 std()
+	dat[[paste0('prs.',r)]] = std(dat[[paste0(trait, '.', r, '.score_sum')]]) # 可尝试去掉std()
 }
 for (i in 1:pcs) {
   PCi <- paste0("PC", i)
@@ -64,30 +64,35 @@ for (r in races){
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# SVM 方法
+# 新方法？？
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- dat[, c("race", paste0("PC", 1:40), "age", "sex","trait", "prs.EUR","prs.AFR", "prs.SAS","prs.EAS")] %>% na.omit()
-dat$trait <- factor(dat$trait); dat$race <- factor(dat$race)
-r.i <- "AFR"
-	r.else <- races[races != r.i]
-	dat1 <- subset(dat, race==r.i)	
-	for (r.j in r.else) {
-		dat.2race <- subset(dat, race==r.i | race==r.j)
-		svm_model <- svm(race ~ ., data = dat.2race[, c("race", paste0("PC", 1:40))], cost=1, kernel="linear", type="C-classification", probability=FALSE)
-		d <- predict(svm_model, dat.2race, decision.values=TRUE)
-		dat.2race$d <- attr(d, "decision.values")
-		dat1[[paste0("d2.", r.j)]] <- subset(dat.2race, race==r.i, select=d)
-	}
-	dat1$d2.self <- rowSums(abs(dat1[paste0("d2.", r.else)]))
-	dat1$d2.else <- rowSums(1/abs(dat1[paste0("d2.", r.else)]))
-	for (r.k in races) {
-		ifelse(r.k==r.i,
-			dat1[paste0("prs_adj.",r.k)] <- dat1[paste0("prs.",r.k)] * ((dat1$d2.self/dat1$d2.else + dat1$d2.self)),
-			dat1[paste0("prs_adj.",r.k)] <- dat1[paste0("prs.",r.k)] * (((1/abs(dat1$d2.self))/dat1$d2.else) + dat1$d2.)
-		)
-	}
-	assign(paste0("dat.", r.i), dat1)
-}	
+r1 <- "AFR"
+oth <- races[races != r1]
+dat1 <- dat[, c("race", paste0("PC", 1:40), "age", "sex","trait", "prs.EUR","prs.AFR", "prs.SAS","prs.EAS")] %>% na.omit()
+dat1$trait <- factor(dat1$trait)
+assign(paste0("SUB.", r1),subset(dat1, race == r1))
+for (r in oth) {
+	subset_data <- subset(dat1, race == r1 | race == r)
+	subset_data$race <- factor(subset_data$race)
+	svm_model <- svm(race ~ ., data = subset_data[, c("race", paste0("PC", 1:40))], cost = 1, kernel = "linear", type = "C-classification", probability = FALSE)
+	d <- predict(svm_model, subset_data, decision.values = TRUE)
+	col_name <- paste0("DST.", r)
+	subset_data[[col_name]] <- attr(d, "decision.values")
+	SUB_tr <- get(paste0("SUB.", r1))
+	SUB_tr[[col_name]] <- subset(subset_data, race == r1, select = col_name)[[col_name]]
+	assign(paste0("SUB.", r1), SUB_tr)
+}  
+temp <- get(paste0("SUB.", r1))
+temp[[paste0("DST.", r1)]] <- rowSums(abs(temp[paste0("DST.", oth)]))
+temp[[paste0("DST.OTH")]] <- rowSums(1/abs(temp[paste0("DST.", oth)]))
+assign(paste0("SUB.", r1), temp)
+for (r in races) {
+	temp <- get(paste0("SUB.", r1))
+	ifelse(r==r1,
+         temp[paste0("prs_adj.",r)] <- get(paste0("SUB.", r1))[paste0("prs.",r)] * ((temp[[paste0("DST.", r)]]/temp[[paste0("DST.OTH")]]+temp[[paste0("DST.", r1)]])),
+         temp[paste0("prs_adj.",r)] <- get(paste0("SUB.", r1))[paste0("prs.",r)] * (((1/abs(temp[[paste0("DST.", r)]]))/temp[[paste0("DST.OTH")]])+temp[[paste0("DST.", r1)]]))
+	assign(paste0("SUB.", r1), temp)
+}
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -98,7 +103,7 @@ fit_G <- list()
 for (r in races){
 	print(paste("PROCESS", r))
 	fit_C.n = fit_G.n = numeric(folds)
-	dat1 <- dat.AFR ####
+	dat1 <- SUB.AFR ####
 	for (i in 1:folds) { 
 	#	ii <- sort(sample(1:nrow(dat1), round(nrow(dat1)*train_n)) )
 	#	dat1.train <- dat1[ii,]; dat1.valid <- dat1[-ii,]
