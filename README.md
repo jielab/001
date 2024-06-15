@@ -94,7 +94,7 @@ done
 ## #3.3. GWAS的管理、 QC、 注释
 > 对每一个GWAS，首先进行以下“三点”检查：
 ```
-1. 用 zcat GWAS.gz | awk '{print NF}' | sort -nu 文件每一行的列数目是一样的📕。 可用 sed -e 's/\t\t/\tNA\t/g' -e 's/\t\t/\tNA\t/g' -e 's/\t$/\tNA/' 解决。
+1. 用 zcat GWAS.gz | awk '{print NF}' | uniq | wc -l 文件每一行的列数目是一样的📕。 可用 sed 's/^\t/NA\t/; s/\t\t/\tNA\t/g; s/\t\t/\tNA\t/g; s/\t$/\tNA/' 解决。
 2. 如果文件不是按照CHR和POS排序🏮，pheweb 会报错，可用sort -k 1,1V -k 2,2n。 -V是为了把chrX和chrY排到最后，但是需要把第一行先写到新文件里。
 3. GWAS数据本身的问题：
    (1). Allele 最好是大写，awk 和 R 都有 toupper()功能。
