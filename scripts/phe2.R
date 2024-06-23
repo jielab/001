@@ -1,5 +1,5 @@
 setwd("D:/")
-pacman::p_load(data.table, dplyr, tidyverse, lubridate, poLCA, BioAge)
+pacman::p_load(data.table, tidyverse, lubridate, poLCA, BioAge)
 
 phe0 <- readRDS("D:/data/ukb/Rdata/all.Rdata")
 

@@ -1,5 +1,5 @@
 setwd("D:/")
-pacman::p_load(data.table, stringr, dplyr, tidyr, crosswalkr, lubridate)
+pacman::p_load(data.table, tidyverse, stringr, crosswalkr, lubridate)
 indir="D:/data/ukb/phe/"
 dates_bad=as.Date(c("1900-01-01", "1901-01-01", "1902-02-02", "1903-03-03", "1999-01-01", "2037-07-07"))
 

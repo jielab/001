@@ -1,4 +1,4 @@
-pacman::p_load(data.table, stringi, dplyr, tidyr, TwoSampleMR, MendelianRandomization, survival, survminer)
+pacman::p_load(data.table, tidyverse, stringi, TwoSampleMR, MendelianRandomization, survival, survminer)
 
 pattern=c('^snp$|^rsid$', '^chr$|^chrom$|^chromosome$', '^bp$|^pos$|^position$|^base_pair_location$', '^ea$|^alt$|^a1$|^effect_allele$', '^nea$|^ref|^allele0$|^a2$|^other_allele$', '^eaf$|^a1freq$|^effect_allele_frequency$', '^n$|^Neff$', '^beta$|^effect$', '^se$|^standard_error', '^p$|^pval$|^p_value$')
 replacement=c('SNP', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P')
@@ -6,7 +6,7 @@ replacement=c('SNP', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P')
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 基于MR的mediation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dir.Y = dir.X = '/data/sph-huangj/data/gwas/main'
+dir.Y = dir.X = '/data/sph-huangj/data/gwas/main/clean'
 dir.M = '/data/sph-huangj/data/gwas/?/clean'
 Xs = '?'
 Ys = '?' 
@@ -24,16 +24,16 @@ for (Y in Ys) { # 🙍
 		if (file.exists(paste0(dir.X, '/', X, '.top.snp'))) {
 			dat.X.iv <- read.table(paste0(dir.X, '/', X, '.top.snp'), header=T); names(dat.X.iv) <- "SNP" 
 		} else {
-			dat.X.sig <- dat.X.raw %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+06))
+			dat.X.sig <- dat.X.raw %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+05))
 			dat.X.iv <- dat.X.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
 		}
 		dat.X <- dat.X.raw %>% merge(dat.X.iv) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
 		dat.Y <- dat.Y.raw %>% merge(dat.X.iv, by="SNP") %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)		
 		# Total effect
 		dat.XY <- harmonise_data(dat.X, dat.Y, action=1) 
-		res.X2Y <- mr(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw")); res.X2Y 
-		beta.X2Y <- res.X2Y$b; se.X2Y <- res.X2Y$se; p.X2Y <- signif(res.X2Y$pval,2)
-		if(p.X2Y >0.05) {print(paste("RES: XY不显著|", X,Y)); next} # 🛑
+		fit.X2Y <- mr(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw")); fit.X2Y 
+		beta.X2Y <- fit.X2Y$b; se.X2Y <- fit.X2Y$se; p.X2Y <- signif(fit.X2Y$pval,2)
+		if(p.X2Y >0.05) {print(paste("RES: XY|", X,"NA",Y, nrow(dat.XY),round(beta.X2Y,3),round(se.X2Y,3),p.X2Y,"| NA NA NA NA | NA NA NA NA | NA NA NA NA")); next} # 🛑
 
 		for (M in Ms) { # 🐎
 			dat.M.raw <- read.table(paste0(dir.M, '/', M, '.gz'), header=T)
@@ -52,8 +52,8 @@ for (Y in Ys) { # 🙍
 			# Step1: X --> M
 			dat.XM <- harmonise_data(dat.X, dat.M.4X, action=1)
 			dat.XM.mv <- harmonise_data(dat.X.mv, dat.M.mv, action=1); names(dat.XM.mv) <- gsub("outcome", "mediator", names(dat.XM.mv))
-			res.X2M <- mr(dat.XM, method_list=c("mr_wald_ratio", "mr_ivw")); res.X2M 
-			beta.X2M <- res.X2M$b; se.X2M <- res.X2M$se; p.X2M <- signif(res.X2M$pval,2)
+			fit.X2M <- mr(dat.XM, method_list=c("mr_wald_ratio", "mr_ivw")); fit.X2M 
+			beta.X2M <- fit.X2M$b; se.X2M <- fit.X2M$se; p.X2M <- signif(fit.X2M$pval,2)
 	
 			# 合并 dat.X 和 dat.M 和 dat.Y
 			dat.Y.mv <- merge(dat.Y.raw, dat.XnM.iv, by="SNP") %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)		
@@ -65,9 +65,9 @@ for (Y in Ys) { # 🙍
 			if (nrow(dat)==0) next
 			
 			# Step 2: M (+X) --> Y 
-			dat.mvmr <- MendelianRandomization::mr_mvinput(bx=cbind(dat$beta.mediator, dat$beta.exposure), bxse=cbind(dat$se.mediator, dat$se.exposure), by=dat$beta.outcome, byse=dat$se.outcome)
-			res.mvmr <- MendelianRandomization::mr_mvivw(dat.mvmr, model="default", correl=FALSE, distribution="normal", alpha=0.05); res.mvmr
-			beta.M2Y <- res.mvmr$Estimate[["Bx1"]]; se.M2Y <- res.mvmr$StdError[["Bx1"]] ; p.M2Y <- res.mvmr$Pvalue[["Bx1"]]
+			dat.M2Y <- MendelianRandomization::mr_mvinput(bx=cbind(dat$beta.mediator, dat$beta.exposure), bxse=cbind(dat$se.mediator, dat$se.exposure), by=dat$beta.outcome, byse=dat$se.outcome)
+			fit.M2Y <- MendelianRandomization::mr_mvivw(dat.M2Y, model="default", correl=FALSE, distribution="normal", alpha=0.05); fit.M2Y
+			beta.M2Y <- fit.M2Y$Estimate[["Bx1"]]; se.M2Y <- fit.M2Y$StdError[["Bx1"]] ; p.M2Y <- fit.M2Y$Pvalue[["Bx1"]]
 			
 			# Mediation
 			beta.me <- beta.X2M * beta.M2Y # 🐕 乘法
