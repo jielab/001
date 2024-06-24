@@ -71,7 +71,3 @@ Y = 'covid_A2' # 🙍
 			se.me <- sqrt(beta.X2M^2 * se.X2M^2 + beta.M2Y^2 * se.M2Y^2) # 🐕 POE法，也称Delta法 
 			p.me <- 2*pnorm(-abs(beta.me/se.me))
 			print(paste("RES: XY|", X,M,Y, nrow(dat.XY),round(beta.X2Y,3),round(se.X2Y,3),p.X2Y, "|", nrow(dat.XM),round(beta.X2M,3),round(se.X2M,3),p.X2M, "|", nrow(dat),round(beta.M2Y,3),round(se.M2Y,3),signif(p.M2Y,2), "|", round(prop.me,3),round(beta.me,3),round(se.me,3),signif(p.me,2)))
-
-		}	
-	}
-}
