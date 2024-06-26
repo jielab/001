@@ -13,7 +13,7 @@ dat <- dat0 %>% filter(ethnic_cat=="White")
 
 Xs <- "?" #grep("^age_sex|age_m|^edu_score|^birth_weight|^height$|^chunk|^leg|^hippo_|^fev1fvc|^stiffness|score_sum$", names(dat), value=TRUE)
 Ys <- "?" # grep("^icdDate_", names(dat), value=TRUE)
-Ms <- "?" # grep("^bmi$|bb_|bc_", names(dat), value=TRUE) # grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
+Ms <- ? # grep("^bmi$|bb_|bc_", names(dat), value=TRUE) # grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
 sink("?.log")
 
 for (Y in Ys) { # 🙍
@@ -82,10 +82,9 @@ for (Y in Ys) { # 🙍
 			fit.X2M <- lm(M ~ X +age+sex+PC1+PC2, data=dat1); res.X2M=coef(summary(fit.X2M))
 			fit.M2Y <- survreg(Surv(follow_years, Y_yes) ~ M + X +age+sex+PC1+PC2, data=dat1); res.M2Y=summary(fit.M2Y)$table # 🐕 这儿用surveg
 			fit.medi <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M"); res <- summary(fit.medi) 
-			print(paste("RES: XY|", X,M,Y, nrow(dat1), round(res$tau.coef,3), paste(round(res$tau.ci,3),collapse='-'), signif(res$tau.p,2), "|", 
+			print(paste("RES:", X, M, Y, nrow(dat1), round(res$tau.coef,3), paste(round(res$tau.ci,3),collapse='-'), signif(res$tau.p,2), "|", 
 				nrow(dat1), round(res.X2M[2,1],3), round(res.X2M[2,2],3), signif(res.X2M[2,4],2), "|", 
-				nrow(dat1),  round(res.M2Y[2,1],3), round(res.M2Y[2,2],3), signif(res.M2Y[2,4],2), 
-					round(res.M2Y[3,1],3), round(res.M2Y[3,2],3), signif(res.M2Y[3,4],2), "|", 
+				nrow(dat1),  round(res.M2Y[2,1],3), round(res.M2Y[2,2],3), signif(res.M2Y[2,4],2), round(res.M2Y[3,1],3), round(res.M2Y[3,2],3), signif(res.M2Y[3,4],2), "|", 
 				round(res$n.avg,3), round(res$d.avg,3), paste(round(res$d.avg.ci,3),collapse='-'), signif(res$d.avg.p,2))
 			)
 		}

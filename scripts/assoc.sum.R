@@ -68,15 +68,21 @@ for (Y in Ys) { # 🙍
 			dat.M2Y <- MendelianRandomization::mr_mvinput(bx=cbind(dat$beta.mediator, dat$beta.exposure), bxse=cbind(dat$se.mediator, dat$se.exposure), by=dat$beta.outcome, byse=dat$se.outcome)
 			fit.M2Y <- MendelianRandomization::mr_mvivw(dat.M2Y, model="default", correl=FALSE, distribution="normal", alpha=0.05); fit.M2Y
 			beta.M2Y <- fit.M2Y$Estimate[["Bx1"]]; se.M2Y <- fit.M2Y$StdError[["Bx1"]] ; p.M2Y <- fit.M2Y$Pvalue[["Bx1"]]
+			beta.M2Y.X <- fit.M2Y$Estimate[["Bx2"]]; se.M2Y.X <- fit.M2Y$StdError[["Bx2"]] ; p.M2Y.X <- fit.M2Y$Pvalue[["Bx2"]]
 			
 			# Mediation
 			beta.me <- beta.X2M * beta.M2Y # 🐕 乘法
 			prop.me <- beta.me / beta.X2Y
 			se.me <- sqrt(beta.X2M^2 * se.X2M^2 + beta.M2Y^2 * se.M2Y^2) # 🐕 POE法，也称Delta法 
 			p.me <- 2*pnorm(-abs(beta.me/se.me))
-			print(paste("RES: XY|", X,M,Y, nrow(dat.XY),round(beta.X2Y,3),round(se.X2Y,3),p.X2Y, "|", nrow(dat.XM),round(beta.X2M,3),round(se.X2M,3),p.X2M, "|", nrow(dat),round(beta.M2Y,3),round(se.M2Y,3),signif(p.M2Y,2), "|", round(prop.me,3),round(beta.me,3),round(se.me,3),signif(p.me,2)))
+			X_str=paste0(X, "(", nrow(dat.X.iv), ")"); M_str=paste0(M, "(", nrow(dat.M.iv), ")");
+			print(paste("RES:", X_str, M_str, Y, nrow(dat.XY), round(beta.X2Y,3), round(se.X2Y,3), p.X2Y, "|", 
+				nrow(dat.XM), round(beta.X2M,3), round(se.X2M,3), p.X2M, "|", 
+				nrow(dat), round(beta.M2Y,3), round(se.M2Y,3), signif(p.M2Y,2), round(beta.M2Y.X,3), round(se.M2Y.X,3), signif(p.M2Y.X,2), "|", 
+				round(prop.me,3), round(beta.me,3), round(se.me,3), signif(p.me,2))
+			)
 
-		}	
+		}
 	}
 }
 sink()

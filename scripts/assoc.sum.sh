@@ -22,5 +22,5 @@ done
 done
 done
 
-# label=ABO; cat */$label-*-*.log | awk '$22>0 && $25<0.05' | sed 's/"//g; s/ /\t/g' | sort -k 22,22gr > $label.top.txt
+# label=walk; cat */$label*-*.log | awk '$22>0 && $25<0.05' | sed 's/"//g; s/ /\t/g' | sort -k 22,22gr > $label.top.txt
 
