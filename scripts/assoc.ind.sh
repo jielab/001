@@ -9,6 +9,7 @@ for Y in asthma breast_cancer covid lung_cancer cad stroke t2dm vte2; do # asthm
 
 	outdir=$dir/assoc.ind/$Y; mkdir -p $outdir
 	for X in height bmi walk_pace abo.a abo.o abo.a_b abo.se vte.ff apoe.e4 sp1.s sp1.z; do
+        if [ $X == $Y ]; then continue; fi
 	label="$X-$Y"
 	if [ -f $outdir/$label.log ]; then echo $label already run; continue; fi
 
@@ -20,7 +21,7 @@ for Y in asthma breast_cancer covid lung_cancer cad stroke t2dm vte2; do # asthm
 	R CMD BATCH $label.R
 	" > $outdir/$label.cmd
 	cd $outdir
-	bsub -q short -J $label -o $label.LOG -e $label.ERR < $label.cmd
+	bsub -q spec -J ind.$label -o $label.LOG -e $label.ERR < $label.cmd
 
 done
 done
