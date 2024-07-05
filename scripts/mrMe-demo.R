@@ -69,7 +69,12 @@ fit1 <- ivreg::ivreg(Y ~ X | G, data = dat1); summary(fit1) # 跟上面的结果
 # mediation：从个体数据到summary数据
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 示例原文出处：https://rpubs.com/MichaelGilbertUCR/732775
-# 同时参考https://rdrr.io/github/scllin/toypack/src/R/mrMed.R
+# 同时参考 https://rdrr.io/github/scllin/toypack/man/mrMed.html
+# Gx=1: X 显著但是M不显著。只有在Diff_IVW_0和 Prod_IVW_0 中才作为测试用。
+# Gx_plum=1: Gx=1 并且 TwoSampleMR::mr(X-Y)分析中不是 outlier, 用于 X --> M或Y
+# Gm=1: M显著
+# Gm_plum=1: Gm=1 并且 Gx =0, 用于 M --> Y
+# G_mvmr=0: Gx_plum=0 并且 Gm_plum=0
 set.seed(12334) 
 dat1 <- iris %>% rename(X=Sepal.Length) %>% 
 	mutate(
@@ -105,20 +110,9 @@ res <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M", boot=T); pr
 	beta.prop <- beta.me / beta.X2Y; beta.prop
 		se.prop <- sqrt(se.me^2/beta.X2Y^2 + beta.me^2*se.X2Y^2/beta.X2Y^4); se.prop
 		p.prop <- signif(2*pnorm(-abs(beta.prop/se.prop)),2); p.prop
-	
-	
-	head(WHR_T2D_CAD)
-"SNP"             "Gx"              "Gm"              "Gx_plum"         "Gm_plum"         "G_mvmr"         
- [7] "effect_allele.X" "other_allele.X"  "eaf.X"           "beta.X"          "se.X"            "pval.X"         
-[13] "effect_allele.M" "other_allele.M"  "eaf.M"           "beta.M"          "se.M"            "pval.M"         
-[19] "effect_allele.Y" "other_allele.Y"  "eaf.Y"           "beta.Y"          "se.Y"            "pval.Y"   
-	mrMed(WHR_T2D_CAD)
-	
-	
-
 	X_str=paste0(X, "(", nrow(dat.X.iv), ")"); M_str=paste0(M, "(", nrow(dat.M.iv), ")");
-			print(paste("RES:", X_str, M_str, Y, nrow(dat.XY), round(beta.X2Y,3), round(se.X2Y,3), signif(p.X2Y,2), "|", 
-				nrow(dat.XM), round(beta.X2M,3), round(se.X2M,3), signif(p.X2M,2), "|", 
-				nrow(dat), round(beta.M2Y,3), round(se.M2Y,3), signif(p.M2Y,2), round(beta.X2Y.dr,3), round(se.X2Y.dr,3), signif(p.X2Y.dr,2), "|", 
-				round(beta.me,3), signif(p.me,2),  round(beta.dr,3), signif(p.dr,2), NA,NA, round(beta.prop,3), signif(p.prop,2)  # ACME, ADE, TOT, Prop
-			))
+	print(paste("RES:", X_str, M_str, Y, nrow(dat.XY), round(beta.X2Y,3), round(se.X2Y,3), signif(p.X2Y,2), "|", 
+		nrow(dat.XM), round(beta.X2M,3), round(se.X2M,3), signif(p.X2M,2), "|", 
+		nrow(dat), round(beta.M2Y,3), round(se.M2Y,3), signif(p.M2Y,2), round(beta.X2Y.dr,3), round(se.X2Y.dr,3), signif(p.X2Y.dr,2), "|", 
+		round(beta.me,3), signif(p.me,2),  round(beta.dr,3), signif(p.dr,2), NA,NA, round(beta.prop,3), signif(p.prop,2)  # ACME, ADE, TOT, Prop
+	))
