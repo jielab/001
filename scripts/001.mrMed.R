@@ -51,11 +51,11 @@ dir.M = 'D:/data/gwas/bb/clean'; M = 'bb_ALP' # 🐎
 	beta.X2Y.dr <- fit.M2Y$Estimate[["Bx2"]]; se.X2Y.dr <- fit.M2Y$StdError[["Bx2"]] ; p.X2Y.dr <- fit.M2Y$Pvalue[["Bx2"]]
 # mediation self-made method # 🏮
 	beta.me <- beta.X2M * beta.M2Y # 🐕 product
-	se.me <- sqrt(beta.X2M^2 * se.X2M^2 + beta.M2Y^2 * se.M2Y^2); p.me <- 2*pnorm(-abs(beta.me/se.me))
-	beta.dr <- beta.X2Y - beta.me # difference
-	se.dr <- sqrt(se.X2Y^2 + se.me^2); p.dr <- 2*pnorm(-abs(beta.dr/se.dr))
+		se.me <- sqrt(beta.X2M^2 * se.X2M^2 + beta.M2Y^2 * se.M2Y^2)
+		p.me <- 2*pnorm(-abs(beta.me/se.me))
 	beta.prop <- beta.me / beta.X2Y
-	se.prop <- sqrt(se.me^2/beta.X2Y^2 + beta.me^2*se.X2Y^2/beta.X2Y^4); p.prop <- 2*pnorm(-abs(beta.prop/se.prop))
+		se.prop <- sqrt(se.me^2/beta.X2Y^2 + beta.me^2*se.X2Y^2/beta.X2Y^4)
+		p.prop <- 2*pnorm(-abs(beta.prop/se.prop))
 # mrMed method # 🏮
 	dat1 <- dat
 	names(dat1) <- stri_replace_all_regex(names(dat1), pattern=c("exposure", "mediator", "outcome"), replacement=c("X", "M", "Y"), vectorize_all=FALSE)
@@ -66,12 +66,17 @@ dir.M = 'D:/data/gwas/bb/clean'; M = 'bb_ALP' # 🐎
 		Gm_plum = Gm, # (... & [MY]keep=TRUE), 用于 M -> Y
 		G_mvmr = ifelse(Gx_plum==0 & Gm_plum==0, 0, 1)
 	)
-	res <- mrMed(dat_mrMed=dat1, method_list="Prod_IVW") # 还有 Diff_IVW, Prod_Median
-# key results # ✒
+	if ( max(dat1$Gx) * max(dat1$Gm) ==0 ) {
+		mrMed_str <- paste("mrMed has no SNP !!")
+	} else {
+		res <- mrMed(dat_mrMed=dat1, method_list="Prod_IVW")
+		mrMed_str <- paste(rb(res$TE$b), rp(res$TE$p), rb(res$IE$b), rp(res$IE$p), rb(res$DE$b), rp(res$DE$p), rb(res$rho$b), rp(res$rho$p)) # TE, ACME, ADE, Prop(rho)
+	}		
+# key results # 🔦
 	X_str=paste0(X, "(", nrow(dat.X.iv), ")"); M_str=paste0(M, "(", nrow(dat.M.iv), ")");
 	print(paste("RES:", X_str, M_str, Y, "|[X2Y]", nrow(dat.XY), rb(beta.X2Y), rp(p.X2Y), 
-		"[X2M]", nrow(dat.XM), rb(beta.X2M), rp(p.X2M), rb(beta.dr), rp(p.dr),
-		"[M2Y]", nrow(dat), rb(beta.M2Y), rp(p.M2Y), 
-		"[me]", rb(beta.me), rp(p.me), rb(beta.X2Y.dr), rp(p.X2Y.dr), rb(beta.prop), rp(p.prop), # ACME, ADE, Prop(rho) 
-		"[mrMed]", rb(res$TE$b), rp(res$TE$p), rb(res$IE$b), rp(res$IE$p), rb(res$DE$b), rp(res$DE$p), rb(res$rho$b), rp(res$rho$p) # TE, ACME, ADE, Prop(rho) 
+		"|X2M", nrow(dat.XM), rb(beta.X2M), rp(p.X2M),
+		"|M2Y", nrow(dat), rb(beta.M2Y), rp(p.M2Y), 
+		"|Me", rb(beta.me), rp(p.me), rb(beta.X2Y.dr), rp(p.X2Y.dr), rb(beta.prop), rp(p.prop), # ACME, ADE, Prop(rho) 
+		"|mrMed", mrMed_str	
 	))
