@@ -1,10 +1,10 @@
 pacman::p_load(data.table, tidyverse, lubridate, survival, randomForest, randomForestSRC, vivid)
 inormal <- function(x) qnorm((rank(x, na.last="keep") - 0.5) / sum(!is.na(x)))
-
 std <- function(x) (x - mean(x,na.rm=T)) / sd(x,na.rm=T)
 remove_outlier <- function(x) (ifelse((x > (mean(x,na.rm=TRUE) + 3*sd(x,na.rm=TRUE)) | x < (mean(x,na.rm=TRUE) - 3*sd(x,na.rm=TRUE))), NA, x))
 hardcall <- function(x) ifelse(x<0.5, 0, ifelse(x<1.5, 1, 2))
 expo <- function(x) 1.1^x
+rb <- function(x) (round(x,3)); rp <- function(x) (signif(x,2))
 
 run_vivid="NO"; cal_10y_risk="NO"; 
 dat0 <- readRDS(file="/work/sph-huangj/data/ukb/Rdata/all.Rdata")
@@ -78,15 +78,16 @@ for (Y in Ys) { # 🙍
 					labs(x="X labels", y="10-year risk (%)", title="") + scale_fill_manual(values=c("green", "gray", "orange"), name="Legend name") + theme_minimal() 
 			}
 			## 下面进行 mediation 分析
-			fit.X2Y <- survreg(Surv(follow_years, Y_yes) ~ X +age+sex+PC1+PC2, data=dat1)
+			set.seed(12345)
+			fit.X2Y <- survreg(Surv(follow_years, Y_yes) ~ X +age+sex+PC1+PC2, data=dat1); res.X2Y=summary(fit.X2Y)$table
 			fit.X2M <- lm(M ~ X +age+sex+PC1+PC2, data=dat1); res.X2M=coef(summary(fit.X2M))
 			fit.M2Y <- survreg(Surv(follow_years, Y_yes) ~ M + X +age+sex+PC1+PC2, data=dat1); res.M2Y=summary(fit.M2Y)$table # 🐕 这儿用surveg
 			fit.medi <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M"); res <- summary(fit.medi) 
-			print(paste("RES:", X, M, Y, nrow(dat1), round(res$tau.coef,3), paste(round(res$tau.ci,3),collapse='-'), signif(res$tau.p,2), "|", 
-				nrow(dat1), round(res.X2M[2,1],3), round(res.X2M[2,2],3), signif(res.X2M[2,4],2), "|", 
-				nrow(dat1),  round(res.M2Y[2,1],3), round(res.M2Y[2,2],3), signif(res.M2Y[2,4],2), round(res.M2Y[3,1],3), round(res.M2Y[3,2],3), signif(res.M2Y[3,4],2), "|", 
-				round(res$n.avg,3), round(res$d.avg,3), paste(round(res$d.avg.ci,3),collapse='-'), signif(res$d.avg.p,2))
-			)
+			print(paste("RES:", X, M, Y, nrow(dat1), rb(res.X2Y[2,1]), rp(res.X2Y[2,4]), 
+				"|X2M", rb(res.X2M[2,1]), rp(res.X2M[2,4]),
+				"|M2Y", rb(res.M2Y[2,1]), rp(res.M2Y[2,4]), rb(res.M2Y[3,1]), rp(res.M2Y[3,4]), 
+				"|Me", rb(res$d.avg), rp(res$d.avg.p),  rb(res$z.avg), rp(res$z.avg.p),  rb(res$tau.coef), rp(res$tau.p),  rb(res$n.avg), rp(res$n.avg.p) # ACME, ADE, TOT, Prop
+			))
 		}
 	}
 }
