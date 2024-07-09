@@ -101,7 +101,7 @@ for (Y in Ys) { # 🙍
 				res <- mrMed(dat_mrMed=dat1, method_list="Prod_IVW")
 				mrMed_str <- paste(rb(res$TE$b), rp(res$TE$p), rb(res$IE$b), rp(res$IE$p), rb(res$DE$b), rp(res$DE$p), rb(res$rho$b), rp(res$rho$p)) # TE, ACME, ADE, Prop(rho)
 			}			
-			# 汇总分析结果 # ✒
+			# 汇总分析结果 # 🔦
 			X_str=paste0(X, "(", nrow(dat.X.iv), ")"); M_str=paste0(M, "(", nrow(dat.M.iv), ")");
 			print(paste("RES:", X_str, M_str, Y, "|X2Y", nrow(dat.XY), rb(beta.X2Y), rp(p.X2Y), 
 				"|X2M", nrow(dat.XM), rb(beta.X2M), rp(p.X2M),
