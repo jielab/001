@@ -36,13 +36,15 @@ for (Y in Ys) { # 🙍
 		
 		dat.X <- dat.X.raw %>% merge(dat.X.iv) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
 		dat.Y <- dat.Y.raw %>% merge(dat.X.iv, by="SNP") %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)		
-		# Total effect
+
+		# Harmonize dat.X + dat.Y, 并计算 Total effect
 		dat.XY <- harmonise_data(dat.X, dat.Y, action=1) 
 		fit.X2Y <- mr(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw")); fit.X2Y 
 		beta.X2Y <- fit.X2Y$b; se.X2Y <- fit.X2Y$se; p.X2Y <- fit.X2Y$pval
 		if(p.X2Y >0.05) {print(paste("SKIP:", X,"NA",Y, nrow(dat.XY), rb(beta.X2Y), rp(p.X2Y), "X2Y not significant !!")); next} # 🛑
 
 		for (M in Ms) { # 🐎
+			# Harmonize dat.X + dat.M + dat.Y
 			dat.M.raw <- read.table(paste0(dir.M, '/', M, '.gz'), header=T)
 			names(dat.M.raw) <- stri_replace_all_regex(toupper(names(dat.M.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
 			if (file.exists(paste0(dir.M, '/', M, '.top.snp'))) {
@@ -54,13 +56,6 @@ for (Y in Ys) { # 🙍
 				dat.M.iv <- dat.M.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
 				write.table(dat.M.iv, paste0(dir.M, '/', M, '.NEW.top.snp'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 			}
-			# Step1: X --> M # 🔔
-			dat.M.4X <- dat.M.raw %>% merge(dat.X.iv) %>% format_data(type='outcome', snp_col='SNP',  effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome=M)
-			dat.XM <- harmonise_data(dat.X, dat.M.4X, action=1)
-			fit.X2M <- mr(dat.XM, method_list=c("mr_wald_ratio", "mr_ivw")); fit.X2M 
-			beta.X2M <- fit.X2M$b; se.X2M <- fit.X2M$se; p.X2M <- signif(fit.X2M$pval,2)
-	
-			# 合并 dat.X 和 dat.M 和 dat.Y
 			dat.XnM.iv <- rbind(dat.X.iv, dat.M.iv) %>% unique() # 最理想的是把 dat.X和dat.M中所有的显著性snp合并然后 %>% clump_data() %>% select(SNP)
 			dat.X.mv <- dat.X.raw %>% merge(dat.XnM.iv) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
 			dat.M.mv <- dat.M.raw %>% merge(dat.XnM.iv) %>% format_data(type='outcome',  snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =M)
@@ -72,6 +67,12 @@ for (Y in Ys) { # 🙍
 			if (bad_row !=0) {print(paste("ERR:", X, Y, M, "X-M-Y have inconsistent alleles !!")); next}
 			names(dat) <- gsub("\\.x$", "", names(dat)); dat <- subset(dat, select=!grepl("\\.y", names(dat)))
 			if (nrow(dat)==0) {print(paste("SKIP:", X, Y, M, "X-M-Y harmonized data is empty !!")); next}
+
+			# Step1: X --> M # 🔔
+			dat.M.4X <- dat.M.raw %>% merge(dat.X.iv) %>% format_data(type='outcome', snp_col='SNP',  effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome=M)
+			dat.XM <- harmonise_data(dat.X, dat.M.4X, action=1)
+			fit.X2M <- mr(dat.XM, method_list=c("mr_wald_ratio", "mr_ivw")); fit.X2M 
+			beta.X2M <- fit.X2M$b; se.X2M <- fit.X2M$se; p.X2M <- signif(fit.X2M$pval,2)	
 			
 			# Step 2: M (+X) --> Y # 🔔🔔
 			dat.M2Y <- MendelianRandomization::mr_mvinput(bx=cbind(dat$beta.mediator, dat$beta.exposure), bxse=cbind(dat$se.mediator, dat$se.exposure), by=dat$beta.outcome, byse=dat$se.outcome)
@@ -91,16 +92,17 @@ for (Y in Ys) { # 🙍
 			dat1 <- dat
 			names(dat1) <- stri_replace_all_regex(names(dat1), pattern=c("exposure", "mediator", "outcome"), replacement=c("X", "M", "Y"), vectorize_all=FALSE)
 			dat1 <- dat1 %>% mutate (
-				Gx = ifelse(pval.X >5e-08 | pval.M >5e-08, 0, 1), Gx_plum = Gx,
-				Gm = ifelse(pval.M <5e-08, 1, 0), Gm_plum = Gm,
+				Gx = ifelse(pval.X <5e-08, 1, 0), Gx_plum = Gx, # 可加上 “& pval.M >5e-08”, 用于 X -> M或Y
+				Gm = 1, Gm_plum = Gm, # 可考虑 ifelse(pval.M <5e-08, 1, 0), 用于 M -> Y 
 				G_mvmr = ifelse(Gx_plum==0 & Gm_plum==0, 0, 1)
 			)
 			if ( max(dat1$Gx) * max(dat1$Gm) ==0 ) {
 				mrMed_str <- paste("mrMed has no SNP !!")
 			} else {
-				res <- mrMed(dat_mrMed=dat1, method_list="Prod_IVW")
+				res <- mrMed(dat_mrMed=dat1, method_list="Prod_IVW_0")
 				mrMed_str <- paste(rb(res$TE$b), rp(res$TE$p), rb(res$IE$b), rp(res$IE$p), rb(res$DE$b), rp(res$DE$p), rb(res$rho$b), rp(res$rho$p)) # TE, ACME, ADE, Prop(rho)
-			}			
+			}
+			
 			# 汇总分析结果 # 🔦
 			X_str=paste0(X, "(", nrow(dat.X.iv), ")"); M_str=paste0(M, "(", nrow(dat.M.iv), ")");
 			print(paste("RES:", X_str, M_str, Y, "|X2Y", nrow(dat.XY), rb(beta.X2Y), rp(p.X2Y), 
