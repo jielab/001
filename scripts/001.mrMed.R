@@ -51,7 +51,7 @@ dat1 <- dat1 %>% mutate (
 if ( max(dat1$Gx) * max(dat1$Gm) ==0 ) {
 	mrMed_str <- paste("mrMed has no SNP !!")
 } else {
-	res <- mrMed(dat_mrMed=dat1, method_list="Prod_IVW_0"); print(res)
+	res <- mrMed(dat_mrMed=dat1, method_list="Prod_IVW_0")
 }
 
 # key results # 🔦
