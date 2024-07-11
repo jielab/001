@@ -1,3 +1,6 @@
+# mediation包支持 lm, glm(或 bayesglm), polr(或 bayespolr), gam, rq, survreg, merMod
+# 分别对应于线性回归、 广义线性、 有序响应、 广义加法、 分位数回归、 参数持续时间、 多级模型
+# mediate函数只能实现survreg 拟合的参数化生存回归模型，无法实现coxph拟合的半参数的生存回归模型
 pacman::p_load(data.table, tidyverse, lubridate, survival, randomForest, randomForestSRC, vivid)
 inormal <- function(x) qnorm((rank(x, na.last="keep") - 0.5) / sum(!is.na(x)))
 std <- function(x) (x - mean(x,na.rm=T)) / sd(x,na.rm=T)
@@ -12,7 +15,7 @@ dat <- dat0 %>% filter(ethnic_cat=="White")
 	#rename(F5=vte.F5.rs6025_C, F2=vte.F2.rs1799963_G) % drop_na(???)
 
 Xs <- "?" #grep("^age_sex|age_m|^edu_score|^birth_weight|^height$|^chunk|^leg|^hippo_|^fev1fvc|^stiffness|score_sum$", names(dat), value=TRUE)
-Ys <- "?" # grep("^icdDate_", names(dat), value=TRUE)
+Ys <- "?" # grep("^icdDate_", names(dat), value=TRUE) 去掉 icdDate_ 前缀
 Ms <- ? # grep("^bmi$|bb_|bc_", names(dat), value=TRUE) # grep("^o$|^se$", names(dat), value=TRUE) # |^rh|shbg|^apoe$|\\.rs
 sink("?.log")
 
@@ -82,7 +85,7 @@ for (Y in Ys) { # 🙍
 			fit.X2Y <- survreg(Surv(follow_years, Y_yes) ~ X +age+sex+PC1+PC2, data=dat1); res.X2Y=summary(fit.X2Y)$table
 			fit.X2M <- lm(M ~ X +age+sex+PC1+PC2, data=dat1); res.X2M=coef(summary(fit.X2M))
 			fit.M2Y <- survreg(Surv(follow_years, Y_yes) ~ M + X +age+sex+PC1+PC2, data=dat1); res.M2Y=summary(fit.M2Y)$table # 🐕 这儿用surveg
-			fit.medi <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M"); res <- summary(fit.medi) 
+			fit.medi <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M", boot=F, outcome="status", sims=100); res <- summary(fit.medi) 
 			print(paste("RES:", X, M, Y, nrow(dat1), rb(res.X2Y[2,1]), rp(res.X2Y[2,4]), 
 				"|X2M", rb(res.X2M[2,1]), rp(res.X2M[2,4]), "|M2Y", rb(res.M2Y[2,1]), rp(res.M2Y[2,4]), 
 				"|Me", rb(res$tau.coef), rp(res$tau.p), rb(res$d.avg), rp(res$d.avg.p), rb(res$z.avg), rp(res$z.avg.p), rb(res$n.avg), rp(res$n.avg.p) # TOT, ACME, ADE, Prop
