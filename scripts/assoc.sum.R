@@ -12,25 +12,30 @@ dir.M = paste0(dir,'/data/gwas/?/clean')
 Xs = '?'
 Ys = '?' 
 Ms = gsub('.gz', '', list.files(path=dir.M, pattern='.gz$')); Ms
-log_file="?.log"
+log_file='?.log'
 n_cores=40
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 先定义function
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-mediation <- function(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw) {
+# mrMed(dat_mrMed, method_list=c('Diff_IVW','Prod_IVW','Prod_IVW_0', 'Prod_Median'))
+# MVMR可参考 https://github.com/yechaojie/mental_aging/tree/main/mediation/MVMR
+#   MRMVInputObject <- mr_mvinput(bx=cbind(dat$beta.M,dat$beta.X), bxse=cbind(dat$se.M,dat$se.X), by=dat$beta.Y, byse=dat$se.Y)
+#   MV-IVW <- mr_mvivw(MRMVInputObject, model='default', correl=FALSE, distribution='normal', alpha=0.05)
+#   MVEGGER <- mr_mvegger(MRMVInputObject, orientate=1, correl=FALSE, distribution='normal', alpha=0.05)	
+mediation <- function(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_file) {
 	# Harmonize dat.X + dat.M + dat.Y
 	dat.M.raw <- read.table(paste0(dir.M, '/', M, '.gz'), header=T)
 	dat.M.4x <- dat.M.raw %>% merge(dat.X.iv) %>% format_data(type='outcome', snp_col='SNP',  effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome=M)
 	names(dat.M.raw) <- stri_replace_all_regex(toupper(names(dat.M.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
 	if (file.exists(paste0(dir.M, '/', M, '.top.snp'))) {
-		dat.M.iv <- read.table(paste0(dir.M, '/', M, '.top.snp'), header=T); names(dat.M.iv) <- "SNP" 
+		dat.M.iv <- read.table(paste0(dir.M, '/', M, '.top.snp'), header=T); names(dat.M.iv) <- 'SNP' 
 	} else if (file.exists(paste0(dir.M, '/', M, '.NEW.top.snp'))) {
 		dat.M.iv <- read.table(paste0(dir.M, '/', M, '.NEW.top.snp'), header=T)
 	} else {
 		dat.M.sig <- dat.M.raw %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+05))
-		dat.M.iv <- dat.M.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
+		dat.M.iv <- dat.M.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select('SNP')
 		write.table(dat.M.iv, paste0(dir.M, '/', M, '.NEW.top.snp'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 	}
 	dat.XnM.iv <- rbind(dat.X.iv, dat.M.iv) %>% unique() # 最理想的是把 dat.X和dat.M中所有的显著性snp合并然后 %>% clump_data() %>% select(SNP)
@@ -38,8 +43,8 @@ mediation <- function(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw) {
 	dat.M.mv <- dat.M.raw %>% merge(dat.XnM.iv) %>% format_data(type='outcome',  snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =M)
 	dat.Y.mv <- dat.Y.raw %>% merge(dat.XnM.iv) %>% format_data(type='outcome',  snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)		
 	dat.XY.mv <- harmonise_data(dat.X.mv, dat.Y.mv, action=1)
-	dat.XM.mv <- harmonise_data(dat.X.mv, dat.M.mv, action=1); names(dat.XM.mv) <- gsub("outcome", "mediator", names(dat.XM.mv))
-	dat <- merge(dat.XM.mv, dat.XY.mv, by="SNP")
+	dat.XM.mv <- harmonise_data(dat.X.mv, dat.M.mv, action=1); names(dat.XM.mv) <- gsub('outcome', 'mediator', names(dat.XM.mv))
+	dat <- merge(dat.XM.mv, dat.XY.mv, by='SNP')
 	bad_row <- subset(dat, effect_allele.exposure.x != effect_allele.exposure.y) %>% nrow()
 	if (bad_row !=0) { write(paste("ERR:", X, Y, M, "X-M-Y have inconsistent alleles !!"), file=log_file, append=TRUE); break }
 	names(dat) <- gsub("\\.x$", "", names(dat)); dat <- subset(dat, select=!grepl("\\.y", names(dat)))
@@ -100,7 +105,7 @@ for (Y in Ys) { # 🙍
 #		numCores <- detectCores()-1; cl <- makeCluster(numCores); registerDoParallel(cl)
 #		foreach::foreach(M = Ms) %dopar% { # 🐎
 		for (M in Ms) {
-			mediation(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw)
+			mediation(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_file)
 		}
 #		stopCluster(cl)
 	}
