@@ -3,6 +3,7 @@ pattern=c('^snp$|^rsid$', '^chr$|^chrom$|^chromosome$', '^bp$|^pos$|^position$|^
 replacement=c('SNP', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P')
 rb <- function(x) (round(x,3)); rp <- function(x) (signif(x,2))
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MR：从"一"开始 (OneSampleMR)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,15 +52,21 @@ res <- mr(dat); res; # generate_odds_ratios(res) # 置信区间
 	res.single <- mr_singlesnp(dat)
 	mr_forest_plot(res.single)[[1]]
 	mr_funnel_plot(res.single)
-dat.bsmr <- dat_to_MRInput(dat); dat.bsmr <- dat.bsmr[[1]]
+dat.bsmr <- dat_to_MRInput(dat)[[1]]
 	mr_plot(dat.bsmr, interactive=F)
 	mr_plot(mr_allmethods( dat.bsmr, method="main", iterations = 50)) # method="all"
 	mr_forest(dat.bsmr, snp_estimates=F, methods=c("ivw", "median", "wmedian", "egger", "maxlik", "conmix")) 
 	+ scale_colour_manual(values = c("IVW estimate"="red")) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=10, face="bold"), axis.text.x=element_text(size=10, face="bold"), axis.text.y=element_text(size=15, face="bold"))
+# 比较两个数据
+dat.X <- read.table("D:/data/gwas/main/clean/bald0.top.txt", header=T) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
+dat.Y <- read.table("D:/data/gwas/main/clean/bald0.NEW.top.txt", header=T) %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
+dat <- harmonise_data(dat.X, dat.Y, action=1) 
+dat.bsmr <- dat_to_MRInput(dat)[[1]]
+mr_plot(dat.bsmr, interactive=F)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# MR："三"角关系复杂 (MVMR)
+# MR：被"三"添乱 (MVMR)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 示例原文出处：https://rpubs.com/MichaelGilbertUCR/732775
 set.seed(12334) # 🏮
@@ -80,20 +87,3 @@ fit.X2M <- lm(M ~ X, data=dat); summary(fit.X2M)
 fit.M2Y <- lm(Y ~ M+X, data=dat); summary(fit.M2Y) # 🐖 这儿必须捎带上X
 res <- mediation::mediate(fit.X2M, fit.M2Y, treat="X", mediator="M", boot=T); print(SUM <- summary(res))
 	c(rb(SUM$d.avg), rb(SUM$z.avg), rb(SUM$tau.coef), rb(SUM$n.avg)) # ACME, ADE, Total, Prop
-# 从个体数据到summary数据的飞跃 🚀，但是这里没有用到SNP作为IV
-coef.X2Y <- coef(summary(fit.X2Y)); coef.X2Y
-	beta.X2Y <- coef.X2Y[2,1]; se.X2Y <- coef.X2Y[2,2]; p.X2Y <- rp(coef.X2Y[2,4])
-coef.X2M <- coef(summary(fit.X2M)); coef.X2M
-	beta.X2M <- coef.X2M[2,1]; se.X2M <- coef.X2M[2,2]; p.X2M <- rp(coef.X2M[2,4])
-coef.M2Y <- coef(summary(fit.M2Y)); coef.M2Y 
-	beta.M2Y <- coef.M2Y[2,1]; se.M2Y <- coef.M2Y[2,2]; rp(coef.M2Y[2,4])
-	beta.X2Y.dr <- coef.M2Y[3,1]; se.X2Y.dr <- coef.M2Y[3,2]; rp(coef.M2Y[3,4])
-print(beta.me <- beta.X2M * beta.M2Y) # 乘法
-	print(se.me <- sqrt(beta.X2M^2 * se.X2M^2 + beta.M2Y^2 * se.M2Y^2)) # SE算法不太对
-	print(p.me <- rp(2*pnorm(-abs(beta.me/se.me))))
-print(beta.dr <- beta.X2Y - beta.me) # 减法
-	print(se.dr <- sqrt(se.X2Y^2 + se.me^2))
-	print(p.dr <- rp(2*pnorm(-abs(beta.dr/se.dr))))
-print(beta.prop <- beta.me / beta.X2)
-	print(se.prop <- sqrt(se.me^2/beta.X2Y^2 + beta.me^2*se.X2Y^2/beta.X2Y^4))
-	print(p.prop <- rp(2*pnorm(-abs(beta.prop/se.prop))))
