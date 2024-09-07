@@ -99,6 +99,73 @@ saveRDS(life_factor_df, file = "D:/data/ukb/Rdata/ukb.life.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# walk-VTE文章版本
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+dat0 <- phe0 %>% 
+	mutate( #🏮diet_score
+		veg_cooked = ifelse(veg_cooked < 0 | veg_cooked == 50, NA, veg_cooked),
+		veg_salad = ifelse(veg_salad < 0 | veg_salad == 50, NA, veg_salad),
+		vegetable = ifelse(veg_cooked + veg_salad >= 4, 1, 0),	#at least 4 tablespoons/day
+		fruit_fresh = ifelse(fruit_fresh < 0 | fruit_fresh == 50, NA, fruit_fresh),
+		fruit_dried = ifelse(fruit_dried < 0 | fruit_dried == 100, NA, fruit_dried), fruit = ifelse(fruit_fresh + fruit_dried >= 3, 1, 0), #at least 3 pieces/day
+		fish_oily = case_when(fish_oily < 0 ~ NA_real_, fish_oily %in% c(0, 1) ~ 0, fish_oily == 2 ~ 1, fish_oily == 3 ~ 2, fish_oily == 4 ~ 5,  fish_oily == 5 ~ 7),
+		fish = case_when(fish < 0 ~ NA_real_, fish %in% c(0, 1) ~ 0, fish == 2 ~ 1, fish == 3 ~ 2, fish == 4 ~ 5,  fish == 5 ~ 7),
+		fish = ifelse(fish_oily + fish >= 2, 1, 0), #at least twice per week(>= 2 ~ 1)	
+		beef = case_when(beef < 0 ~ NA_real_, beef %in% c(0, 1) ~ 0, beef == 2 ~ 1, beef == 3 ~ 2, beef == 4 ~ 5,  beef == 5 ~ 7),
+		lamb = case_when(lamb < 0 ~ NA_real_, lamb %in% c(0, 1) ~ 0, lamb == 2 ~ 1, lamb == 3 ~ 2, lamb == 4 ~ 5,  lamb == 5 ~ 7),
+		pork = case_when(pork < 0 ~ NA_real_, pork %in% c(0, 1) ~ 0, pork == 2 ~ 1, pork == 3 ~ 2, pork == 4 ~ 5,  pork == 5 ~ 7),
+		red_meat = ifelse(beef + lamb + pork <= 2, 1, 0), #no more than twice per week(<= 2 ~ 1)
+		meat_processed = case_when(meat_processed < 0 ~ NA_real_, meat_processed %in% c(0, 1) ~ 0, meat_processed == 2 ~ 1, meat_processed == 3 ~ 2, meat_processed == 4 ~ 5,  meat_processed == 5 ~ 7),meat_processed = ifelse(meat_processed < 2, 1, 0), #less than twice per week(< 2 ~ 1)
+		diet_score = vegetable + fruit + fish + red_meat + meat_processed, diet_score = factor(diet_score, levels = c(0,1,2,3,4,5))) %>%
+	mutate( #🏮IPAQ_activity
+		IPAQ_activity = factor(IPAQ_activity, levels = c(0, 1, 2), labels = c("low", "moderate", "high"))) %>% rowwise() %>%
+	mutate( #🏮sedentary_time
+		tv_time = ifelse(tv_time < 0 | tv_time > 24, NA, tv_time),
+		computer_time = ifelse(computer_time < 0 | computer_time > 24, NA, computer_time),
+		driving_time = ifelse(driving_time < 0 | driving_time > 24, NA, driving_time),
+		sedentary_time = sum(c(tv_time, computer_time, driving_time), na.rm = TRUE),
+		sedentary_time = ifelse(sedentary_time > 24, 24, sedentary_time)) %>% #exceeded 24h/day, total sedentary time was recoded to 24h/day
+	mutate(
+		med_male = ifelse(med_male < 0, NA, med_male),
+		med_female = ifelse(med_female < 0, NA, med_female),
+		medication = ifelse(!is.na(med_male), med_male, ifelse(!is.na(med_female), med_female, NA)),
+		cholesterol_lowering_medication = ifelse(medication == 1, 1, ifelse(is.na(medication), NA, 0)),
+		ht_medication = ifelse(medication == 2, 1, ifelse(is.na(medication), NA, 0)),
+		diabetes_medication = ifelse(medication == 3, 1, ifelse(is.na(medication), NA, 0))) %>%
+	mutate( #🏮history_cvd
+		non_cancer = ifelse(non_cancer < 0 | non_cancer == 99999, NA, non_cancer),
+		heart_dr = ifelse(heart_dr < 0, NA, heart_dr),
+		cad_yes = ifelse(is.na(icdDate_cad), 0, 1),
+		history_cad = case_when(non_cancer %in% c(1074, 1075) ~ 1, heart_dr %in% c(1, 2) ~ 1,cad_yes == 1 ~ 1,is.na(non_cancer) & is.na(heart_dr) & is.na(cad_yes) ~ NA_real_, TRUE ~ 0),
+		stroke_yes = ifelse(is.na(icdDate_stroke), 0, 1),
+		history_stroke = case_when(non_cancer %in% c(1081, 1082, 1086, 1491) ~ 1,heart_dr == 3 ~ 1,stroke_yes == 1 ~ 1,is.na(non_cancer) & is.na(heart_dr) & is.na(stroke_yes) ~ NA_real_, TRUE ~ 0),
+		hf_yes = ifelse(is.na(icdDate_hf), 0, 1),
+		history_hf = case_when(non_cancer == 1076 ~ 1,hf_yes == 1 ~ 1,is.na(non_cancer) & is.na(hf_yes) ~ NA_real_, TRUE ~ 0),
+		af_yes = ifelse(is.na(icdDate_af), 0, 1),
+		history_af = case_when(non_cancer %in% c(1471, 1483, 1583) ~ 1, af_yes == 1 ~ 1, is.na(non_cancer) & is.na(af_yes) ~ NA_real_, TRUE ~ 0),
+		history_cvd = ifelse(history_cad == 1 | history_stroke == 1 | history_hf == 1 | history_af == 1, 1, 0),
+		history_cvd = factor(history_cvd, levels = c(0, 1), labels = c("no", "yes")),)%>%
+	mutate( #🏮history_dm 
+		dm_yes = ifelse(is.na(icdDate_dm), 0, 1),
+		non_cancer = ifelse(non_cancer < 0 | non_cancer == 99999, NA, non_cancer),
+		dm_dr = ifelse(dm_dr < 0, NA, dm_dr),
+		history_diabetes = case_when(non_cancer %in% c(1220, 1222, 1223) ~ 1, dm_dr == 1 ~ 1, medication == 3 ~ 1, dm_yes == 1 ~ 1, is.na(non_cancer) & is.na(dm_dr) & is.na(medication) & is.na(dm_yes) ~ NA_real_, TRUE ~ 0 ),
+		history_diabetes = factor(history_diabetes, levels = c(0, 1), labels = c("no", "yes")),) %>%
+	mutate( #🏮history_ht
+		ht_yes = ifelse(is.na(icdDate_ht), 0, 1),
+		non_cancer = ifelse(non_cancer < 0 | non_cancer == 99999, NA, non_cancer),
+		heart_dr = ifelse(heart_dr < 0, NA, heart_dr),
+		history_ht = case_when(non_cancer == 1065 ~ 1,heart_dr == 4 ~ 1, medication == 2 ~ 1, sbp >= 140 | Diastolic_blood_pressure >= 90 ~ 1, ht_yes == 1 ~ 1, is.na(non_cancer) & is.na(heart_dr) & is.na(medication) & is.na(sbp) & is.na(Diastolic_blood_pressure) & is.na(ht_yes) ~ NA_real_, TRUE ~ 0),
+		history_ht = factor(history_ht, levels = c(0, 1), labels = c("no", "yes")))%>%
+	mutate( #🏮leg pain
+		chestpain_walk_normal = ifelse(chestpain_walk_normal < 0, NA, chestpain_walk_normal),chestpain_walk_hurry = ifelse(chestpain_walk_hurry < 0, NA, chestpain_walk_hurry),chestpain_walk = ifelse(chestpain_walk_normal == 1 | chestpain_walk_hurry == 1, 1, 0),
+		legpain_walk_normal = ifelse(legpain_walk_normal < 0, NA, legpain_walk_normal),legpain_walk_hurry = ifelse(legpain_walk_hurry < 0, NA, legpain_walk_hurry),legpain_walk = ifelse(legpain_walk_normal == 1 | legpain_walk_hurry == 1, 1, 0),
+		leg_arteries = ifelse(leg_arteries < 0, NA, leg_arteries), leg_amputation = ifelse(leg_amputation < 0, NA, leg_amputation),
+		leg_surgery = ifelse(leg_arteries == 1 | leg_amputation %in% c(1:3), 1, 0)
+	)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 空气和噪音污染，待完成
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 复旦公卫 Predicting particulate matter, nitrogen dioxide, and ozone across Great Britain with high spatiotemporal resolution based on random forest models
