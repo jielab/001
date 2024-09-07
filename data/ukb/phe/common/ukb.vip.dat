@@ -20,6 +20,9 @@
 924	walk_pace
 971	walk_freq
 981	walk_time
+1070	tv_time
+1080	computer_time
+1090	driving_time
 1180	sleep_chronotype
 1160	sleep_duration
 1200	sleep_insomnia
@@ -41,14 +44,31 @@
 1458	cereal
 1468	cereal_type
 1647	birth_country
+1757	age_facial
 1920	mood_swing
-2139	age_sex
+2139	age_fsex
+2149	sex_partner
 2159	gay
+2395	bald
+2443	dm_dr
 2714	age_mn
 2897	age_smoke_quit
+3063	fev1
 3581	age_menopause
+3606	chestpain_walk_normal	
+3751	chestpain_walk_hurry	
+4080	sbp
+4728	legpain_walk	
+5485	legpain_walk_normal	
+5474	legpain_walk_hurry	
+5529	leg_arteries
+5540	leg_amputation	
 6138	edu
 6142	emp
+6150	heart_dr
+6153	med_female	
+6177	med_male
+20002	non_cancer #???	
 20015	height_sitting
 20022	birth_weight
 20116	smoke_status
@@ -81,7 +101,13 @@
 22020	in_pc
 22021	genetic_kinship
 22027	genetic_outliers
+22032	IPAQ_activity
 22182	hla
+22190	telomere
+22191	telomere_adj
+22192	telomere_adjZ
+22193	telomere_plate
+22194	telomere_reg
 24003	air_no2       
 24004	air_nox      
 24005	pm10    
@@ -132,14 +158,14 @@
 30640	bb_APOB
 30650	bb_AST
 30660	bb_BILD
-30670	bb_BUN
+30670	bb_BUN	#bioage
 30680	bb_CA
-30690	bb_TC
+30690	bb_TC	#bioage
 30700	bb_CRE
 30710	bb_CRP
 30720	bb_CYS
 30740	bb_GLU
-30750	bb_HBA1C
+30750	bb_HBA1C	#bioage
 30760	bb_HDL
 30770	bb_IGF1
 30780	bb_LDL

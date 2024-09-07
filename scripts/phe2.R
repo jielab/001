@@ -1,8 +1,7 @@
 setwd("D:/")
 pacman::p_load(data.table, tidyverse, lubridate, poLCA, BioAge)
 
-phe0 <- readRDS("D:/data/ukb/Rdata/all.Rdata")
-
+dat0 <- readRDS("D:/data/ukb/Rdata/all.Rdata")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 生物年龄 (PMID: 37080981)
@@ -95,13 +94,13 @@ dat <- dat  %>%
 			ifelse(tt6_score >=2 & (tt6_score + rowSums(is.na(dat))) < 4, "2", 
 			ifelse(tt6_score ==0, "1", "??")))
 	)
-saveRDS(life_factor_df, file = "D:/data/ukb/Rdata/ukb.life.rds")
+saveRDS(life_factor_df, file = "D:/data/ukb/Rdata/ukb.le8.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # walk-VTE文章版本
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat0 <- phe0 %>% 
+dat <- dat0 %>% 
 	mutate( #🏮diet_score
 		veg_cooked = ifelse(veg_cooked < 0 | veg_cooked == 50, NA, veg_cooked),
 		veg_salad = ifelse(veg_salad < 0 | veg_salad == 50, NA, veg_salad),
@@ -163,6 +162,7 @@ dat0 <- phe0 %>%
 		leg_arteries = ifelse(leg_arteries < 0, NA, leg_arteries), leg_amputation = ifelse(leg_amputation < 0, NA, leg_amputation),
 		leg_surgery = ifelse(leg_arteries == 1 | leg_amputation %in% c(1:3), 1, 0)
 	)
+saveRDS(dat, file = "D:/data/ukb/Rdata/ukb.life.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

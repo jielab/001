@@ -39,8 +39,10 @@ phe <- phe0 %>%
 		cannabis_score = ifelse(cannabis==0,1, 0),
 		alcohol_score = ifelse(alcohol_status==0,1, 0),
 		alcohol_status = factor(alcohol_status, levels=0:2, labels=c("never","previous","current")),
-		edu_score = ifelse(edu %in% 1:2,3, ifelse(edu %in% 3:6,2, 1)),  # 1-2: College or above; 3-6: High school or equivalent; -7: Less than high school
-		emp_score = ifelse(emp %in% c(1,2,6,7), 2, 1), # 1 paid employment or self-employed; 2 retired; 6 doing unpaid or voluntary work; 7 full or part time students; 3 Looking after home and/or family; 4 Unable to work because of sickness or disability; 5 Unemployed 
+		sexp_cat =ifelse(sex_partner > 10, "high", ifelse(sex_partner>3, "middle", "low")),
+		sexp_cat = factor(sexp_cat, levels=c("low", "middle", "high")),
+		edu_cat = factor(ifelse(edu %in% 1:2,3, ifelse(edu %in% 3:6,2, 1))),  # 1-2: College or above; 3-6: High school or equivalent; -7: Less than high school
+		emp_cat = factor(ifelse(emp %in% c(1,2,6,7), 2, 1)), # 1 paid employment or self-employed; 2 retired; 6 doing unpaid or voluntary work; 7 full or part time students; 3 Looking after home and/or family; 4 Unable to work because of sickness or disability; 5 Unemployed 
 		income_cat = ifelse(income==1,1, ifelse(income %in% 2:3,2, 3)),
 		leg = height - chunk, leg_ratio = leg / chunk, chunk_ratio = chunk / leg,
 		leg_ratio_adj = leg_ratio / height, chunk_ratio_adj = chunk_ratio / height,
@@ -52,7 +54,7 @@ phe <- phe0 %>%
 		birth_year = ifelse((birth_year<1936 | birth_year>1970), NA, birth_year), # 1934年1个，1971年2个，去掉
 		birth_5year = cut(birth_year, breaks=seq(1935,1970,5)),
 		age_2021 = 2021-birth_year, age_2021 = ifelse(is.na(date_lost) & is.na(date_death), age_2021, NA),
-		facial_age = factor(facial_age, labels=c("young", "old", "normal")),
+		age_facial = factor(age_facial, labels=c("young", "old", "normal")),
 		lifespan = year(date_death) - birth_year
 	)
 saveRDS(phe, file="D:/data/ukb/Rdata/ukb.phe.rds")
@@ -138,3 +140,73 @@ for (i in 1:nrow(vip)) {
 }
 fod <- subset(bd, select=grep("eid|fod_", names(bd), value=T)) %>% rename(eid=f.eid)
 saveRDS(fod, file="D:/data/ukb/Rdata/ukb.fod.rds")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# merge all together
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+phe <- readRDS("D:/data/ukb/Rdata/ukb.phe.rds")
+pc  <- readRDS("D:/data/ukb/Rdata/ukb.pc.rds")
+icd <- readRDS("D:/data/ukb/Rdata/ukb.icd.rds")
+srd <- readRDS("D:/data/ukb/Rdata/ukb.srd.rds")
+fod <- readRDS("D:/data/ukb/Rdata/ukb.fod.rds")
+gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds") 
+hla <- readRDS("D:/data/ukb/Rdata/ukb.hla.rds") #hla <- hla %>% select(which(colMeans(.,na.rm=T) >=0.02))
+prs0 <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T); prs <- subset(prs0, select=grepl("^eid$|score_sum$|allele_cnt$", names(prs0)))
+dat0 <- Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, pc, icd, srd, fod, gen, prs)) %>% filter(eid>0)
+dat0 <- dat0 %>% mutate(
+		walk_pace=4 - walk_pace, across(grep("walk", names(dat0), value=T), ~factor(.x)),
+		walk_pace=factor(walk_pace, labels=c("brisk","steady", "slow")),
+		icdDate_vte2=as.Date(ifelse(!is.na(icdDate_vte), as.character(icdDate_vte), ifelse(!is.na(srdYear_vte), (paste0(srdYear_vte,"-07-01")), ifelse(!is.na(srdAge_vte) & srdAge_vte >0, paste0(birth_year+srdAge_vte,"-07-01"), NA))))
+	) 
+saveRDS(dat0, file="D:/data/ukb/Rdata/all.Rdata")
+# 做一点 sanity check
+table(phe$ethnicity, phe$ethnic_cat, useNA="always")
+	naniar::gg_miss_var(subset(phe, select=grep("sex|bb_", names(phe), value=TRUE)), facet=sex)
+	hist(phe$bmi_diff, nclass=100)
+group_by(dat0, abo, se) %>% summarise(count=n(), mean=mean(bb_TES, na.rm=TRUE))
+	aggregate(bb_TES ~ abo*se, dat0, FUN=function(x) {round(c(length(x), mean(x), sd(x), quantile(x,probs=c(0,0.5,1))), 2)} )
+	bp <- boxplot(bb_TES ~ abo*se, dat0, las=2, col=rainbow(6), font=2); bp$stats
+	dat0 %>% drop_na(abo, se) %>% ggplot(aes(x=abo, y=bb_TES, fill=se)) + geom_boxplot() + stat_summary(fun.y=mean, color="darkred", position=position_dodge(0.75), geom="point", shape=18, size=3)
+dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(dat0), value=TRUE)) %>% na.omit() %>% dplyr::sample_n(10000)
+	car::scatterplotMatrix(dat, spread=FALSE, smoother.args=list(lty=0.1))
+	psych::pairs.panels(dat)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 生成GWAS所需的表型数据
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+dat <- dat0 %>% filter(ethnic_cat=="White") %>% rename(IID=eid) %>% 
+	mutate(
+		FID = IID,
+		bald12 = ifelse(bald==1,0, ifelse(bald==2,1,NA)),
+		bald13 = ifelse(bald==1,0, ifelse(bald==3,1,NA)),
+		bald14 = ifelse(bald==1,0, ifelse(bald==4,1,NA)),
+		bald134 = ifelse(bald==1,0, ifelse(bald==3 | bald==4,1,NA)),
+		bald1234 = ifelse(bald==1,0, 1),
+		sexp25 =ifelse(sex_partner > 5, 1, ifelse(sex_partner>2, NA,0)),
+		sexp35 =ifelse(sex_partner > 5, 1, ifelse(sex_partner>3, NA,0)),
+		death60 = ifelse(!is.na(lifespan) & lifespan <=60, 1, ifelse(age_2021>=70, 0, NA))
+		# lifespan里面的"绝大多数"是NA，第一个ifelse()如果不用 !is.na(lifespan)，那"绝大多数"就直接变成NA了，后面的">=80"就没用了
+	) %>%
+	dplyr::select(FID, IID, age, sex, PC1, PC2, PC3, PC4, bmi, height, leg, chunk, leg_ratio, leg_ratio_adj, chunk_ratio, chunk_ratio_adj, walk_pace, walk_brisk, bald12, bald13, bald14, bald134, bald1234, sexp25, sexp35, death60)
+	write.table(dat, "ukb.pheno", append=FALSE, quote=FALSE, row.names=FALSE)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# find trio
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ped <- subset(dat0, ethnicity_gen==1, select=c("eid", "age", "sex", "birth_year"))
+kin <- read.table("D:/data/ukb/phe/common/ukb.kin0", header=T, as.is=T) %>% 
+	subset(ID1>0 & InfType=="PO", select=c("ID1", "ID2"))
+dat <- merge(ped, kin, by.x="eid", by.y="ID1")
+dat <- merge(ped, dat, by.x="eid", by.y="ID2") %>% 
+	subset(abs(age.x - age.y)> 18) %>% rename(eid.x=eid) %>%
+	mutate(
+		child = ifelse(age.x > age.y, eid.y, eid.x),
+		father = ifelse(eid.x==child & sex.y==1, eid.y, ifelse(eid.y==child & sex.x==1, eid.x, NA)),
+		mother = ifelse(eid.x==child & sex.y==0, eid.y, ifelse(eid.y==child & sex.x==0, eid.x, NA))
+	)
+father <- subset(dat, !is.na(father), select=c("child", "father"))
+mother <- subset(dat, !is.na(mother), select=c("child", "mother"))
+trio <- merge(father, mother)
