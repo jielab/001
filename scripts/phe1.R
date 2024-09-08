@@ -3,7 +3,6 @@ pacman::p_load(data.table, tidyverse, stringr, crosswalkr, lubridate)
 indir="D:/data/ukb/phe/"
 dates_bad=as.Date(c("1900-01-01", "1901-01-01", "1902-02-02", "1903-03-03", "1999-01-01", "2037-07-07"))
 
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # main PHE
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -53,7 +52,6 @@ phe <- phe0 %>%
 		walk_time = factor(walk_time, levels=c("short", "average", "long")),
 		birth_year = ifelse((birth_year<1936 | birth_year>1970), NA, birth_year), # 1934年1个，1971年2个，去掉
 		birth_5year = cut(birth_year, breaks=seq(1935,1970,5)),
-		age_2021 = 2021-birth_year, age_2021 = ifelse(is.na(date_lost) & is.na(date_death), age_2021, NA),
 		age_facial = factor(age_facial, labels=c("young", "old", "normal")),
 		lifespan = year(date_death) - birth_year
 	)
@@ -186,27 +184,9 @@ dat <- dat0 %>% filter(ethnic_cat=="White") %>% rename(IID=eid) %>%
 		bald1234 = ifelse(bald==1,0, 1),
 		sexp25 =ifelse(sex_partner > 5, 1, ifelse(sex_partner>2, NA,0)),
 		sexp35 =ifelse(sex_partner > 5, 1, ifelse(sex_partner>3, NA,0)),
+		age_2021 = 2021-birth_year, age_2021 = ifelse(is.na(date_lost) & is.na(date_death), age_2021, NA),
 		death60 = ifelse(!is.na(lifespan) & lifespan <=60, 1, ifelse(age_2021>=70, 0, NA))
 		# lifespan里面的"绝大多数"是NA，第一个ifelse()如果不用 !is.na(lifespan)，那"绝大多数"就直接变成NA了，后面的">=80"就没用了
 	) %>%
 	dplyr::select(FID, IID, age, sex, PC1, PC2, PC3, PC4, bmi, height, leg, chunk, leg_ratio, leg_ratio_adj, chunk_ratio, chunk_ratio_adj, walk_pace, walk_brisk, bald12, bald13, bald14, bald134, bald1234, sexp25, sexp35, death60)
 	write.table(dat, "ukb.pheno", append=FALSE, quote=FALSE, row.names=FALSE)
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# find trio
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ped <- subset(dat0, ethnicity_gen==1, select=c("eid", "age", "sex", "birth_year"))
-kin <- read.table("D:/data/ukb/phe/common/ukb.kin0", header=T, as.is=T) %>% 
-	subset(ID1>0 & InfType=="PO", select=c("ID1", "ID2"))
-dat <- merge(ped, kin, by.x="eid", by.y="ID1")
-dat <- merge(ped, dat, by.x="eid", by.y="ID2") %>% 
-	subset(abs(age.x - age.y)> 18) %>% rename(eid.x=eid) %>%
-	mutate(
-		child = ifelse(age.x > age.y, eid.y, eid.x),
-		father = ifelse(eid.x==child & sex.y==1, eid.y, ifelse(eid.y==child & sex.x==1, eid.x, NA)),
-		mother = ifelse(eid.x==child & sex.y==0, eid.y, ifelse(eid.y==child & sex.x==0, eid.x, NA))
-	)
-father <- subset(dat, !is.na(father), select=c("child", "father"))
-mother <- subset(dat, !is.na(mother), select=c("child", "mother"))
-trio <- merge(father, mother)
