@@ -1,24 +1,24 @@
 #!/bin/bash
 
-dir=/work/sph-huangj/analysis
-pathX=main
+dir=/work/sph-huangj
+pathX=ppp
 pathY=main
 
-for Y in covid_A2 covid_B2 covid_C2 y.cad y.cirrhosis y.dementia y.in y.t2dm y.varicose y.vte; do
-	outdir=$dir/assoc.sum/$Y; mkdir -p $outdir
-	for X in x.bmi x.drink x.education x.smoke; do # height ABO GLP1R walk_pace x.age_fbirth x.age_fsex x.bmi x.crp x.drink x.education x.smoke x.vitad; do
+for Y in bald12 bald13 bald14 bald134 bald1234; do
+	outdir=$dir/analysis/assoc.sum/$Y; mkdir -p $outdir
+	for X in `cd $dir/data/gwas/$pathX/clean; ls *gz | sed 's/\.gz//g'`; do 
+	# height ABO GLP1R walk_pace x.age_fbirth x.age_fsex x.bmi x.crp x.drink x.education x.smoke x.vitad; do
 	# id.1850 id.1853 id.400 id.419 id.432 id.433 id.436
 	if [ $X == $Y ]; then continue; fi
-	for M in bb bc inf mb mb2 met ppp; do
-	if [ $M == $X ]; then continue; fi
-	label="$X-$M-$Y"
+	for pathM in NA; do # bb bc inf mb mb2 met ppp
+	label="$pathX-$pathM-$pathY"
 	if [ -f $outdir/$label.log ]; then echo $label already run; continue; fi
 
 	echo "#!/bin/bash
 	module load python/anaconda3/2020.7 # 调用集群conda环境
 	source activate # 进入conda的base环境
 	conda activate R
-	cat /work/sph-huangj/scripts/main/assoc.sum.R | sed '9 s/?/$pathX/; 10 s/?/$pathY/; 11 s/?/$M/; 12 s/?/$X/; 13 s/?/$Y/; 15 s/?/$label/' > $label.R
+	cat $dir/scripts/main/assoc.sum.R | sed '9 s/?/$pathX/; 10 s/?/$pathY/; 11 s/?/$pathM/; 12 s/?/$X/; 13 s/?/$Y/; 14 s/?/$label/g' > $label.R
 	R CMD BATCH $label.R
 	" > $outdir/$label.cmd
 	cd $outdir

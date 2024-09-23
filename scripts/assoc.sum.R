@@ -1,4 +1,4 @@
-pacman::p_load(foreach, doParallel, data.table, tidyverse, stringi, TwoSampleMR, MendelianRandomization, mrMed)
+pacman::p_load(data.table, tidyverse, stringi, TwoSampleMR, MendelianRandomization, mrMed) # foreach, doParallel
 
 pattern=c('^snp$|^rsid$', '^chr$|^chrom$|^chromosome$', '^bp$|^pos$|^position$|^base_pair_location$', '^ea$|^alt$|^a1$|^effect_allele$', '^nea$|^ref|^allele0$|^a2$|^other_allele$', '^eaf$|^a1freq$|^effect_allele_frequency$', '^n$|^Neff$', '^beta$|^effect$', '^se$|^standard_error', '^p$|^pval$|^p_value$')
 replacement=c('SNP', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P')
@@ -9,10 +9,12 @@ dir='/work/sph-huangj'
 dir.X = paste0(dir,'/data/gwas/?/clean')
 dir.Y = paste0(dir,'/data/gwas/?/clean')
 dir.M = paste0(dir,'/data/gwas/?/clean')
-Xs = '?'
-Ys = '?' 
-Ms = gsub('.gz', '', list.files(path=dir.M, pattern='.gz$')); Ms
-log_file='?.log'
+Xs = '?' # 可以仅是一个变量
+Ys = '?' # 可以仅是一个变量
+log_mr='?.mr.log'; log_mrMed='?.mrMed.log'
+if (grepl("ALL", Xs)) {Xs = gsub('.gz', '', list.files(path=dir.X, pattern='.gz$'))}
+if (grepl("ALL", Ys)) {Ys = gsub('.gz', '', list.files(path=dir.Y, pattern='.gz$'))}
+if (!grepl("NA", dir.M)) {Ms = gsub('.gz', '', list.files(path=dir.M, pattern='.gz$'))}
 n_cores=40
 
 
@@ -66,10 +68,10 @@ mediation <- function(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_file) {
 	X_str=paste0(X, "(", nrow(dat.X.iv), ")"); M_str=paste0(M, "(", nrow(dat.M.iv), ")");
 	write(paste("RES:", X_str, M_str, Y, "|X2Y", nrow(dat.XY), rb(beta.X2Y), rp(p.X2Y), 
 		"|mrMed", paste(rb(res$TE$b), rp(res$TE$p), rb(res$IE$b), rp(res$IE$p), rb(res$DE$b), rp(res$DE$p), rb(res$rho$b), rp(res$rho$p)) # TE, ACME, ADE, Prop(rho)
-		), file=log_file, append=TRUE
+		), file=log_mrMed, append=TRUE
 	)
 }
-		
+
 			
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 基于MR的mediation
@@ -100,13 +102,12 @@ for (Y in Ys) { # 🙍
 		dat.XY <- harmonise_data(dat.X, dat.Y, action=1) 
 		fit.X2Y <- mr(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw")); fit.X2Y 
 		beta.X2Y <- fit.X2Y$b; se.X2Y <- fit.X2Y$se; p.X2Y <- fit.X2Y$pval
-		if(p.X2Y >0.05) { write(paste("SKIP:", X,"NA",Y, nrow(dat.XY), rb(beta.X2Y), rp(p.X2Y), "X2Y not significant !!"), file=log_file, append=TRUE); next } # 🛑
-
+		write(paste(X,Y, nrow(dat.XY), rb(beta.X2Y), rb(se.X2Y), rp(p.X2Y)), file=log_mr, append=TRUE)
+		
+#		if(p.X2Y >0.05) { next } # 🛑
 #		numCores <- detectCores()-1; cl <- makeCluster(numCores); registerDoParallel(cl)
 #		foreach::foreach(M = Ms) %dopar% { # 🐎
-		for (M in Ms) {
-			mediation(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_file)
-		}
+#		for (M in Ms) { mediation(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_file) }
 #		stopCluster(cl)
 	}
 }
