@@ -28,9 +28,10 @@ dat %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
 
 ## #1.2. 1000 genomes (千人基因组) genotype 数据， 一般作为 imputation 的 reference panel.
 
-> 在[千人基因组官网](https://www.internationalgenome.org/data) 下载 Phase 3 对应的 VCF 链接，
+> 在[千人基因组官网](https://www.internationalgenome.org/data) 下载 Phase 3 对应的 VCF [链接](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/)，GRCh37版本。
+> 该数据是用[GATK](https://gatk.broadinstitute.org/hc/en-us)平台生成，用的reference genome 来自[GATK resource bundle](https://gatk.broadinstitute.org/hc/en-us/articles/360035890811-Resource-bundle).
 > 有一个文件罗列了每一个样本的人群（pop）和人种 (super_pop)，以及性别，可以用PLINK --keep 选取特定人种的样本。
-> 下载下来的数据，有将近一个亿的SNP，每个染色体都是单独的文件。后续跑 GWAS 或提取 PRS 的时候，也是每条染色体的数据分开来跑。
+> 下载下来的数据，有将近一个亿的SNP，每个染色体都是单独的文件。 后续运行 GWAS 或计算 PRS 的时候，也是每条染色体的数据分开来跑。
 > PLINK的网站上也有“1000 genomes phase3” 数据。PLINK 不允许 SNP 名字有重复，可以用下面的命令来处理。
 ```
 awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim.COPY > chr1.bim 
