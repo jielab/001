@@ -29,7 +29,7 @@ fit.mr <- ivreg::ivreg(Y ~ X | G, data = dat) # 可以是 G1+G2+G3
 # MR: 因"二"流行 (TwoSampleMR)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat.X.file <- 'D:/data/gwas/main/clean/a01.1e-3'
-dat.Y.file <- 'D:/data/gwas/main/clean/y.cad.gz'
+dat.Y.file <- 'D:/data/gwas/main/clean/y.t2dm.gz'
 dat.X.raw <- read.table(dat.X.file, header=T)
 	names(dat.X.raw) <- stri_replace_all_regex(toupper(names(dat.X.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
 	dat.X.sig <- dat.X.raw %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+05))
@@ -41,19 +41,20 @@ dat.Y.raw <- read.table(dat.Y.file, header=T)
  	dat.Y <- dat.Y.raw %>% merge(dat.X.iv, by="SNP") %>% 
 	format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
 dat <- harmonise_data(dat.X, dat.Y, action=1) 
+	# F <- beta.exposure^2 / se.exposure^2
 dat.radial <- format_radial(dat$beta.exposure, dat$beta.outcome, dat$se.exposure, dat$se.outcome, dat$SNP)
 	ivw.radial <- ivw_radial(dat.radial, 0.05/nrow(dat.radial), 3, 0.0001)
 	egg.radial <- egger_radial(dat.radial, 0.05/nrow(dat.radial), 3); egg.radial$outliers
 	plot_radial(c(ivw.radial, egg.radial), T, F, F)
-res <- mr(dat); res; # generate_odds_ratios(res) # 置信区间
-	mr(dat, method_list = c("mr_ivw", "mr_egger_regression", "mr_egger_regression_bootstrap"))
-	mr_pleiotropy_test(dat) # 输出 egger_intercept
+	mr_heterogeneity(dat); mr_heterogeneity(dat, method_list=c("mr_ivw"))$Q_pval
+	mr_pleiotropy_test(dat); mr_pleiotropy_test(dat)$pval # 输出 egger_intercept
+res <- mr(dat); res
+	generate_odds_ratios(res) # 置信区间
+	mr(dat, method_list = c("mr_ivw", "mr_ivw_radial", "mr_egger_regression"))
 	run_mr_presso(dat)
-	mr_heterogeneity(dat) # differences in the effect sizes of genetic variants across studies
 	mr_scatter_plot(res, dat)[[1]]
-	res.single <- mr_singlesnp(dat)
-	mr_forest_plot(res.single)[[1]]
-	mr_funnel_plot(res.single)
+	mr_forest_plot(mr_singlesnp(dat))[[1]]
+	mr_funnel_plot(mr_singlesnp(dat))
 dat.bsmr <- dat_to_MRInput(dat)[[1]]
 	mr_plot(dat.bsmr, interactive=F)
 	mr_plot(mr_allmethods( dat.bsmr, method="main", iterations = 50)) # method="all"
