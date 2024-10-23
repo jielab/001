@@ -28,8 +28,8 @@ fit.mr <- ivreg::ivreg(Y ~ X | G, data = dat) # 可以是 G1+G2+G3
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MR: 因"二"流行 (TwoSampleMR)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat.X.file <- 'D:/data/gwas/main/ppp_ABO.gz'
-dat.Y.file <- 'D:/data/gwas/main/covid_B2.EUR.gz'
+dat.X.file <- 'D:/data/gwas/main/clean/a01.1e-3'
+dat.Y.file <- 'D:/data/gwas/main/clean/y.cad.gz'
 dat.X.raw <- read.table(dat.X.file, header=T)
 	names(dat.X.raw) <- stri_replace_all_regex(toupper(names(dat.X.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
 	dat.X.sig <- dat.X.raw %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+05))
@@ -47,7 +47,9 @@ dat.radial <- format_radial(dat$beta.exposure, dat$beta.outcome, dat$se.exposure
 	plot_radial(c(ivw.radial, egg.radial), T, F, F)
 res <- mr(dat); res; # generate_odds_ratios(res) # 置信区间
 	mr(dat, method_list = c("mr_ivw", "mr_egger_regression", "mr_egger_regression_bootstrap"))
-	mr_pleiotropy_test(dat); mr_heterogeneity(dat)
+	mr_pleiotropy_test(dat) # 输出 egger_intercept
+	run_mr_presso(dat)
+	mr_heterogeneity(dat) # differences in the effect sizes of genetic variants across studies
 	mr_scatter_plot(res, dat)[[1]]
 	res.single <- mr_singlesnp(dat)
 	mr_forest_plot(res.single)[[1]]
