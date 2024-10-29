@@ -14,11 +14,11 @@ phe0 <- phe0 %>%
 	dplyr::select(grep("eid|\\.0.0", names(phe0), value=T), f.48.2.0, f.49.2.0, f.21001.2.0) # 目前只保留 baseline 数据
 	dates <- names(phe0)[sapply(phe0, is.Date)]; summary(phe0[,dates]) # check invalid dates
 	for (date1 in dates) { phe0[[date1]][phe0[[date1]] %in% dates_bad] <- NA }
-vip <- read.table(paste0(indir,"/common/ukb.vip.dat"), header=FALSE, flush=TRUE)
-	vip$V1[duplicated(vip$V1)]; vip$V2[duplicated(vip$V2)] #check duplication
+vip.dat <- read.table(paste0(indir,"/common/ukb.vip.dat"), header=FALSE, flush=TRUE)
+	vip.dat$V1[duplicated(vip.dat$V1)]; vip.dat$V2[duplicated(vip.dat$V2)] #check duplication
 	fid <- as.data.frame(names(phe0)[-1]); names(fid)="id1"
 	fid[c('f0','f1','f2')] <- stringr::str_split_fixed(fid$id1, "\\.", 3)
-	fid <- merge(fid, vip, by.x="f1", by.y="V1", all.x=TRUE) %>% mutate(id2 = ifelse(f2=="0.0", V2, paste0(V2,".",f2))) 
+	fid <- merge(fid, vip.dat, by.x="f1", by.y="V1", all.x=TRUE) %>% mutate(id2 = ifelse(f2=="0.0", V2, paste0(V2,".",f2))) 
 phe0 <- phe0 %>% crosswalkr::renamefrom(fid, id1, id2, drop_extra=F) %>% 
 	filter(eid>0) %>% rename(chunk=height_sitting) 
 phe <- phe0 %>% 
@@ -77,16 +77,16 @@ source(paste0(indir,"/raw-670287/icd10.r")); icd <- bd
 source(paste0(indir,"/raw-670287/icd10Date.r")); icdDate <- bd; bd <- NULL
 dates <- names(icdDate)[sapply(icdDate, is.Date)]; summary(icdDate[,-1])
 for (date1 in dates) { icdDate[[date1]][icdDate[[date1]] %in% as.Date(c("1900-01-01", "1999-01-01"))] <- NA }
-vip <- read.table(paste0(indir,"/common/ukb.vip.icd"), header=F, flush=T) %>% rename(trait=V1, code=V2)
+vip.icd <- read.table(paste0(indir,"/common/ukb.vip.icd"), header=F, flush=T) %>% rename(trait=V1, code=V2)
 dat <- subset(icd, select=f.eid) %>% rename(eid=f.eid)
-for (i in 1:nrow(vip)) {
+for (i in 1:nrow(vip.icd)) {
 	datCode <- icd[,-1]
 	datDate <- icdDate[,-1]
-	exclude <- apply(datCode, 2, function(x){!grepl(vip$code[i],x)}) # 2 或者 1:2 得到 same dimension
+	exclude <- apply(datCode, 2, function(x){!grepl(vip.icd$code[i],x)}) # 2 或者 1:2 得到 same dimension
 	datCode[exclude] <- NA
 	datDate[exclude] <- NA
-	dat[[paste0("icdCt_",vip$trait[i])]] <- apply(datCode, 1, function(x){sum(!is.na(x))}) # apply 1
-	dat[[paste0("icdDate_",vip$trait[i])]] <- as.Date(apply(datDate, 1, FUN=min, na.rm=T)) 
+	dat[[paste0("icdCt_",vip.icd$trait[i])]] <- apply(datCode, 1, function(x){sum(!is.na(x))}) # apply 1
+	dat[[paste0("icdDate_",vip.icd$trait[i])]] <- as.Date(apply(datDate, 1, FUN=min, na.rm=T)) 
 }
 dat$icdDate_vte <- as.Date(apply(subset(dat, select=c(icdDate_dvt, icdDate_pe)), 1, FUN=min, na.rm=T))
 hist(dat$icdDate_covid, breaks="weeks", freq=TRUE)
@@ -98,19 +98,19 @@ saveRDS(dat, file="D:/data/ukb/Rdata/ukb.icd.rds")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source(paste0(indir,"/raw-670287/srd.r")); srd <- bd
 source(paste0(indir,"/raw-670287/srdTime.r")); srdTime <- bd; bd <- NULL
-vip <- read.table(paste0(indir,"/common/ukb.vip.srd"), header=F, flush=T) %>% rename(trait=V1, code=V2)
+vip.srd <- read.table(paste0(indir,"/common/ukb.vip.srd"), header=F, flush=T) %>% rename(trait=V1, code=V2)
 dat <- subset(srd, select=f.eid) %>% rename(eid=f.eid)
-for (i in 1:nrow(vip)) {
+for (i in 1:nrow(vip.srd)) {
 	datCode <- srd[,-1]
 	datAge <- sapply(srdTime[,-1], as.numeric)
 	datYear <- sapply(srdTime[,-1], as.numeric)
-	exclude <- apply(datCode, 2, function(x){!grepl(vip$code[i],x)}) 
+	exclude <- apply(datCode, 2, function(x){!grepl(vip.srd$code[i],x)}) 
 	datCode[exclude] <- NA
 	datAge[exclude] <- NA; datAge[datAge >100] <- NA
 	datYear[exclude] <- NA; datYear[datYear <1930] <- NA
-	dat[[paste0("srdCt_",vip$trait[i])]] <- apply(datCode, 1, function(x){sum(!is.na(x))})
-	dat[[paste0("srdAge_",vip$trait[i])]] <- apply(datAge, 1, FUN=min, na.rm=TRUE)
-	dat[[paste0("srdYear_",vip$trait[i])]] <- apply(datYear, 1, FUN=min, na.rm=TRUE)
+	dat[[paste0("srdCt_",vip.srd$trait[i])]] <- apply(datCode, 1, function(x){sum(!is.na(x))})
+	dat[[paste0("srdAge_",vip.srd$trait[i])]] <- apply(datAge, 1, FUN=min, na.rm=TRUE)
+	dat[[paste0("srdYear_",vip.srd$trait[i])]] <- apply(datYear, 1, FUN=min, na.rm=TRUE)
 }
 dat[sapply(dat, is.infinite)] <- NA #!!
 saveRDS(dat, file="D:/data/ukb/Rdata/ukb.srd.rds")
@@ -124,17 +124,17 @@ dates <- names(bd)[sapply(bd, is.Date)]; summary(bd[,dates])
 for (date1 in dates) { bd[[date1]][bd[[date1]] %in% dates_bad] <- NA }
 icdField <- read.table(paste0(indir,"/common/ukb.icd-dataField.txt"), header=F) %>%
 	rename(icd=V1, field=V2)
-vip <- read.table(paste0(indir,"/common/ukb.vip.fod"), header=F, flush=T) %>% 
+vip.fod <- read.table(paste0(indir,"/common/ukb.vip.fod"), header=F, flush=T) %>% 
 	rename(trait=V1, code=V2) %>% 
 	mutate(first=gsub("-.*", "", code), last=gsub(".*-", "", code)) %>%
 	merge(icdField, by.x="first", by.y="icd", all.x=T) %>%
 	merge(icdField, by.x="last", by.y="icd", all.x=T) %>%
 	mutate(first=ifelse(!is.na(field.x), field.x, first), last =ifelse(!is.na(field.y), field.y, last))
 fields_all <- read.table(paste0(indir,"/raw-50136/fields.ukb"), header=F)
-for (i in 1:nrow(vip)) {
-	fields <- paste0("f.", subset(fields_all, V1 >=vip[i,"first"] & V1 <=vip[i,"last"] & V1%%2==0)$V1, ".0.0")
+for (i in 1:nrow(vip.fod)) {
+	fields <- paste0("f.", subset(fields_all, V1 >=vip.fod[i,"first"] & V1 <=vip.fod[i,"last"] & V1%%2==0)$V1, ".0.0")
 	subdata <- subset(bd, select=fields)
-	bd[[paste0("fod_",vip$trait[i])]] <- as.Date(apply(subdata, 1, FUN=min, na.rm=T)) 
+	bd[[paste0("fod_",vip.fod$trait[i])]] <- as.Date(apply(subdata, 1, FUN=min, na.rm=T)) 
 }
 fod <- subset(bd, select=grep("eid|fod_", names(bd), value=T)) %>% rename(eid=f.eid)
 saveRDS(fod, file="D:/data/ukb/Rdata/ukb.fod.rds")
@@ -152,11 +152,18 @@ gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds")
 hla <- readRDS("D:/data/ukb/Rdata/ukb.hla.rds") #hla <- hla %>% select(which(colMeans(.,na.rm=T) >=0.02))
 prs0 <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T); prs <- subset(prs0, select=grepl("^eid$|score_sum$|allele_cnt$", names(prs0)))
 dat0 <- Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, pc, icd, srd, fod, gen, prs)) %>% filter(eid>0)
-dat0 <- dat0 %>% mutate(
+dat0 <- dat0 %>% 
+	mutate(
 		walk_pace=4 - walk_pace, across(grep("walk", names(dat0), value=T), ~factor(.x)),
 		walk_pace=factor(walk_pace, labels=c("brisk","steady", "slow")),
-		icdDate_vte2=as.Date(ifelse(!is.na(icdDate_vte), as.character(icdDate_vte), ifelse(!is.na(srdYear_vte), (paste0(srdYear_vte,"-07-01")), ifelse(!is.na(srdAge_vte) & srdAge_vte >0, paste0(birth_year+srdAge_vte,"-07-01"), NA))))
-	) 
+	)
+for (t in vip.srd$trait) {
+	dat0[[paste0("icdDate2_",t)]]=as.Date(
+		ifelse(!is.na(dat0[[paste0("icdDate_",t)]]), as.character(dat0[[paste0("icdDate_",t)]]), 
+		ifelse(!is.na(dat0[[paste0("srdYear_",t)]]), (paste0(dat0[[paste0("srdYear_",t)]],"-07-01")), 
+		ifelse(!is.na(dat0[[paste0("srdAge_",t)]]) & dat0[[paste0("srdAge_",t)]] >0, paste0(dat0$birth_year+dat0[[paste0("srdAge_",t)]],"-07-01"), NA)))
+	)
+}	
 saveRDS(dat0, file="D:/data/ukb/Rdata/all.Rdata")
 
 
