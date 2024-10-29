@@ -152,13 +152,8 @@ gen <- readRDS("D:/data/ukb/Rdata/ukb.gen.rds")
 hla <- readRDS("D:/data/ukb/Rdata/ukb.hla.rds") #hla <- hla %>% select(which(colMeans(.,na.rm=T) >=0.02))
 prs0 <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T); prs <- subset(prs0, select=grepl("^eid$|score_sum$|allele_cnt$", names(prs0)))
 dat0 <- Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, pc, icd, srd, fod, gen, prs)) %>% filter(eid>0)
-dat0 <- dat0 %>% 
-	mutate(
-		walk_pace=4 - walk_pace, across(grep("walk", names(dat0), value=T), ~factor(.x)),
-		walk_pace=factor(walk_pace, labels=c("brisk","steady", "slow")),
-	)
 for (t in vip.srd$trait) {
-	dat0[[paste0("icdDate2_",t)]]=as.Date(
+	dat0[[paste0("icdDate_",t,"2")]]=as.Date(
 		ifelse(!is.na(dat0[[paste0("icdDate_",t)]]), as.character(dat0[[paste0("icdDate_",t)]]), 
 		ifelse(!is.na(dat0[[paste0("srdYear_",t)]]), (paste0(dat0[[paste0("srdYear_",t)]],"-07-01")), 
 		ifelse(!is.na(dat0[[paste0("srdAge_",t)]]) & dat0[[paste0("srdAge_",t)]] >0, paste0(dat0$birth_year+dat0[[paste0("srdAge_",t)]],"-07-01"), NA)))
