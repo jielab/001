@@ -28,18 +28,18 @@ fit.mr <- ivreg::ivreg(Y ~ X | G, data = dat) # 可以是 G1+G2+G3
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MR: 因"二"流行 (TwoSampleMR)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat.X.file <- 'D:/data/gwas/main/clean/a01.1e-3'
-dat.Y.file <- 'D:/data/gwas/main/clean/y.t2dm.gz'
+dat.X.file <- 'D:/data/gwas/main/clean/ABO.gz'
+dat.Y.file <- 'D:/data/gwas/main/clean/x.bmi.gz'
 dat.X.raw <- read.table(dat.X.file, header=T)
 	names(dat.X.raw) <- stri_replace_all_regex(toupper(names(dat.X.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
 	dat.X.sig <- dat.X.raw %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+05))
 	dat.X.iv <- dat.X.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
 	dat.X <- dat.X.raw %>% merge(dat.X.iv, by="SNP") %>% 
-	format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
+		format_data(type='exposure', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P') 
 dat.Y.raw <- read.table(dat.Y.file, header=T)
 	names(dat.Y.raw) <- stri_replace_all_regex(toupper(names(dat.Y.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
  	dat.Y <- dat.Y.raw %>% merge(dat.X.iv, by="SNP") %>% 
-	format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
+		format_data(type='outcome', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P') 
 dat <- harmonise_data(dat.X, dat.Y, action=1) 
 	# F <- beta.exposure^2 / se.exposure^2
 dat.radial <- format_radial(dat$beta.exposure, dat$beta.outcome, dat$se.exposure, dat$se.outcome, dat$SNP)
@@ -56,16 +56,22 @@ res <- mr(dat); res
 	mr_forest_plot(mr_singlesnp(dat))[[1]]
 	mr_funnel_plot(mr_singlesnp(dat))
 dat.bsmr <- dat_to_MRInput(dat)[[1]]
-	mr_plot(dat.bsmr, interactive=F)
+	mr_plot(dat.bsmr, interactive=F) # 可用于比较两个数据
 	mr_plot(mr_allmethods( dat.bsmr, method="main", iterations = 50)) # method="all"
 	mr_forest(dat.bsmr, snp_estimates=F, methods=c("ivw", "median", "wmedian", "egger", "maxlik", "conmix")) 
 	+ scale_colour_manual(values = c("IVW estimate"="red")) + theme(axis.title.y=element_text(size=20, face="bold"), axis.title.x=element_text(size=10, face="bold"), axis.text.x=element_text(size=10, face="bold"), axis.text.y=element_text(size=15, face="bold"))
-# 比较两个数据
-dat.X <- read.table("D:/data/gwas/main/clean/bald0.top.txt", header=T) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
-dat.Y <- read.table("D:/data/gwas/main/clean/bald0.NEW.top.txt", header=T) %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') 
+# 延申功能 --> coloc分析 🏂
+library(coloc); library(gassocplot) # data(coloc_test_data)
+CHR=9; flank=100000; BEGIN=136130562-flank; END=136150630+flank
+	dat.X <- dat.X.raw %>% filter(CHR==CHR, POS>=BEGIN, POS<=END) %>% format_data(type='exposure', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P') 
+	dat.Y <- dat.Y.raw %>% filter(CHR==CHR, POS>=BEGIN, POS<=END) %>% format_data(type='outcome', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P') 
 dat <- harmonise_data(dat.X, dat.Y, action=1) 
-dat.bsmr <- dat_to_MRInput(dat)[[1]]
-mr_plot(dat.bsmr, interactive=F)
+	dat.coloc.X <- dat %>% {list(type="quant", snp=.$SNP, position=.$pos.exposure, MAF=.$eaf.exposure, N=.$samplesize.exposure, beta=.$beta.exposure, varbeta =.$se.exposure^2, pvalues=.$pval.exposure)}
+	dat.coloc.Y <- dat %>% {list(type="cc", snp=.$SNP, position=.$pos.outcome, MAF=.$eaf.outcome, N=100000, beta=.$beta.outcome, varbeta =.$se.outcome^2, pvalues=.$pval.outcome)}
+fit.coloc <- coloc::coloc.abf(dat.coloc.X, dat.coloc.Y)
+	t(as.data.frame(fit.coloc[["summary"]])) 
+par(mfrow = c(2,1)); plot_dataset(dat.coloc.X); plot_dataset(dat.coloc.Y)
+	sensitivity(fit.coloc,"H4>0.9")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
