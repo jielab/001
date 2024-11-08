@@ -176,44 +176,25 @@ python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA
 > - 一天发了7篇 NATURE系列文章的Gnomad项目的 browser: https://gnomad.broadinstitute.org/ 
 > - 带”Global“的 GlobalBiobankEngine：https://github.com/rivas-lab 
 
-理论学习
-> 进化对人类疾病的影响：
-> > - Y 2021. Nature Review Genetics. [The influence of evolutionary history on human health and disease](https://www.nature.com/articles/s41576-020-00305-9)
-> > - Y 2023. Science Bulletin. [Recent positive selection signatures reveal phenotypic evolution in the Han Chinese population](https://www.sciencedirect.com/science/article/pii/S2095927323005558)
 
 GWAS-PRS-MR ”三驾马车“ 入门：
 > GWAS:
-> > - Y 2006. Nature Review Genetics. [A tutorial on statistical methods for population association studies](https://pubmed.ncbi.nlm.nih.gov/16983374/)
-> > - Y 2014. Nature Protocols. [Quality control and conduct of genome-wide association meta-analyses](https://www.nature.com/articles/nprot.2014.071)
 > > - Y 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 > > - [芬兰赫尔辛基大学 GWAS 课程](https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/)
-
+> > - 🏮中文版🏮[gwaslab.org](https://gwaslab.org)
 > PRS:
 > > - Y 2019. Lancet Respiratory Medicine. [Identification of risk loci and a polygenic risk score for lung cancer: a large-scale prospective cohort study in Chinese populations](pubmed.ncbi.nlm.nih.gov/31326317/)
 > > - Y 2020. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
-> > - Y 2022. EHJ. [A polygenic risk score improves risk stratification of coronary artery disease: a large-scale prospective Chinese cohort study](pubmed.ncbi.nlm.nih.gov/35195259/)
-> > - Y 2023. Nature Medicine. [A multi-ancestry polygenic risk score improves risk prediction for coronary artery disease](https://www.nature.com/articles/s41591-023-02429-x)
-
 > MR：
-> > - Y 2012. 经典案例 Lancet. [Plasma HDL cholesterol and risk of myocardial infarction: a mendelian randomisation study](https://pubmed.ncbi.nlm.nih.gov/22607825/)
 > > - Y 2017. 一篇解读我的PRIMe方法的文章 Ele Zeggini. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
-> > - Y 2021. 通过MR进行中介分析 [Mendelian randomisation for mediation analysis: current methods and challenges for implementation](https://pubmed.ncbi.nlm.nih.gov/33961203/)
 > > - Y 2022. 入门必读 Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
-> > - Y 2023. 一篇非常简单的JAMA子刊 JAMA Psychiatry. [Association of Genetically Predicted Insomnia With Risk of Sepsis](https://jamanetwork.com/journals/jamapsychiatry/fullarticle/2807954)
 
 <br/>
 
 
 一些有用、有趣的实用工具：
 > - [The R Graph Gallery](https://r-graph-gallery.com/index.html)
-> - [Doing and reporting your first mediation analysis in R](https://towardsdatascience.com/doing-and-reporting-your-first-mediation-analysis-in-r-2fe423b92171)
-> - [Add P-values and Significance Levels to ggplots](https://www.r-bloggers.com/2017/06/add-p-values-and-significance-levels-to-ggplots/)
 > - [Top 100 R resources on COVID-19 Coronavirus](https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/)
 > - 以及 scitb, CanvasXpress, modelSummary, forplo，sankey diagram, CellChat, ComplexHeatmap，等等
 <br/>
 <br/>
-
-## 代码中的数字揭秘：
-> - X2Y: X到Y
-> - Y4x: Y中数据中为(for)了X的部分，里面并没有X的数据，因此小写x。
-> - dat0 原始数据，很大，不要多次读取； dat正常分析用的数据； dat1 临时数据，在loop里面使用，要不然在loop外面和里面都用dat，会出问题。

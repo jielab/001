@@ -4,15 +4,16 @@ appID=66137 # 整个项目的ID，需要写到文章的致谢部分。
 # 1. ukbunpack 打开包裹
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 上面两个 ukbunpack 命令可分开跑，跑完后分别跑下面的 unkbconvt 命令。
+Run ID=48807 # Basket 2014862
+    md5sum=eeff5373a57254ec5a0487e4ea2a943d
+    key=e64a3f78*1c2c8*00ed4ecfbe9a4f*2c0b5115aeb77e1cb1eba01f3d*e3463af
 runID=50136 # Basket 2016432
 	md5sum=981b47f85c6b2fb849320c7a3559ba23
 	key=fd5b09bb6f6db*e9e0774e91f81*af1a2d9e*aea3ddad*2a2ff6ea60f2f23458
-	echo -e "$appID\n$key" > .ukb.key
-	ukbunpack ukb$runID.enc
 runID=670287 # Basket 4018893
 	md5sum=6cfe4d40d12fdb1b8564dc67ce91ad20
 	key=a93*00fe54833*70898b8e87f96646fdf52f509de2b87248ed1ea92b560c2ba1
-	echo -e "$appID\n$key" > .ukb.key
+echo -e "$appID\n$key" > .ukb.key
 	ukbunpack ukb$runID.enc
 
 
