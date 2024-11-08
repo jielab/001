@@ -178,13 +178,16 @@ python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA
 
 
 GWAS-PRS-MR ”三驾马车“ 入门：
+
 > GWAS:
 > > - Y 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 > > - [芬兰赫尔辛基大学 GWAS 课程](https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/)
 > > - 🏮中文版🏮[gwaslab.org](https://gwaslab.org)
+
 > PRS:
 > > - Y 2019. Lancet Respiratory Medicine. [Identification of risk loci and a polygenic risk score for lung cancer: a large-scale prospective cohort study in Chinese populations](pubmed.ncbi.nlm.nih.gov/31326317/)
 > > - Y 2020. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
+
 > MR：
 > > - Y 2017. 一篇解读我的PRIMe方法的文章 Ele Zeggini. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
 > > - Y 2022. 入门必读 Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
