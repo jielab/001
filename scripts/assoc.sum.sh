@@ -3,26 +3,34 @@
 dir=/work/sph-huangj
 pathX=ppp
 pathY=main
+cis=1 # 通常设为0，当进行PPP的cis-pQTL分析时设为0
 
-for Y in bald12 bald13 bald14 bald134 bald1234; do
+for Y in bald12; do
 	outdir=$dir/analysis/assoc.sum/$Y; mkdir -p $outdir
+
 	for X in `cd $dir/data/gwas/$pathX/clean; ls *gz | sed 's/\.gz//g'`; do 
-	# height ABO GLP1R walk_pace x.age_fbirth x.age_fsex x.bmi x.crp x.drink x.education x.smoke x.vitad; do
-	# id.1850 id.1853 id.400 id.419 id.432 id.433 id.436
+	echo $X
 	if [ $X == $Y ]; then continue; fi
+
 	for pathM in NA; do # bb bc inf mb mb2 met ppp
-	label="$pathX-$pathM-$pathY"
+	label="$X-$pathM-$Y"
 	if [ -f $outdir/$label.log ]; then echo $label already run; continue; fi
 
 	echo "#!/bin/bash
-	module load python/anaconda3/2020.7 # 调用集群conda环境
-	source activate # 进入conda的base环境
+	module load python/anaconda3/2020.7
+	source activate
 	conda activate R
-	cat $dir/scripts/main/assoc.sum.R | sed '9 s/?/$pathX/; 10 s/?/$pathY/; 11 s/?/$pathM/; 12 s/?/$X/; 13 s/?/$Y/; 14 s/?/$label/g' > $label.R
-	R CMD BATCH $label.R
+	cat $dir/scripts/main/assoc.sum.R | sed '9 s/?/$pathX/; 10 s/?/$pathY/; 11 s/?/$pathM/; 13 s/?/$X/; 14 s/?/$Y/; 15 s/?/$label/g' > $label.R
 	" > $outdir/$label.cmd
+	
+	if [ $cis==1 ]; then 
+		read chr pos_begin pos_end < <(awk -v p=$X '$4==p {print $1, $2, $3}' $dir/files/glist-hg19)
+		echo "sed -i '12 s/cis=0/cis=1; chr=$chr; pos_begin=$pos_begin; pos_end=$pos_end; flank=1000000/' $label.R" >> $outdir/$label.cmd
+	fi
+	echo "R CMD BATCH $label.R" >> $outdir/$label.cmd
+
 	cd $outdir
-	bsub -q short -n 40 -J sum.$label -o $label.LOG -e $label.ERR < $label.cmd
+#	bsub -q short -n 40 -J sum.$label -o $label.LOG -e $label.ERR < $label.cmd
 done
 done
 done

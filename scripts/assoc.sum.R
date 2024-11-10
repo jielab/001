@@ -1,5 +1,5 @@
+# devtools::install_github("scllin/mrMed") 
 pacman::p_load(data.table, tidyverse, stringi, TwoSampleMR, MendelianRandomization, mrMed) # foreach, doParallel
-
 pattern=c('^snp$|^rsid$', '^chr$|^chrom$|^chromosome$', '^bp$|^pos$|^position$|^base_pair_location$', '^ea$|^alt$|^a1$|^effect_allele$', '^nea$|^ref|^allele0$|^a2$|^other_allele$', '^eaf$|^a1freq$|^effect_allele_frequency$', '^n$|^Neff$', '^beta$|^effect$', '^se$|^standard_error', '^p$|^pval$|^p_value$')
 replacement=c('SNP', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P')
 pval <- function(b,se) (2*pnorm(-abs(b/se)))
@@ -9,6 +9,7 @@ dir='/work/sph-huangj'
 dir.X = paste0(dir,'/data/gwas/?/clean')
 dir.Y = paste0(dir,'/data/gwas/?/clean')
 dir.M = paste0(dir,'/data/gwas/?/clean')
+cis=0
 Xs = '?' # 可以仅是一个变量
 Ys = '?' # 可以仅是一个变量
 log_mr='?.mr.log'; log_mrMed='?.mrMed.log'
@@ -21,11 +22,6 @@ n_cores=40
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 先定义function
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# mrMed(dat_mrMed, method_list=c('Diff_IVW','Prod_IVW','Prod_IVW_0', 'Prod_Median'))
-# MVMR可参考 https://github.com/yechaojie/mental_aging/tree/main/mediation/MVMR
-#   MRMVInputObject <- mr_mvinput(bx=cbind(dat$beta.M,dat$beta.X), bxse=cbind(dat$se.M,dat$se.X), by=dat$beta.Y, byse=dat$se.Y)
-#   MV-IVW <- mr_mvivw(MRMVInputObject, model='default', correl=FALSE, distribution='normal', alpha=0.05)
-#   MVEGGER <- mr_mvegger(MRMVInputObject, orientate=1, correl=FALSE, distribution='normal', alpha=0.05)	
 mediation <- function(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_file) {
 	# Harmonize dat.X + dat.M + dat.Y
 	dat.M.raw <- read.table(paste0(dir.M, '/', M, '.gz'), header=T)
@@ -74,7 +70,7 @@ mediation <- function(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_file) {
 
 			
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 基于MR的mediation
+# 进行分析
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 for (Y in Ys) { # 🙍
 #	writeLines(paste('\n\n-->Run:', Y))
@@ -84,6 +80,8 @@ for (Y in Ys) { # 🙍
 	for (X in Xs) { # 🍷
 		dat.X.raw <- read.table(paste0(dir.X, '/', X, '.gz'), header=T)
 		names(dat.X.raw) <- stri_replace_all_regex(toupper(names(dat.X.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
+		if (cis==1) { dat.X.raw <- subset(dat.X.raw, CHR==chr & POS>=(pos_begin-flank) & POS<=(pos_begin+flank)) }
+
 		if (file.exists(paste0(dir.X, '/', X, '.top.snp'))) {
 			dat.X.iv <- read.table(paste0(dir.X, '/', X, '.top.snp'), header=T); names(dat.X.iv) <- "SNP" 
 		} else if (file.exists(paste0(dir.X, '/', X, '.NEW.top.snp'))) {
@@ -101,13 +99,13 @@ for (Y in Ys) { # 🙍
 		# Harmonize dat.X + dat.Y, 并计算 Total effect
 		dat.XY <- harmonise_data(dat.X, dat.Y, action=1) 
 		fit.X2Y <- mr(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw")); fit.X2Y 
-		beta.X2Y <- fit.X2Y$b; se.X2Y <- fit.X2Y$se; p.X2Y <- fit.X2Y$pval
-		p.hetero <- mr_heterogeneity(dat, method_list=c("mr_wald_ratio", "mr_ivw"))$Q_pval
-		p.pleio <- mr_pleiotropy_test(dat)$pval
-		write(paste(X,Y, nrow(dat.XY), rb(beta.X2Y), rb(se.X2Y), rp(p.X2Y), rp(p.hetero), rp(p.pleio)), file=log_mr, append=TRUE)
+			beta.X2Y <- fit.X2Y$b; se.X2Y <- fit.X2Y$se; p.X2Y <- fit.X2Y$pval
+			p.hetero <- mr_heterogeneity(dat, method_list=c("mr_wald_ratio", "mr_ivw"))$Q_pval
+			p.pleio <- mr_pleiotropy_test(dat)$pval
+			write(paste(X,Y, nrow(dat.XY), rb(beta.X2Y), rb(se.X2Y), rp(p.X2Y), rp(p.hetero), rp(p.pleio)), file=log_mr, append=TRUE)
 
-		next # 🛑		
-		if(p.X2Y >0.05) { next } # 🛑
+		next # 🛑 if(p.X2Y >0.05)
+	
 		# numCores <- detectCores()-1; cl <- makeCluster(numCores); registerDoParallel(cl)
 		# foreach::foreach(M = Ms) %dopar% { # 🐎
 		for (M in Ms) { mediation(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_file) }
