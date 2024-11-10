@@ -5,7 +5,7 @@ pathX=ppp
 pathY=main
 cis=1 # 通常设为0，当进行PPP的cis-pQTL分析时设为0
 
-for Y in bald12; do
+for Y in bald12 bald13; do
 	outdir=$dir/analysis/assoc.sum/$Y; mkdir -p $outdir
 
 	for X in `cd $dir/data/gwas/$pathX/clean; ls *gz | sed 's/\.gz//g'`; do 
@@ -30,7 +30,7 @@ for Y in bald12; do
 	echo "R CMD BATCH $label.R" >> $outdir/$label.cmd
 
 	cd $outdir
-#	bsub -q short -n 40 -J sum.$label -o $label.LOG -e $label.ERR < $label.cmd
+	bsub -q short -n 40 -J sum.$label -o $label.LOG -e $label.ERR < $label.cmd
 done
 done
 done

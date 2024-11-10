@@ -80,7 +80,7 @@ for (Y in Ys) { # 🙍
 	for (X in Xs) { # 🍷
 		dat.X.raw <- read.table(paste0(dir.X, '/', X, '.gz'), header=T)
 		names(dat.X.raw) <- stri_replace_all_regex(toupper(names(dat.X.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
-		if (cis==1) { dat.X.raw <- subset(dat.X.raw, CHR==chr & POS>=(pos_begin-flank) & POS<=(pos_begin+flank)) }
+		if (cis==1) { dat.X.raw <- subset(dat.X.raw, CHR==chr & POS>=(pos_begin-flank) & POS<=(pos_end+flank)) }
 
 		if (file.exists(paste0(dir.X, '/', X, '.top.snp'))) {
 			dat.X.iv <- read.table(paste0(dir.X, '/', X, '.top.snp'), header=T); names(dat.X.iv) <- "SNP" 
