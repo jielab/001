@@ -100,8 +100,8 @@ for (Y in Ys) { # 🙍
 		dat.XY <- harmonise_data(dat.X, dat.Y, action=1) 
 		fit.X2Y <- mr(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw")); fit.X2Y 
 			beta.X2Y <- fit.X2Y$b; se.X2Y <- fit.X2Y$se; p.X2Y <- fit.X2Y$pval
-			p.hetero <- mr_heterogeneity(dat, method_list=c("mr_wald_ratio", "mr_ivw"))$Q_pval
-			p.pleio <- mr_pleiotropy_test(dat)$pval
+			p.hetero <- mr_heterogeneity(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw"))$Q_pval
+			p.pleio <- mr_pleiotropy_test(dat.XY)$pval
 			write(paste(X,Y, nrow(dat.XY), rb(beta.X2Y), rb(se.X2Y), rp(p.X2Y), rp(p.hetero), rp(p.pleio)), file=log_mr, append=TRUE)
 
 		next # 🛑 if(p.X2Y >0.05)
