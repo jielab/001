@@ -23,8 +23,10 @@ for Y in bald12 bald13; do
 	cat $dir/scripts/main/assoc.sum.R | sed '9 s/?/$pathX/; 10 s/?/$pathY/; 11 s/?/$pathM/; 13 s/?/$X/; 14 s/?/$Y/; 15 s/?/$label/g' > $label.R
 	" > $outdir/$label.cmd
 	
-	if [ $cis==1 ]; then 
-		read chr pos_begin pos_end < <(awk -v p=$X '$4==p {print $1, $2, $3}' $dir/files/glist-hg19)
+	if [ $cis == 1 ]; then 
+		str=`awk -v p=$X '{if ($4==p) print $1, $2, $3}' $dir/files/ppp.glist-hg19`
+		read -r chr pos_begin pos_end <<< $str
+		if [ $chr == "" ]; then continue; fi
 		echo "sed -i '12 s/cis=0/cis=1; chr=$chr; pos_begin=$pos_begin; pos_end=$pos_end; flank=1000000/' $label.R" >> $outdir/$label.cmd
 	fi
 	echo "R CMD BATCH $label.R" >> $outdir/$label.cmd

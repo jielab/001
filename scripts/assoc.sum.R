@@ -22,7 +22,7 @@ n_cores=40
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 先定义function
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-mediation <- function(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_file) {
+mediation <- function(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_mrMed) {
 	# Harmonize dat.X + dat.M + dat.Y
 	dat.M.raw <- read.table(paste0(dir.M, '/', M, '.gz'), header=T)
 	dat.M.4x <- dat.M.raw %>% merge(dat.X.iv) %>% format_data(type='outcome', snp_col='SNP',  effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome=M)
@@ -44,9 +44,9 @@ mediation <- function(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_file) {
 	dat.XM.mv <- harmonise_data(dat.X.mv, dat.M.mv, action=1); names(dat.XM.mv) <- gsub('outcome', 'mediator', names(dat.XM.mv))
 	dat <- merge(dat.XM.mv, dat.XY.mv, by='SNP')
 	bad_row <- subset(dat, effect_allele.exposure.x != effect_allele.exposure.y) %>% nrow()
-	if (bad_row !=0) { write(paste("ERR:", X, Y, M, "X-M-Y have inconsistent alleles !!"), file=log_file, append=TRUE); break }
+	if (bad_row !=0) { write(paste("ERR:", X, Y, M, "X-M-Y have inconsistent alleles !!"), file=log_mrMed, append=TRUE); break }
 	names(dat) <- gsub("\\.x$", "", names(dat)); dat <- subset(dat, select=!grepl("\\.y", names(dat)))
-	if (nrow(dat)==0) { write(paste("SKIP:", X, Y, M, "X-M-Y harmonized data is empty !!"), file=log_file, append=TRUE); break }
+	if (nrow(dat)==0) { write(paste("SKIP:", X, Y, M, "X-M-Y harmonized data is empty !!"), file=log_mrMed, append=TRUE); break }
 	# mrMed 方法 🏮🏮
 	dat1 <- dat
 	names(dat1) <- stri_replace_all_regex(names(dat1), pattern=c("exposure", "mediator", "outcome"), replacement=c("X", "M", "Y"), vectorize_all=FALSE)
@@ -91,7 +91,7 @@ for (Y in Ys) { # 🙍
 			dat.X.iv <- dat.X.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
 			write.table(dat.X.iv, paste0(dir.X, '/', X, '.NEW.top.snp'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 		}
-		if(nrow(dat.X.iv) ==0) {write(paste("SKIP:", X,"NA",Y, "X no IV !!"), file=log_file, append=TRUE); next}
+		if(nrow(dat.X.iv) ==0) {write(paste("SKIP:", X,"NA",Y, "X no IV !!"), file=log_mr, append=TRUE); next}
 		
 		dat.X <- dat.X.raw %>% merge(dat.X.iv) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
 		dat.Y <- dat.Y.raw %>% merge(dat.X.iv, by="SNP") %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)		
@@ -108,7 +108,7 @@ for (Y in Ys) { # 🙍
 	
 		# numCores <- detectCores()-1; cl <- makeCluster(numCores); registerDoParallel(cl)
 		# foreach::foreach(M = Ms) %dopar% { # 🐎
-		for (M in Ms) { mediation(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_file) }
+		for (M in Ms) { mediation(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_mrMed) }
 		# stopCluster(cl)
 	}
 }
