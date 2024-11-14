@@ -20,7 +20,7 @@ for Y in bald12 bald13; do
 	module load python/anaconda3/2020.7
 	source activate
 	conda activate R
-	cat $dir/scripts/main/assoc.sum.R | sed '9 s/?/$pathX/; 10 s/?/$pathY/; 11 s/?/$pathM/; 13 s/?/$X/; 14 s/?/$Y/; 15 s/?/$label/g' > $label.R
+	cat $dir/scripts/main/assoc.sum.R | sed '9 s/?/$pathX/; 10 s/?/$pathY/; 11 s/?/$pathM/; 13 s/?/$X/; 14 s/?/$Y/; 15 s/?/$label/' > $label.R
 	" > $outdir/$label.cmd
 	
 	if [ $cis == 1 ]; then 

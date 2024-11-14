@@ -12,7 +12,7 @@ dir.M = paste0(dir,'/data/gwas/?/clean')
 cis=0
 Xs = '?' # 可以仅是一个变量
 Ys = '?' # 可以仅是一个变量
-log_mr='?.mr.log'; log_mrMed='?.mrMed.log'
+label='?'; log_mr=paste0(label,'.mr.log'); log_mrMed=paste0(label,'.mrMed.log')
 if (grepl("ALL", Xs)) {Xs = gsub('.gz', '', list.files(path=dir.X, pattern='.gz$'))}
 if (grepl("ALL", Ys)) {Ys = gsub('.gz', '', list.files(path=dir.Y, pattern='.gz$'))}
 if (!grepl("NA", dir.M)) {Ms = gsub('.gz', '', list.files(path=dir.M, pattern='.gz$'))}
@@ -98,11 +98,13 @@ for (Y in Ys) { # 🙍
 
 		# Harmonize dat.X + dat.Y, 并计算 Total effect
 		dat.XY <- harmonise_data(dat.X, dat.Y, action=1) 
+		write.table(dat.XY, paste0(label, '.dat'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 		fit.X2Y <- mr(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw")); fit.X2Y 
 			beta.X2Y <- fit.X2Y$b; se.X2Y <- fit.X2Y$se; p.X2Y <- fit.X2Y$pval
-			p.hetero <- mr_heterogeneity(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw"))$Q_pval
-			p.pleio <- mr_pleiotropy_test(dat.XY)$pval
-			write(paste(X,Y, nrow(dat.XY), rb(beta.X2Y), rb(se.X2Y), rp(p.X2Y), rp(p.hetero), rp(p.pleio)), file=log_mr, append=TRUE)
+			p.hetero <- mr_heterogeneity(dat.XY)$Q_pval
+                        p.pleio <- mr_pleiotropy_test(dat.XY)$pval
+                        write(paste(X,Y, nrow(dat.XY), rb(beta.X2Y), rb(se.X2Y), rp(p.X2Y), rp(p.hetero[1]), rp(p.hetero[2]), rp(p.pleio)), file=log_mr, append=TRUE)
+
 
 		next # 🛑 if(p.X2Y >0.05)
 	
@@ -112,3 +114,4 @@ for (Y in Ys) { # 🙍
 		# stopCluster(cl)
 	}
 }
+
