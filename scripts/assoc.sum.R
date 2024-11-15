@@ -1,5 +1,5 @@
 # devtools::install_github("scllin/mrMed") 
-pacman::p_load(data.table, tidyverse, stringi, TwoSampleMR, MendelianRandomization, mrMed) # foreach, doParallel
+pacman::p_load(data.table, tidyverse, stringi, TwoSampleMR, MendelianRandomization, mrMed, cisMRcML) # foreach, doParallel
 pattern=c('^snp$|^rsid$', '^chr$|^chrom$|^chromosome$', '^bp$|^pos$|^position$|^base_pair_location$', '^ea$|^alt$|^a1$|^effect_allele$', '^nea$|^ref|^allele0$|^a2$|^other_allele$', '^eaf$|^a1freq$|^effect_allele_frequency$', '^n$|^Neff$', '^beta$|^effect$', '^se$|^standard_error', '^p$|^pval$|^p_value$')
 replacement=c('SNP', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P')
 pval <- function(b,se) (2*pnorm(-abs(b/se)))
@@ -20,7 +20,7 @@ n_cores=40
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 先定义function
+# 中介function
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 mediation <- function(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_mrMed) {
 	# Harmonize dat.X + dat.M + dat.Y
@@ -60,7 +60,6 @@ mediation <- function(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_mrMed) {
 	} else {
 		res <- mrMed(dat_mrMed=dat1, method_list="Prod_IVW_0")
 	}
-	# key results # 🔦
 	X_str=paste0(X, "(", nrow(dat.X.iv), ")"); M_str=paste0(M, "(", nrow(dat.M.iv), ")");
 	write(paste("RES:", X_str, M_str, Y, "|X2Y", nrow(dat.XY), rb(beta.X2Y), rp(p.X2Y), 
 		"|mrMed", paste(rb(res$TE$b), rp(res$TE$p), rb(res$IE$b), rp(res$IE$p), rb(res$DE$b), rp(res$DE$p), rb(res$rho$b), rp(res$rho$p)) # TE, ACME, ADE, Prop(rho)
@@ -81,7 +80,27 @@ for (Y in Ys) { # 🙍
 		dat.X.raw <- read.table(paste0(dir.X, '/', X, '.gz'), header=T)
 		names(dat.X.raw) <- stri_replace_all_regex(toupper(names(dat.X.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
 		if (cis==1) { dat.X.raw <- subset(dat.X.raw, CHR==chr & POS>=(pos_begin-flank) & POS<=(pos_end+flank)) }
+		
+		# 基于某个locus所有SNP进行cisMR-cML分析 🏮🏮
+		if (cisMR==1) {
+			mr_dat$exp_df$cor = mr_dat$exp_df$b / sqrt(mr_dat$exp_df$b^2 + (mr_dat$exp_df$N - 2) * mr_dat$exp_df$se^2)
+			mr_dat$exp_df$bJ = solve(mr_dat$LD_mat) %*% mr_dat$exp_df$cor
+			mr_dat$out_df$cor = mr_dat$out_df$b / sqrt(mr_dat$out_df$b^2 + (mr_dat$out_df$N - 2) * mr_dat$out_df$se^2)
+			mr_dat$out_df$bJ = solve(mr_dat$LD_mat) %*% mr_dat$out_df$cor
+			b_exp_cond=mr_dat$exp_df$bJ
+			b_out_cond=mr_dat$out_df$bJ 
+			Sig_exp1 = solve(mr_dat$LD_mat) %*% (mr_dat$exp_df$se_cor %o% mr_dat$exp_df$se_cor * mr_dat$LD_mat) %*% solve(mr_dat$LD_mat)
+			Sig_out1 = solve(mr_dat$LD_mat) %*% (mr_dat$out_df$se_cor %o% mr_dat$out_df$se_cor * mr_dat$LD_mat) %*% solve(mr_dat$LD_mat)
+			Sig_exp_inv=solve(Sig_exp1)
+			Sig_out_inv=solve(Sig_out1)
+			res = cismr_cML_DP(
+				b_exp=b_exp_cond,b_out=b_out_cond, Sig_exp_inv=Sig_exp_inv,Sig_out_inv=Sig_out_inv,maxit=200, n = mr_dat$N1,random_start = 5,
+                min_theta_range=-0.1,max_theta_range=0.1, num_pert=100,random_start_pert=5,random_seed = 12345
+			)			  
+			c(res$BIC_DP_theta, res$BIC_DP_se, res$BIC_DP_p)
+		}
 
+		# 基于显著SNP工具变量进行常规MR分析 🏮🏮
 		if (file.exists(paste0(dir.X, '/', X, '.top.snp'))) {
 			dat.X.iv <- read.table(paste0(dir.X, '/', X, '.top.snp'), header=T); names(dat.X.iv) <- "SNP" 
 		} else if (file.exists(paste0(dir.X, '/', X, '.NEW.top.snp'))) {
@@ -91,23 +110,20 @@ for (Y in Ys) { # 🙍
 			dat.X.iv <- dat.X.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
 			write.table(dat.X.iv, paste0(dir.X, '/', X, '.NEW.top.snp'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 		}
-		if(nrow(dat.X.iv) ==0) {write(paste("SKIP:", X,"NA",Y, "X no IV !!"), file=log_mr, append=TRUE); next}
-		
+		if(nrow(dat.X.iv) ==0) {write(paste("SKIP:", X,"NA",Y, "X no IV !!"), file=log_mr, append=TRUE); next}	
 		dat.X <- dat.X.raw %>% merge(dat.X.iv) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
 		dat.Y <- dat.Y.raw %>% merge(dat.X.iv, by="SNP") %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)		
-
-		# Harmonize dat.X + dat.Y, 并计算 Total effect
 		dat.XY <- harmonise_data(dat.X, dat.Y, action=1) 
 		write.table(dat.XY, paste0(label, '.dat'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 		fit.X2Y <- mr(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw")); fit.X2Y 
 			beta.X2Y <- fit.X2Y$b; se.X2Y <- fit.X2Y$se; p.X2Y <- fit.X2Y$pval
 			p.hetero <- mr_heterogeneity(dat.XY)$Q_pval
-                        p.pleio <- mr_pleiotropy_test(dat.XY)$pval
-                        write(paste(X,Y, nrow(dat.XY), rb(beta.X2Y), rb(se.X2Y), rp(p.X2Y), rp(p.hetero[1]), rp(p.hetero[2]), rp(p.pleio)), file=log_mr, append=TRUE)
+            p.pleio <- mr_pleiotropy_test(dat.XY)$pval
+			write("X Y M BETA SE P.ivw p.hetero.egger p.hetero.weighted p.pleio", file=log_mr, append=FALSE)
+            write(paste(X,Y, nrow(dat.XY), rb(beta.X2Y), rb(se.X2Y), rp(p.X2Y), rp(p.hetero[1]), rp(p.hetero[2]), rp(p.pleio)), file=log_mr, append=TRUE)
 
-
+		## 中介分析
 		next # 🛑 if(p.X2Y >0.05)
-	
 		# numCores <- detectCores()-1; cl <- makeCluster(numCores); registerDoParallel(cl)
 		# foreach::foreach(M = Ms) %dopar% { # 🐎
 		for (M in Ms) { mediation(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_mrMed) }
