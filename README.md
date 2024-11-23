@@ -40,11 +40,10 @@ awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim
 
 
 # #2. UKB 基因型和表型数据
-阅读 Data access guide 文件，里面会提到如何下载用来下载UKB数据的小软件（比如ukbunpack和unkconv）。
 ![UKB](./images/ukb.png)
-申请得到批准后，从最上面的 Researcher log in 登录后获取。基因型数据我已下载到南科大的HPC上，表型数据见百度网盘。
-UKB-RAP上面下载数据后，用 sed -e 's/^\t/NA\t/; s/\t\t/\tNA\t/g; s/\t\t/\tNA\t/g; s/\t$/\tNA/' 将缺失数据替换为NA。 
-具体的数据管理方法，请见 scripts 文件夹下的代码。
+基因型数据已下载到南科大的HPC上。
+点击[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)左边的 <b>accessing phenotype data</b> ，下载TSV格式的表型数据。下载后，用 sed -e 's/^\t/NA\t/; s/\t\t/\tNA\t/g; s/\t\t/\tNA\t/g; s/\t$/\tNA/' 将缺失数据替换为NA。 
+后续进一步的数据处理和分析，见 <b>scripts</b> 文件夹下的代码。
 <br/>
 
 
@@ -192,6 +191,6 @@ GWAS-PRS-MR ”三驾马车“ 入门：
 一些有用、有趣的实用工具：
 > - [The R Graph Gallery](https://r-graph-gallery.com/index.html)
 > - [Top 100 R resources on COVID-19 Coronavirus](https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/)
-> - 以及 scitb, CanvasXpress, modelSummary, forplo，sankey diagram, CellChat, ComplexHeatmap，等等
+> - 以及 CanvasXpress, CellChat, ComplexHeatmap, forplo，modelSummary, sankey diagram, scitb, seminr 等 R 包。
 <br/>
 <br/>
