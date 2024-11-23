@@ -47,7 +47,7 @@ awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim
 ```
  sed -e 's/^\t/NA\t/; s/\t\t/\tNA\t/g; s/\t\t/\tNA\t/g; s/\t$/\tNA/' 
  ```
-<br/><br/>
+<br/>
 
 
 # #3. GWAS 运行和结果 “挖掘”
