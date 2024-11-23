@@ -42,9 +42,12 @@ awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim
 # #2. UKB 基因型和表型数据
 ![UKB](./images/ukb.png)
 基因型数据已下载到南科大的HPC上。
-点击[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)左边的 <b>accessing phenotype data</b>，下载TSV格式的表型数据。下载后，用 sed -e 's/^\t/NA\t/; s/\t\t/\tNA\t/g; s/\t\t/\tNA\t/g; s/\t$/\tNA/' 将缺失数据替换为NA。 
+点击[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)左边的 <b>accessing phenotype data</b>，下载TSV格式的表型数据。下载后，用下面代码将缺失数据替换为NA。 
 后续进一步的数据处理和分析，见 <b>scripts</b> 文件夹下的代码。
-<br/>
+```
+ sed -e 's/^\t/NA\t/; s/\t\t/\tNA\t/g; s/\t\t/\tNA\t/g; s/\t$/\tNA/' 
+ ```
+<br/><br/>
 
 
 # #3. GWAS 运行和结果 “挖掘”
