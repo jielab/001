@@ -42,15 +42,9 @@ awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim
 # #2. UKB 基因型和表型数据
 阅读 Data access guide 文件，里面会提到如何下载用来下载UKB数据的小软件（比如ukbunpack和unkconv）。
 ![UKB](./images/ukb.png)
-申请得到批准后，从最上面的 Researcher log in 登录后获取。基因型数据我已下载到南科大的HPC上，表型数据见百度网盘上的 ukb50136.enc。
- [ukbiobank](ukbiobank.ac.uk) 官网，点击 data showcase --> Essential information --> Accessing UK Biobank data。具体的流程和代码，请见 scripts 文件夹下的 phe.sh, gen.sh 以及 phe.R 和 gen.R。
-> 通过 ukbconv 提取很多列的时候，可以先写一个 MY.fields.txt 文件，列出想提取的变量和对应的 data-field，比如第一行是sex	31，第二行是 age 21022，等。然后用 ukbconv ukb50136.enc_ukb r -iMY.fields.id -oMY
-> 对于表型数据的提取，有一个 [ukbtools R软件包](https://kenhanscombe.github.io/ukbtools/articles/explore-ukb-data.html)。 但不是太好用，并且很慢，可供参考。
-> 用下面的代码将 icd.tab 文件整合为两列，便于读入R。
-```
-cat icd.tab | sed -e 's/\tNA//g' -e 's/\t/,/2g' | \
-awk '{ if(NR==1) print "IID icd"; else if (NF==1) print $1 " NA"; else print $0"," }' > icd.2cols
-```
+申请得到批准后，从最上面的 Researcher log in 登录后获取。基因型数据我已下载到南科大的HPC上，表型数据见百度网盘。
+UKB-RAP上面下载数据后，用 sed -e 's/^\t/NA\t/; s/\t\t/\tNA\t/g; s/\t\t/\tNA\t/g; s/\t$/\tNA/' 将缺失数据替换为NA。 
+具体的数据管理方法，请见 scripts 文件夹下的代码。
 <br/>
 
 
