@@ -124,7 +124,7 @@ for (Y in Ys) { # 🙍
 
 		##🗡 中介分析
 		# next # 🛑 
-		next if(p.X2Y >0.05)
+		if(p.X2Y >0.05) next
 		# numCores <- detectCores()-1; cl <- makeCluster(numCores); registerDoParallel(cl)
 		# foreach::foreach(M = Ms) %dopar% { # 🐎
 		for (M in Ms) { mediation(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_mrMed) }

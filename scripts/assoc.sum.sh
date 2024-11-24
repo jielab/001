@@ -6,7 +6,7 @@ pathY=main
 cis=1 # 通常设为0，当进行PPP的cis-pQTL分析时设为0
 
 for Y in bald12 bald13 bald14 bald134 bald1234; do
-	outdir=$dir/analysis/assoc.sum/$Y; mkdir -p $outdir
+	outdir=$dir/analysis/assoc.sum.NEW/$Y; mkdir -p $outdir
 
 	for X in CA5A EPGN PAM PXN FES UXS1; do # ALL
 	echo $X
