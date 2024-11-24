@@ -5,16 +5,16 @@ pathX=ppp
 pathY=main
 cis=1 # 通常设为0，当进行PPP的cis-pQTL分析时设为0
 
-for Y in bald12 bald13; do
+for Y in bald12 bald13 bald14 bald134 bald1234; do
 	outdir=$dir/analysis/assoc.sum/$Y; mkdir -p $outdir
 
-	for X in `cd $dir/data/gwas/$pathX/clean; ls *gz | sed 's/\.gz//g'`; do 
+	for X in CA5A EPGN PAM PXN FES UXS1; do # ALL
 	echo $X
 	if [ $X == $Y ]; then continue; fi
 
-	for pathM in NA; do # bb bc inf mb mb2 met ppp
+	for pathM in mb met; do # bb bc mb met ppp 或 NA
 	label="$X-$pathM-$Y"
-	if [ -f $outdir/$label.log ]; then echo $label already run; continue; fi
+	# if [ -f $outdir/$label.log ]; then echo $label already run; continue; fi
 
 	echo "#!/bin/bash
 	module load python/anaconda3/2020.7

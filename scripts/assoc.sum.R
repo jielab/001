@@ -10,8 +10,8 @@ dir.X = paste0(dir,'/data/gwas/?/clean')
 dir.Y = paste0(dir,'/data/gwas/?/clean')
 dir.M = paste0(dir,'/data/gwas/?/clean')
 cis=0
-Xs = '?' # 可以仅是一个变量
-Ys = '?' # 可以仅是一个变量
+Xs = '?' # 一个X，或全部 ALL
+Ys = '?' # 一个X，或全部 ALL
 label='?'; log_mr=paste0(label,'.mr.log'); log_mrMed=paste0(label,'.mrMed.log')
 if (grepl("ALL", Xs)) {Xs = gsub('.gz', '', list.files(path=dir.X, pattern='.gz$'))}
 if (grepl("ALL", Ys)) {Ys = gsub('.gz', '', list.files(path=dir.Y, pattern='.gz$'))}
@@ -81,7 +81,7 @@ for (Y in Ys) { # 🙍
 		names(dat.X.raw) <- stri_replace_all_regex(toupper(names(dat.X.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
 		if (cis==1) { dat.X.raw <- subset(dat.X.raw, CHR==chr & POS>=(pos_begin-flank) & POS<=(pos_end+flank)) }
 		
-		# 基于某个locus所有SNP进行cisMR-cML分析 🏮🏮
+		##🗡 基于某个locus所有SNP进行cisMR-cML分析 🏮🏮
 		if (cisMR==1) {
 			mr_dat$exp_df$cor = mr_dat$exp_df$b / sqrt(mr_dat$exp_df$b^2 + (mr_dat$exp_df$N - 2) * mr_dat$exp_df$se^2)
 			mr_dat$exp_df$bJ = solve(mr_dat$LD_mat) %*% mr_dat$exp_df$cor
@@ -100,7 +100,7 @@ for (Y in Ys) { # 🙍
 			c(res$BIC_DP_theta, res$BIC_DP_se, res$BIC_DP_p)
 		}
 
-		# 基于显著SNP工具变量进行常规MR分析 🏮🏮
+		##🗡 基于显著SNP工具变量进行常规MR分析 🏮🏮
 		if (file.exists(paste0(dir.X, '/', X, '.top.snp'))) {
 			dat.X.iv <- read.table(paste0(dir.X, '/', X, '.top.snp'), header=T); names(dat.X.iv) <- "SNP" 
 		} else if (file.exists(paste0(dir.X, '/', X, '.NEW.top.snp'))) {
@@ -122,8 +122,9 @@ for (Y in Ys) { # 🙍
 			write("X Y M BETA SE P.ivw p.hetero.egger p.hetero.weighted p.pleio", file=log_mr, append=FALSE)
             write(paste(X,Y, nrow(dat.XY), rb(beta.X2Y), rb(se.X2Y), rp(p.X2Y), rp(p.hetero[1]), rp(p.hetero[2]), rp(p.pleio)), file=log_mr, append=TRUE)
 
-		## 中介分析
-		next # 🛑 if(p.X2Y >0.05)
+		##🗡 中介分析
+		# next # 🛑 
+		next if(p.X2Y >0.05)
 		# numCores <- detectCores()-1; cl <- makeCluster(numCores); registerDoParallel(cl)
 		# foreach::foreach(M = Ms) %dopar% { # 🐎
 		for (M in Ms) { mediation(X, dat.X.raw, dat.X.iv, M, Y, dat.Y.raw, log_mrMed) }
