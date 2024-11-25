@@ -10,7 +10,7 @@ cisMRcML=0
 coloc=0
 mrMed=1 # 通常设为0，会消耗大量计算🏂
 
-for Y in bald12; do # bald13 bald14 bald134 bald1234; do
+for Y in bald12 bald13 bald14 bald134 bald1234; do
 	outdir=$dir/analysis/assoc.sum.NEW/$Y; mkdir -p $outdir
 
 	for X in CA5A EPGN PAM PXN FES UXS1; do # ALL
