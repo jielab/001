@@ -84,18 +84,19 @@ for (Y in Ys) { # 🙍
 				n=dat$N1,random_start=5, min_theta_range=-0.1, max_theta_range=0.1, num_pert=100, random_start_pert=5, random_seed=12345
 			)			  
 			write("X Y m BETA SE P", file=log_cisMrcML, append=FALSE)
-            write(paste(X,Y, nrow(dat), rb(res$BIC_DP_theta), rb(es$BIC_DP_se), rp(res$BIC_DP_p)), file=log_cisMrcML, append=TRUE)
+            write(paste(X,Y, nrow(dat), rb(res$BIC_DP_theta), rb(es$BIC_DP_se), rp(res$BIC_DP_p)), file=log_cisMrcML, append=FALSE)
 		}
 		
 		##🗡 对MR显著的locus，进行coloc分析 🏮🏮
 		if (coloc==1 & p.X2Y <=0.05) {
-			dat <- harmonise_data(dat.X, dat.Y, action=1) 
-			dat.coloc.X <- dat %>% {list(type="quant", snp=.$SNP, position=.$pos.exposure, MAF=.$eaf.exposure, N=.$samplesize.exposure, beta=.$beta.exposure, varbeta =.$se.exposure^2, pvalues=.$pval.exposure)}
-			dat.coloc.Y <- dat %>% {list(type="cc", snp=.$SNP, position=.$pos.outcome, MAF=.$eaf.outcome, N=100000, beta=.$beta.outcome, varbeta =.$se.outcome^2, pvalues=.$pval.outcome)}
+			dat.coloc.X <- dat.XY %>% {list(type="quant", snp=.$SNP, position=.$pos.exposure, MAF=.$eaf.exposure, N=.$samplesize.exposure, beta=.$beta.exposure, varbeta =.$se.exposure^2, pvalues=.$pval.exposure)}
+			dat.coloc.Y <- dat.XY %>% {list(type="cc", snp=.$SNP, position=.$pos.outcome, MAF=.$eaf.outcome, N=500000, beta=.$beta.outcome, varbeta =.$se.outcome^2, pvalues=.$pval.outcome)}
 			fit.coloc <- coloc::coloc.abf(dat.coloc.X, dat.coloc.Y)
-			t(as.data.frame(fit.coloc[["summary"]])) 
-			par(mfrow = c(2,1)); plot_dataset(dat.coloc.X); plot_dataset(dat.coloc.Y)
-			sensitivity(fit.coloc,"H4>0.9")
+			res <- paste(signif(fit.coloc$summary,3),collapse=" ")
+			write(paste(X, nrow(dat.coloc.X), Y, nrow(dat.coloc.Y), res), file=log_coloc, append=FALSE)
+			if (fit.coloc$summary[6] >0.5) {
+				pdf(paste0(label,".coloc.pdf")); sensitivity(fit.coloc,"H4>0.5"); dev.off()
+			}
 		}
 		
 		##🗡 对MR显著的locus，进行中介分析 🏮🏮
