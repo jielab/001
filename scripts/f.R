@@ -8,7 +8,6 @@ mediation <- function(X, dat.X.raw, dat.X.iv, file.M, Y, dat.Y.raw, log_mrMed) {
 	M <- sub('\\.gz$', '', basename(file.M))
 	# Harmonize dat.X + dat.M + dat.Y
 	dat.M.raw <- read.table(file.M, header=T)
-	dat.M.4x <- dat.M.raw %>% merge(dat.X.iv) %>% format_data(type='outcome', snp_col='SNP',  effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome=M)
 	names(dat.M.raw) <- stri_replace_all_regex(toupper(names(dat.M.raw)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
 	if (file.exists(paste0(dir.M, '/', M, '.top.snp'))) {
 		dat.M.iv <- read.table(paste0(dir.M, '/', M, '.top.snp'), header=T); names(dat.M.iv) <- 'SNP' 
