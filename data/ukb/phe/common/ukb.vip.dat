@@ -66,7 +66,7 @@ p6142	emp
 p6150	heart_dr
 p6153	med_female	
 p6177	med_male
-p20015	height_sitting
+p20015	chunk
 p20022	birth_weight
 p20116	smoke_status
 p20117	alcohol_status
@@ -94,8 +94,6 @@ p22005	missingness
 p22006	genetic_ethnicity
 p22007	genotype_plate
 p22008	genotype_well
-p22019	aneuploidy
-p22020	in_pc
 p22021	genetic_kinship
 p22027	genetic_outliers
 p22032	IPAQ_activity

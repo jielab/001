@@ -56,8 +56,8 @@ for (Y in Ys) { # 🙍
 			write.table(dat.X.iv, paste0(dir.X, '/', X, '.NEW.top.snp'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 		}
 		if(nrow(dat.X.iv) ==0) {write(paste("SKIP:", X,"NA",Y, "X no IV !!"), file=log_mr, append=TRUE); next}	
-		dat.X <- dat.X.raw %>% merge(dat.X.iv) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
-		dat.Y <- dat.Y.raw %>% merge(dat.X.iv, by="SNP") %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =Y)		
+		dat.X <- dat.X.raw %>% merge(dat.X.iv) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
+		dat.Y <- dat.Y.raw %>% merge(dat.X.iv, by="SNP") %>% format_data(type='outcome', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome=Y)		
 		dat.XY <- harmonise_data(dat.X, dat.Y, action=1) 
 		write.table(dat.XY, paste0(label, '.dat'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 		fit.X2Y <- mr(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw")); fit.X2Y 
