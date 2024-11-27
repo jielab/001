@@ -181,7 +181,7 @@ for (t in vip.srd$trait) {
 		ifelse(!is.na(dat0[[paste0("srdAge_",t)]]) & dat0[[paste0("srdAge_",t)]] >0, paste0(dat0$birth_year+dat0[[paste0("srdAge_",t)]],"-07-01"), NA)))
 	)
 }
-sum(!is.na(dat0$icdDate_t2dm2))	
+sum(!is.na(dat0$icdDate_t2dm.2))	
 saveRDS(dat0, paste0(indir,"/Rdata/all.rds"))
 
 
