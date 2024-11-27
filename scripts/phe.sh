@@ -10,7 +10,8 @@ zcat raw/pheno.tab | head -1 | tr '\t' '\n' > pheno.id
 # 提取主要表型pheno和PCA数据
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat=dat # dat met 等
-	awk 'BEGIN{print "eid"}{print $1}' $dir/common/ukb.vip.$dat > $dat.id; sort $dat.id | uniq -d
+	awk 'BEGIN{print "eid"}{print $1}' $dir/common/ukb.vip.$dat > $dat.id
+	dos2unix $dat.id; sort $dat.id | uniq -d
 	fgrep -wf $dat.id pheno.id.uniq | wc -l
 	fgrep -vwf pheno.id.uniq $dat.id | head # 显示UKB里面没有的 
 	fgrep -nwf $dat.id pheno.id.2col | awk '$2 !~/_/ || $2 ~/_i0/' | awk -F ":" '{print $1}'  | tr '\n' ',' | sed 's/,$//' | xargs -n1 -I % cut -f % raw/pheno.tab > $dat.tab

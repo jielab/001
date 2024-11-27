@@ -94,6 +94,8 @@ p22005	missingness
 p22006	genetic_ethnicity
 p22007	genotype_plate
 p22008	genotype_well
+p22019	aneuploidy	
+p22020	in_pca
 p22021	genetic_kinship
 p22027	genetic_outliers
 p22032	IPAQ_activity
