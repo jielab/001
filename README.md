@@ -83,7 +83,7 @@ done
 <br/><br/>
 
 
-## #3.3. GWAS的管理、 QC、 注释
+## #3.3. GWAS的管理、QC、注释
 > 对每一个GWAS，首先进行以下“三点”检查：
 ```
 1. 用 zcat GWAS.gz | awk '{print NF}' | sort -nu | wc -l 文件每一行的列数目是一样的。 一定要扣好第一粒纽扣🤲。可用 sed 's/^\t/NA\t/; s/\t\t/\tNA\t/g; s/\t\t/\tNA\t/g; s/\t$/\tNA/' 解决。
@@ -133,11 +133,11 @@ dat=XYZ; zcat $dat.gz | cut -f 2-6,10,13 | awk '{if (NR!=1) {$5=sprintf("%.4f",$
 
 # #4. Post-GWAS分析
 
+
 ## #4.1 单个 GWAS 的深度功能（function）分析 
 
 > 可先尝试傻瓜相机式的[FUMA](https://fuma.ctglab.nl/) 网上解读系统，见[参考文献](https://www.frontiersin.org/articles/10.3389/fgene.2020.00424/full)
 > ![FUMA](./images/fuma.png) 
-<br/>
 <br/>
 
 
@@ -145,13 +145,14 @@ dat=XYZ; zcat $dat.gz | cut -f 2-6,10,13 | awk '{if (NR!=1) {$5=sprintf("%.4f",$
 
 > 相关的方法学，请参考经典版的 [PLINK0.9](http://zzz.bwh.harvard.edu/plink/profile.shtml) 和新版的 [PLINK1.9](https://www.cog-genomics.org/plink/1.9/score) 
 <br/>
-<br/>
+
 
 ## #4.3. 两个或多个GWAS之间的 genetic correlation 分析
 > 一般用[LDSC](https://github.com/bulik/ldsc)软件。
-> ![compareB](./images/T2D.Z.png) 
+> ![compareB](./images/T2D.Z.png)
+<br/> 
 
-## #4.3. 两个或多个GWAS之间的 Mendelian Randomization 分析
+## #4.4. 两个或多个GWAS之间的 Mendelian Randomization 分析
 > 如果有个体数据，可以用 [OneSampleMR包](https://cran.r-project.org/web/packages/OneSampleMR/index.html)。如果只有已发表的summary数据，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/8-449)。
 > 如果工具变量太多，存在LD问题，TwoSampleMR包有clump()的功能。西湖大学杨剑开发的[GSMR](https://cnsgenomics.com/software/gcta/#GSMR) 也可以应对LD问题。[GSMR](https://www.nature.com/articles/s41467-017-02317-2)的好处是在local电脑上运行，不好之处也是在local电脑上运行。 用户一般用 TwoSampleMR 在服务器上进行 clump，但是其过程和稳定性堪忧。 
 <br/>
