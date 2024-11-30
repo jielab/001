@@ -96,7 +96,7 @@ done
 ```
 
 > 经过QC后的GWAS数据，可用 tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz 生成索引文件。
-> 本课题组建议用如下标准的column名称：🦁SNP CHRPOS CHR POS EA NEA EAF N BETA SE Z P🦁。
+> 本课题组建议用如下标准的column名称：🐂<b>SNP CHRPOS CHR POS EA NEA EAF N BETA SE Z P</b>🐎。
 可用下面的 bash 代码实现：
 ```
 Arr1=("SNP" "CHR" "POS" "EA" "NEA" "EAF" "N" "BETA" "SE" "P")
@@ -133,7 +133,7 @@ dat=XYZ
 zcat $dat.gz | cut -f 2-6,10,13 | \
 	awk '{if (NR!=1) {$5=sprintf("%.4f",$5); $6=sprintf("%.4f",$6)} print $0}' | \
 	bgzip > $dat.new.gz
-	```
+```
 > ![compareB](./images/T2D.Z.png) 
 <br/>
 
