@@ -74,14 +74,12 @@ done
 ## #3.2. 公开的GWAS数据进行练手，或对比
 
 > 最经典的，起源于美国NIH 的 [GWAS Catalog](https://www.ebi.ac.uk/gwas). 这个页面也罗列了一些大型GWAS数据联盟。
-> 欧洲版本，不需要下载就能通过 TwoSampleMR 远程读入。他们提倡 使用 VCF 格式的GWAS文件。
-![Figure IEU](./images/ieu-open.png)
+> 欧洲版本，不需要下载就能通过 TwoSampleMR 远程读入。
 
 > UKB GWAS 完整的分析结果，网上发布
 > > - 美国哈佛大学：http://www.nealelab.is/uk-biobank 
 > > - 英国爱丁堡大学：geneatlas: http://geneatlas.roslin.ed.ac.uk
 > > - 哈佛大学的 CVD knowlege portal: https://hugeamp.org/
-
 <br/><br/>
 
 
@@ -96,18 +94,16 @@ done
    (3) BETA|SE|P出现“三缺一” 的情况，可用： b = se * qnorm(p/2); se = abs(b/qnorm(p/2)); se = (CI_upper - CI_lower)/(1.96*2); p = 2*pnorm(-abs(b/se))
 ```
 
-> 经过QC后的GWAS数据，可用 tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz 生成索引文件。
+> 经过QC后的GWAS数据，可用 <b>tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz</b> 生成索引文件。
 > 本课题组建议用如下标准的column名称：🐂<b>SNP CHRPOS CHR POS EA NEA EAF N BETA SE Z P</b>🐎。
 可用下面的 bash 代码实现：
 ```
 Arr1=("SNP" "CHR" "POS" "EA" "NEA" "EAF" "N" "BETA" "SE" "P")
 Arr2=("snp|rsid|variant_id" "chr|chrom|chromosome" "pos|bp|base_pair" "ea|alt|eff.allele|effect_allele|a1|allele1" "nea|ref|allele0|a2|other_allele|" "eaf|a1freq|effect_allele_freq" "n|Neff" "beta" "se|standard_error" "p|pval|p_bolt_lmm")
-dat=XXX.gz
+dat=XYZ.gz
 	head_row=`zcat $dat | head -1 | sed 's/\t/ /g'`; 
 	snp=""; chr=""; pos=""; ea=""; nea=""; eaf=""; n=""; beta=""; se=""; p="" 
-	for i in ${!Arr1[@]}; do
-		eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`
-	done
+	for i in ${!Arr1[@]}; do; eval ${Arr1[$i]}=`echo $head_row | tr ' ' '\n' | grep -Einw ${Arr2[$i]} | sed 's/:.*//'`; done
 	echo dat $dat, snp $SNP, ea $EA, nea $NEA, n $N, beta $BETA, p $P
 ```
 对应的R代码如下：
@@ -130,36 +126,32 @@ python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA
 ```
 > 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 如果用户的GWAS数据超过1G，可用下面的代码对数据进行瘦身后再上传。
 ```
-dat=XYZ
-zcat $dat.gz | cut -f 2-6,10,13 | \
-	awk '{if (NR!=1) {$5=sprintf("%.4f",$5); $6=sprintf("%.4f",$6)} print $0}' | \
-	bgzip > $dat.new.gz
+dat=XYZ; zcat $dat.gz | cut -f 2-6,10,13 | awk '{if (NR!=1) {$5=sprintf("%.4f",$5); $6=sprintf("%.4f",$6)} print $0}' | bgzip > $dat.new.gz
 ```
-> ![compareB](./images/T2D.Z.png) 
 <br/>
 
 
-# #4. GWAS 及 post-GWAS分析
+# #4. Post-GWAS分析
 
-## #4.1 GWAS 功能（function）分析 
+## #4.1 单个 GWAS 的深度功能（function）分析 
 
 > 可先尝试傻瓜相机式的[FUMA](https://fuma.ctglab.nl/) 网上解读系统，见[参考文献](https://www.frontiersin.org/articles/10.3389/fgene.2020.00424/full)
-
-
 > ![FUMA](./images/fuma.png) 
-
 <br/>
 <br/>
 
-## #4.2 多基因风险评分PRS
+
+## #4.2 基于单个GWAS的多基因风险评分PRS
 
 > 相关的方法学，请参考经典版的 [PLINK0.9](http://zzz.bwh.harvard.edu/plink/profile.shtml) 和新版的 [PLINK1.9](https://www.cog-genomics.org/plink/1.9/score) 
-
 <br/>
 <br/>
 
+## #4.3. 两个或多个GWAS之间的 genetic correlation 分析
+> 一般用[LDSC](https://github.com/bulik/ldsc)软件。
+> ![compareB](./images/T2D.Z.png) 
 
-## #4.3. 因果分析 Mendelian Randomization
+## #4.3. 两个或多个GWAS之间的 Mendelian Randomization 分析
 > 如果有个体数据，可以用 [OneSampleMR包](https://cran.r-project.org/web/packages/OneSampleMR/index.html)。如果只有已发表的summary数据，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/8-449)。
 > 如果工具变量太多，存在LD问题，TwoSampleMR包有clump()的功能。西湖大学杨剑开发的[GSMR](https://cnsgenomics.com/software/gcta/#GSMR) 也可以应对LD问题。[GSMR](https://www.nature.com/articles/s41467-017-02317-2)的好处是在local电脑上运行，不好之处也是在local电脑上运行。 用户一般用 TwoSampleMR 在服务器上进行 clump，但是其过程和稳定性堪忧。 
 <br/>
