@@ -26,7 +26,7 @@ dat %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
 ```
 <br/>
 
-## #1.2. 1000 genomes (千人基因组) genotype 数据， 一般作为 imputation 的 reference panel.
+## #1.2. 千人基因组项目的genotype数据[VCF格式]， 一般作为 imputation 的 reference panel.
 
 > 在[千人基因组官网](https://www.internationalgenome.org/data) 下载 Phase 3 对应的 VCF [链接](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/)，GRCh37版本。
 > 该数据是用[GATK](https://gatk.broadinstitute.org/hc/en-us)平台生成，用的reference genome 来自[GATK resource bundle](https://gatk.broadinstitute.org/hc/en-us/articles/360035890811-Resource-bundle)。
