@@ -71,6 +71,7 @@ done
 > 上述命令顺利跑完后，确认生成的文件没有问题后，可以把所有的染色体的数据串到一起，形成一个单一的 XXX.gwas.gz 文件。
 <br/>
 
+
 ## #3.2. 公开的GWAS数据进行练手，或对比
 
 > 最经典的，起源于美国NIH 的 [GWAS Catalog](https://www.ebi.ac.uk/gwas). 这个页面也罗列了一些大型GWAS数据联盟。
@@ -92,6 +93,10 @@ done
    (1) Allele 最好是大写，awk 和 R 都有 toupper()功能。
    (2) P值最好不要小于1e-312。 要不然，awk 会把其当成0，有一些软件（比如LDSC）也会报错，这个时候要么用Z值，要么人为将这些P值设为1e-300。
    (3) BETA|SE|P出现“三缺一” 的情况，可用： b = se * qnorm(p/2); se = abs(b/qnorm(p/2)); se = (CI_upper - CI_lower)/(1.96*2); p = 2*pnorm(-abs(b/se))
+```
+如果生成的GWAS数据超过1G，导致无法上传到pheweb那样的软件，可用下面代码对数据进行瘦身。
+```
+zcat $dat.gz | cut -f 2-6,10,13 | awk '{if (NR!=1) {$5=sprintf("%.4f",$5); $6=sprintf("%.4f",$6)} print $0}' | bgzip > $dat.lean.gz
 ```
 
 > 经过QC后的GWAS数据，可用 <b>tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz</b> 生成索引文件。
@@ -124,10 +129,7 @@ names(dat) <- stringi::stri_replace_all_regex(toupper(names(dat)), pattern=toupp
 ```
 python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d files/dbsnp/rsids-v154-hg19.tsv.gz -o out.tsv
 ```
-> 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 如果用户的GWAS数据超过1G，可用下面的代码对数据进行瘦身后再上传。
-```
-dat=XYZ; zcat $dat.gz | cut -f 2-6,10,13 | awk '{if (NR!=1) {$5=sprintf("%.4f",$5); $6=sprintf("%.4f",$6)} print $0}' | bgzip > $dat.new.gz
-```
+> 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 
 <br/>
 
 
