@@ -193,6 +193,5 @@ GWAS-PRS-MR ”三驾马车“ 入门：
 一些有用、有趣的实用工具：
 > - [The R Graph Gallery](https://r-graph-gallery.com/index.html)
 > - [Top 100 R resources on COVID-19 Coronavirus](https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/)
-> - 以及 CanvasXpress, CellChat, ComplexHeatmap, forplo，modelSummary, sankey diagram, scitb, seminr 等 R 包。
 <br/>
 <br/>
