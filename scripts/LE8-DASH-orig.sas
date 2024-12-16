@@ -1,7 +1,7 @@
 
 /*第一步 将变量中的coding进行重新赋值 555=0.5 444=0.25 300=3*/
 data diet24op;
-wmy.diet24allnew;
+set wmy.diet24allnew;
 array alln _numeric_;
 do over alln;
 if  alln=555 then alln=0.5;
@@ -100,8 +100,8 @@ run;
 /*计算多轮调查的均数*/
 data a.diet24opty1;
 set diet24opty;
-/*energy*/
-energy_total=mean (of n_100002_0_0 n_100002_1_0 n_100002_2_0 n_100002_3_0 n_100002_4_0);
+?? /*energy*/
+?? energy_total=mean (of n_100002_0_0 n_100002_1_0 n_100002_2_0 n_100002_3_0 n_100002_4_0);
 /*healthy*/
 /*Vegetables: All vegetables except potatoes and legumes*/
 mixveg=mean(of n_104060_0_0	n_104060_1_0 n_104060_2_0 n_104060_3_0 n_104060_4_0) ;
