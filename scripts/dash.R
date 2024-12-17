@@ -1,8 +1,10 @@
 # 说明：凡是在 mutate()里面生成的新变量，在新的mutate()里面才能使用
 
-setwd("D:/")
 pacman::p_load(tidyverse, lubridate)
+
 indir="D:/data/ukb/phe"
+pick_first_number <- function(x) as.numeric(strsplit(x, "\\|")[[1]][1]) # for strings such as "1|2|3"
+
 
 dat0 <- read.table(paste0(indir,"/rap/le8.tab"), sep="\t", header=TRUE, flush=TRUE) %>% 
 	mutate(across(where(is.numeric), ~ case_when(. == 555 ~ 0.5, . == 444 ~ 0.25, . == 200 ~ 2, . == 300 ~ 3, . == 400 ~ 4, . == 500 ~ 5, . == 600 ~ 6, TRUE ~ .))) %>%
