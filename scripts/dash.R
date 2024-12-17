@@ -69,7 +69,7 @@ dat <- dat %>% mutate( # 水果🍓
 	Plum = rowMeans(select(., starts_with("p104580_")), na.rm = TRUE),
 	Otherfruit = rowMeans(select(., starts_with("p104590_")), na.rm = TRUE),
 	Orangejuice = rowMeans(select(., starts_with("p100190_")), na.rm = TRUE),
-	Grapefruitjuicejuice = rowMeans(select(., p100200_i0, p100200_i1, p100200_i2, p100200_i3, p100200_i4), na.rm = TRUE),
+	Grapefruitjuice = rowMeans(select(., p100200_i0, p100200_i1, p100200_i2, p100200_i3, p100200_i4), na.rm = TRUE),
 	Purefruitjuice = rowMeans(select(., starts_with("p100210_")), na.rm = TRUE)
 )
 dat <- dat %>% mutate(Fruits = rowSums(select(., c("Stewedfruit", "Prune", "Dried", "Mixedfruit", "Apple",  "Banana", "Berry", "Cherry", "Grapefruit", "Grape", "Mango",  "Melon", "Orange", "Satsuma", "Peach", "Pear", "Pineapple", "Plum", "Otherfruit", "Orangejuice", "Grapefruitjuice", "Purefruitjuice")), na.rm = TRUE),
@@ -223,6 +223,7 @@ dat <- dat %>% mutate( # 盐 ⛵
 )
 
 dash <- dat %>% select(eid, energy_total, Vegetablesnew, Fruitsnew, nutsnew, grainsnew, lowfatdairy, sugarsweetenednew, redmeatnew, Sodium)
+
 dash <- dash %>%
 mutate(
 	quinVegetables = ntile(Vegetablesnew, 5),
