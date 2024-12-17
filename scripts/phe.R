@@ -50,16 +50,17 @@ saveRDS(phe, paste0(indir,"/Rdata/ukb.phe.rds"))
 # LE8
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat %>% 
-mutate( 运动 🏃‍ MET minutes per week for moderate [22038] or vigorous [22039] activity
-	physical_mins = met_mod + met_vig * 2, PA_pts = case_when(physical_mins >= 150 ~ 100, 
+mutate( 
+	# 运动 🏃‍ MET minutes per week for moderate [22038] or vigorous [22039] activity
+	physical_mins = pa_mod + pa_vig * 2, PA_pts = case_when(physical_mins >= 150 ~ 100, 
 	physical_mins >= 120 & physical_mins < 150 ~ 90, physical_mins >= 90 & physical_mins < 120 ~ 80, physical_mins >= 60 & physical_mins < 90 ~ 60, physical_mins >= 30 & physical_mins < 60 ~ 40, physical_mins >= 1 & physical_mins < 30 ~ 20, physical_mins == 0 ~ 0)
 	# 吸烟 🚬 smoke_quit_age [p2897], smoke_history [p1249], smoke_in_house [p1259]
     smoke_quit_age = ifelse(smoke_quit_age %in% c(-3, -1), NA, smoke_quit_age), smoke_history = ifelse(smoke_history == -3, NA, smoke_history), smoke_in_house = ifelse(smoke_in_house == -3, NA, smoke_in_house),
     smkquit_y = ifelse(smoke_quit_age > 0 & age >= smoke_quit_age, age - smoke_quit_age, NA), smoke_cat = case_when(smoking == 0 ~ 100, smoking == 1 & smkquit_y >= 5 ~ 75, smoke_history == 3 ~ 75, smoking == 1 & smkquit_y >= 1 & smkquit_y < 5 ~ 50, smoke_history == 2 ~ 50, smoking == 1 & smkquit_y < 1 ~ 25, smoking == 2 ~ 0),
     smoke_pts = ifelse((smoke_in_house == 1 | smoke_in_house == 2) & smoke_cat > 0, smoke_cat - 20, smoke_cat)
-	# 睡眠🛏 sleep_dura [p1160]
-    sleep_dura = ifelse(sleep_dura %in% c(-1, -3), NA, sleep_dura),
-    sleep_pts = case_when(sleep_dura >= 7 & sleep_dura < 9 ~ 100, sleep_dura >= 9 & sleep_dura < 10 ~ 90, sleep_dura >= 6 & sleep_dura < 7 ~ 70, (sleep_dura >= 5 & sleep_dura < 6) | sleep_dura >= 10 ~ 40, sleep_dura >= 4 & sleep_dura < 5 ~ 20, sleep_dura >= 0 & sleep_dura < 4 ~ 0)
+	# 睡眠🛏 sleep_duration [p1160]
+    sleep_duration = ifelse(sleep_duration %in% c(-1, -3), NA, sleep_duration),
+    sleep_pts = case_when(sleep_duration >= 7 & sleep_duration < 9 ~ 100, sleep_duration >= 9 & sleep_duration < 10 ~ 90, sleep_duration >= 6 & sleep_duration < 7 ~ 70, (sleep_duration >= 5 & sleep_duration < 6) | sleep_duration >= 10 ~ 40, sleep_duration >= 4 & sleep_duration < 5 ~ 20, sleep_duration >= 0 & sleep_duration < 4 ~ 0)
 	# BMI 🎈
 	bmi_pts = case_when(bmi_i > 0 & bmi_i < 25 ~ 100, bmi_i >= 25 & bmi_i < 30 ~ 70, bmi_i >= 30 & bmi_i < 35 ~ 30, bmi_i >= 35 & bmi_i < 40 ~ 15, bmi_i >= 40 ~ 0))
 	# 血脂 
