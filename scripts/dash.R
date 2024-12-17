@@ -6,7 +6,7 @@ indir="D:/data/ukb/phe"
 pick_first_number <- function(x) as.numeric(strsplit(x, "\\|")[[1]][1]) # for strings such as "1|2|3"
 
 
-dat0 <- read.table(paste0(indir,"/rap/le8.tab"), sep="\t", header=TRUE, flush=TRUE) %>% 
+dat0 <- read.table(paste0(indir,"/rap/le8.pku.tab"), sep="\t", header=TRUE, flush=TRUE) %>% 
 	mutate(across(where(is.numeric), ~ case_when(. == 555 ~ 0.5, . == 444 ~ 0.25, . == 200 ~ 2, . == 300 ~ 3, . == 400 ~ 4, . == 500 ~ 5, . == 600 ~ 6, TRUE ~ .))) %>%
 	mutate(across(c(p104000_i0:p104590_i0),  ~ ifelse(p20085_i0 %in% c(3, 4, 6), NA, .)), across(c(p104000_i1:p102970_i1),  ~ ifelse(p20085_i1 %in% c(3, 4, 6), NA, .)), across(c(p104000_i2:p102970_i2),  ~ ifelse(p20085_i2 %in% c(3, 4, 6), NA, .)), across(c(p104000_i3:p102970_i3),  ~ ifelse(p20085_i3 %in% c(3, 4, 6), NA, .)), across(c(p104000_i4:p102970_i4),  ~ ifelse(p20085_i4 %in% c(3, 4, 6), NA, .)))
 
