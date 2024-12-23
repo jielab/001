@@ -54,7 +54,6 @@ sudo shown -R administrator /home/administrator/quickstart-output
 ```
 
 
-
 # #2. UKB 基因型和表型数据
 ![UKB](./images/ukb.png)
 基因型数据已下载到南科大的HPC上。

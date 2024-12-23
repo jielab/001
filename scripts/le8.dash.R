@@ -22,9 +22,14 @@ replace_if_equal <- function(dat, var_list, num) {
 }
 
 
-dat0 <- read.table(paste0(indir,"/rap/le8.pku.tab.gz"), sep="\t", header=TRUE, flush=TRUE) %>% 
-	mutate(across(where(is.numeric), ~ case_when(. == 555 ~ 0.5, . == 444 ~ 0.25, . == 200 ~ 2, . == 300 ~ 3, . == 400 ~ 4, . == 500 ~ 5, . == 600 ~ 6, TRUE ~ .))) %>%
-	mutate(across(c(p104000_i0:p104590_i0),  ~ ifelse(p20085_i0 %in% c(3, 4, 6), NA, .)), across(c(p104000_i1:p102970_i1),  ~ ifelse(p20085_i1 %in% c(3, 4, 6), NA, .)), across(c(p104000_i2:p102970_i2),  ~ ifelse(p20085_i2 %in% c(3, 4, 6), NA, .)), across(c(p104000_i3:p102970_i3),  ~ ifelse(p20085_i3 %in% c(3, 4, 6), NA, .)), across(c(p104000_i4:p102970_i4),  ~ ifelse(p20085_i4 %in% c(3, 4, 6), NA, .)))
+dat0 <- read.table(paste0(indir,"/rap/le8.pku.tab.gz"), sep="\t", header=TRUE, flush=TRUE) %>% mutate(
+	across(where(is.numeric), ~ case_when(. == 555 ~ 0.5, . == 444 ~ 0.25, . == 200 ~ 2, . == 300 ~ 3, . == 400 ~ 4, . == 500 ~ 5, . == 600 ~ 6, TRUE ~ .))) %>% mutate(
+	across(c(p104000_i0:p104590_i0),  ~ ifelse(p20085_i0 %in% c(3, 4, 6), NA, .)), 
+	across(c(p104000_i1:p102970_i1),  ~ ifelse(p20085_i1 %in% c(3, 4, 6), NA, .)), 
+	across(c(p104000_i2:p102970_i2),  ~ ifelse(p20085_i2 %in% c(3, 4, 6), NA, .)), 
+	across(c(p104000_i3:p102970_i3),  ~ ifelse(p20085_i3 %in% c(3, 4, 6), NA, .)), 
+	across(c(p104000_i4:p102970_i4),  ~ ifelse(p20085_i4 %in% c(3, 4, 6), NA, .))
+)
 
 dat <- dat0 %>% mutate( # 热量 🌋
 	energy_total = rowMeans(select(., starts_with("p100002_")), na.rm = TRUE)
@@ -80,19 +85,21 @@ dat <- dat %>% mutate( # 🐄🥛
     Milk = rowMeans(select(., starts_with("milk_")), na.rm = TRUE),
     hardcheese = rowMeans(select(., starts_with("p102810_")), na.rm = TRUE),
     cheesespread = rowMeans(select(., starts_with("p102850_")), na.rm = TRUE),
-    Cottagecheese = rowMeans(select(., starts_with("p102870_")), na.rm = TRUE),
-    cheese = hardcheese + cheesespread + Cottagecheese,
-    cheesenew = ifelse(!is.na(p102800_i0) | !is.na(p102800_i1) | !is.na(p102800_i2) | !is.na(p102800_i3) | !is.na(p102800_i4) & is.na(cheese), 0, cheese),
-    lowfatdairy = Milk + Yogurt + cheesenew
+    Cottagecheese = rowMeans(select(., starts_with("p102870_")), na.rm = TRUE)
+) %>% mutate(
+    cheese = rowSums(select(., hardcheese, cheesespread, Cottagecheese), na.rm = TRUE),
+    cheesenew = ifelse((!is.na(p102800_i0) | !is.na(p102800_i1) | !is.na(p102800_i2) |  !is.na(p102800_i3) | !is.na(p102800_i4)) & is.na(cheese), 0, cheese)
+) %>% mutate(
+    lowfatdairy = rowSums(select(., Milk, Yogurt, cheesenew), na.rm = TRUE)
 )
 
-dat <- bulk_rowMeans(dat, sugar_fields_names) %>%  # 🍬🥤
-	mutate( sugar = Fizzydrink + Squash + Fruitsmootie,
-	sugarnew = ifelse(rowSums(is.na(select(., starts_with("p100020_")))) > 0 & is.na(sugar), 0, sugar), 
+dat <- bulk_rowMeans(dat, sugar_fields_names) %>% mutate( # 🍬🥤
+	sugar = rowSums(select(., Fizzydrink, Squash, Fruitsmootie), na.rm = TRUE),
+	sugarnew = ifelse(rowSums(is.na(select(., starts_with("p100020_")))) > 0 & is.na(sugar), 0, sugar)
 ) 
 
-dat <- bulk_rowMeans(dat, meat_fields_names) %>%  # 红肉🥩
-	mutate( meat = Sausage + Beef + Pork + Lamb + Bacon + Ham + Liver + Scotchegg,
+dat <- bulk_rowMeans(dat, meat_fields_names) %>% mutate( # 红肉🥩
+	meat = rowSums(select(., Sausage, Beef, Pork, Lamb, Bacon, Ham, Liver, Scotchegg), na.rm = TRUE),	
 	meatnew = ifelse(rowSums(is.na(select(., starts_with("p103000_")))) > 0 & is.na(meat), 0, meat),
 ) 
  
@@ -100,7 +107,7 @@ dat <- dat %>% mutate( # 盐 ⛵
 	Sodium = p30530_i0
 )
 
-dash <- dat %>% select(eid, energy_total, Vegetablesnew, Fruitsnew, nutnew, grainsnew, lowfatdairy, sugarnew, meatnew, Sodium)
+dash <- dat %>% select(eid, Vegetablesnew, Fruitsnew, nutnew, grainsnew, lowfatdairy, sugarnew, meatnew, Sodium)
 
 dash <- dash %>% mutate(
 	quinVegetables = ntile(Vegetablesnew, 5),
@@ -118,7 +125,7 @@ dash <- dash %>% mutate(
 
 dash <- dash %>% mutate(
 	dashscore = rowSums(select(., c("quinVegetables", "quinFruits", "quinnut", "quingrains", "quinlowfatdairy", "quinsugar", "quinmeat", "quinSodium")), na.rm = TRUE),
-	dashscore = ifelse(is.na(Vegetablesnew) | is.na(Fruitsnew) | is.na(nutnew) | is.na(grainsnew) | is.na(lowfatdairy) | is.na(sugarnew) | is.na(meatnew) | is.na(Sodium), NA, dashscore)
+	dashscore = ifelse(is.na(Vegetablesnew) | is.na(Fruitsnew) | is.na(nutnew) | is.na(grainsnew) | is.na(lowfatdairy) | is.na(sugarnew) | is.na(meatnew) | is.na(Sodium), NA, dashscore),
 	dashscore_pctile = cut(dashscore, breaks = c(-Inf, unique(quantile(dashscore, probs = c(0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.47, 0.48, 0.49, 0.50, 0.51, 0.52, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.93, 0.94, 0.95), na.rm = TRUE)), Inf), labels = FALSE, right = TRUE),
 	dashpts = case_when(dashscore > 0 & dashscore < 17 ~ 0, dashscore >= 17 & dashscore < 21 ~ 25, dashscore >= 21 & dashscore < 26 ~ 50, dashscore >= 26 & dashscore < 31 ~ 80, dashscore >= 31 ~ 100, TRUE ~ NA_real_)
 )
