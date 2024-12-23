@@ -38,6 +38,22 @@ awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim
 ```
 <br/>
 
+## #1.4. 使用 deepvariant 生成VCF数据.
+> DeepVariant安装
+>> 1. 远程链接服务器 172.18.42.37:33899
+>> 2. VMware Workstation构建虚拟机，安装Linux Ubuntu 24.04.1 LTS。
+>> 3. 根据[deepvariant](https://github.com/google/deepvariant?tab=readme-ov-file) 官方指南安装<b>Docker</b>版本。
+>> 4. 注意事项：（i）VMware选择个人版本可免费使用；（ii）由于服务器不存在GPU，无需安装CUDA；（iii）拉取docker镜像时，如遇访问缓慢，选择切换镜像源为https://docker.1panel.live。
+
+> DeepVariant运行
+>> 1. 打开VMware，登陆Ubuntu系统上的终端进行操作。
+>> 2. 具体步骤参考[deepvariant](https://github.com/google/deepvariant?tab=readme-ov-file) 上的 If you're using GPUs, or want to use Singularity instead, see <b>Quick Start</b> for more details。
+>> 3. 注意事项：如果生成的文件会出现无权限访问，需要在终端修改权限
+```
+sudo shown -R administrator /home/administrator/quickstart-output
+```
+
+
 
 # #2. UKB 基因型和表型数据
 ![UKB](./images/ukb.png)
