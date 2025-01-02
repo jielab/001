@@ -20,19 +20,17 @@ nut_fields_names <- c("p102410_|Saltpeanut", "p102420_|Unsaltpeanut", "p102430_|
 	"p104110_|Broadbean", "p104120_|Greenbean", "p104280_|Pea"
 )
 
-meat_fields_names <- c("p103010_|Sausage", "p103020_|Beef", "p103030_|Pork", "p103040_|Lamb", 
-	"p103070_|Bacon", "p103080_|Ham", "p103090_|Liver", "p102970_|Scotchegg"
-)
-
-sugar_fields_names <- c("p100170_|Fizzydrink", "p100180_|Squash", "p100220_|Fruitsmootie", "p100370_|sugarcoffee", 
-	"p100380_|artisugarcoffee", "p100490_|sugartea", "p100500_|artisugartea", 
-	"p100540_|Lowhotchocolate", "p100550_|Hotchocolate"
-)
-
 porriage_fields_names <- c("p100770_|Porridge", "p100800_|Muesli", "p100810_|Oat", "p100820_|Sweetcereal", 
 	"p100830_|Plaincereal", "p100840_|Brancereal", "p100850_|Wholewheat", "p100860_|Othercereal", 
 	"p102740_|Brownrice", "p102780_|Othergrain", "p102770_|Couscous"
 )
+
+sugar_fields_names <- c("p100170_|Fizzydrink", "p100180_|Squash", "p100220_|Fruitsmootie") # "p100370_|sugarcoffee", "p100380_|artisugarcoffee", "p100490_|sugartea", "p100500_|artisugartea", "p100540_|Lowhotchocolate", "p100550_|Hotchocolate")
+
+meat_fields_names <- c("p103010_|Sausage", "p103020_|Beef", "p103030_|Pork", "p103040_|Lamb", 
+	"p103070_|Bacon", "p103080_|Ham", "p103090_|Liver", "p102970_|Scotchegg"
+)
+
 
 slicedbread_fields <- c("p20091_i0|p100950_i0", "p20091_i1|p100950_i1", "p20091_i2|p100950_i2", "p20091_i3|p100950_i3", "p20091_i4|p100950_i4")
 baguette_fields <- c("p20092_i0|p101020_i0", "p20092_i1|p101020_i1", "p20092_i2|p101020_i2", "p20092_i3|p101020_i3", "p20092_i4|p101020_i4")

@@ -7,12 +7,17 @@ indir="D:/data/ukb/phe"
 pick_first_number <- function(x) {
 	as.numeric(strsplit(x, "\\|")[[1]][1]) # for strings such as "1|2|3"
 }
+rowSums2 <- function(x, na.rm = TRUE) { # 🏮 如果所有的row都是NA，那么结果也是NA，而不是0
+  row_sums <- rowSums(x, na.rm = na.rm)
+  row_sums[row_sums == 0 & rowSums(is.na(x)) == ncol(x)] <- NA
+  return(row_sums)
+}
 bulk_rowMeans <- function(dat, fields_names) {
 	dat %>% mutate( purrr::imap_dfc(fields_names, function(x, name) {
 	prefix <- strsplit(x, "\\|")[[1]][1]
 	new_col <- rowMeans(select(dat, starts_with(prefix)), na.rm = TRUE)
 	setNames(as.data.frame(new_col), strsplit(x, "\\|")[[1]][2])
-	}))
+	})) %>% mutate_all(~ ifelse(is.nan(.), NA, .)) # 🏮 non-numeric 的数据，会被转换成 NaN，而不是NA
 }
 replace_if_equal <- function(dat, var_list, num) {
   sapply(var_list, function(pair) {
@@ -36,18 +41,18 @@ dat <- dat0 %>% mutate( # 热量 🌋
 )
 
 dat <- bulk_rowMeans(dat, veg_fields_names) %>% mutate( # 蔬菜 🥦 
-	Vegetables = rowSums(select(., c("mixveg", "vegpiece", "Coleslaw", "Side", "Avocado", "Beetroot", "Broccoli", "Butternut", "Cabbage", "Carrot", "Cauliflower", "Celery", "Courgette", "Cucumber", "Garlic", "Leek", "Lettuce", "Mushroom", "Onion", "Parsnip", "pepper", "Spinach", "Sprouts", "Sweetcorn", "Freshtomato", "Tinnedtomato", "Turnip", "Watercress", "Otherveg")), na.rm = TRUE),
-	Vegetablesnew = ifelse(rowSums(is.na(select(., starts_with("p103990_")))) > 0 & is.na(Vegetables), 0, Vegetables)
+	Vegetables = rowSums2(select(., sub(".*\\|", "", veg_fields_names)), na.rm = TRUE),
+	Vegetablesnew = ifelse(rowSums2(is.na(select(., starts_with("p103990_")))) > 0 & is.na(Vegetables), 0, Vegetables)
 ) 
 
 dat <- bulk_rowMeans(dat, fruit_fields_names) %>% mutate( # 水果🍓
-	Fruits = rowSums(select(., c("Stewedfruit", "Prune", "Dried", "Mixedfruit", "Apple",  "Banana", "Berry", "Cherry", "Grapefruit", "Grape", "Mango",  "Melon", "Orange", "Satsuma", "Peach", "Pear", "Pineapple", "Plum", "Otherfruit", "Orangejuice", "Grapefruitjuice", "Purefruitjuice")), na.rm = TRUE),
-	Fruitsnew = ifelse(rowSums(is.na(select(., starts_with("p104400_")))) > 0 & is.na(Fruits), 0, Fruits)
+	Fruits = rowSums2(select(., sub(".*\\|", "", fruit_fields_names)), na.rm = TRUE),
+	Fruitsnew = ifelse(rowSums2(is.na(select(., starts_with("p104400_")))) > 0 & is.na(Fruits), 0, Fruits)
 ) 
 
 dat <- bulk_rowMeans(dat, nut_fields_names) %>% mutate( # 坚果🌲
-	nut = rowSums(select(., c("Saltpeanut", "Unsaltpeanut", "Saltnut", "Unsaltnut", "Seeds", "Tofu", "Bakedbean", "Pulses", "Broadbean", "Greenbean", "Pea")), na.rm = TRUE),
-	nutnew = ifelse(rowSums(is.na(select(., starts_with("p102400_")))) > 0 & is.na(nut), 0, nut)
+	nut = rowSums2(select(., sub(".*\\|", "", nut_fields_names)), na.rm = TRUE),
+	nutnew = ifelse(rowSums2(is.na(select(., starts_with("p102400_")))) > 0 & is.na(nut), 0, nut)
 )
 
 dat <- bulk_rowMeans(dat, porriage_fields_names) # 主食🍚🍞
@@ -61,8 +66,8 @@ dat <- dat %>% mutate(
     Oatcakes = rowMeans(select(., starts_with("p101260_")), na.rm = TRUE),
     Otherbread = rowMeans(select(., starts_with("p101270_")), na.rm = TRUE)
 ) %>% mutate(
-	grains = rowSums(select(., c("Porridge", "Muesli", "Oat", "Sweetcereal", "Plaincereal", "Brancereal", "Wholewheat", "Othercereal", "Brownrice", "Othergrain", "Couscous", "Slicedbread", "Baguette", "Bap", "Breadroll", "Wholemealpasta", "Crispbread", "Oatcakes", "Otherbread")), na.rm = TRUE),
-	grainsnew = ifelse(rowSums(is.na(select(., starts_with("p100760_")))) > 0 & is.na(grains), 0, grains)
+	grains = rowSums2(select(., c(sub(".*\\|", "", veg_fields_names), "Slicedbread", "Baguette", "Bap", "Breadroll", "Wholemealpasta", "Crispbread", "Oatcakes", "Otherbread")), na.rm = TRUE),
+	grainsnew = ifelse(rowSums2(is.na(select(., starts_with("p100760_")))) > 0 & is.na(grains), 0, grains)
 )
 
 dat <- dat %>% mutate( # 🐄🥛
@@ -87,20 +92,20 @@ dat <- dat %>% mutate( # 🐄🥛
     cheesespread = rowMeans(select(., starts_with("p102850_")), na.rm = TRUE),
     Cottagecheese = rowMeans(select(., starts_with("p102870_")), na.rm = TRUE)
 ) %>% mutate(
-    cheese = rowSums(select(., hardcheese, cheesespread, Cottagecheese), na.rm = TRUE),
+    cheese = rowSums2(select(., hardcheese, cheesespread, Cottagecheese), na.rm = TRUE),
     cheesenew = ifelse((!is.na(p102800_i0) | !is.na(p102800_i1) | !is.na(p102800_i2) |  !is.na(p102800_i3) | !is.na(p102800_i4)) & is.na(cheese), 0, cheese)
 ) %>% mutate(
-    lowfatdairy = rowSums(select(., Milk, Yogurt, cheesenew), na.rm = TRUE)
+    lowfatdairy = rowSums2(select(., Milk, Yogurt, cheesenew), na.rm = TRUE)
 )
 
 dat <- bulk_rowMeans(dat, sugar_fields_names) %>% mutate( # 🍬🥤
-	sugar = rowSums(select(., Fizzydrink, Squash, Fruitsmootie), na.rm = TRUE),
-	sugarnew = ifelse(rowSums(is.na(select(., starts_with("p100020_")))) > 0 & is.na(sugar), 0, sugar)
+	sugar = rowSums2(select(., sub(".*\\|", "", sugar_fields_names)), na.rm = TRUE),
+	sugarnew = ifelse(rowSums2(is.na(select(., starts_with("p100020_")))) > 0 & is.na(sugar), 0, sugar)
 ) 
 
 dat <- bulk_rowMeans(dat, meat_fields_names) %>% mutate( # 红肉🥩
-	meat = rowSums(select(., Sausage, Beef, Pork, Lamb, Bacon, Ham, Liver, Scotchegg), na.rm = TRUE),	
-	meatnew = ifelse(rowSums(is.na(select(., starts_with("p103000_")))) > 0 & is.na(meat), 0, meat),
+	meat = rowSums2(select(., sub(".*\\|", "", meat_fields_names)), na.rm = TRUE),
+	meatnew = ifelse(rowSums2(is.na(select(., starts_with("p103000_")))) > 0 & is.na(meat), 0, meat),
 ) 
  
 dat <- dat %>% mutate( # 盐 ⛵
@@ -124,7 +129,7 @@ dash <- dash %>% mutate(
 )
 
 dash <- dash %>% mutate(
-	dashscore = rowSums(select(., c("quinVegetables", "quinFruits", "quinnut", "quingrains", "quinlowfatdairy", "quinsugar", "quinmeat", "quinSodium")), na.rm = TRUE),
+	dashscore = rowSums2(select(., c("quinVegetables", "quinFruits", "quinnut", "quingrains", "quinlowfatdairy", "quinsugar", "quinmeat", "quinSodium")), na.rm = TRUE),
 	dashscore = ifelse(is.na(Vegetablesnew) | is.na(Fruitsnew) | is.na(nutnew) | is.na(grainsnew) | is.na(lowfatdairy) | is.na(sugarnew) | is.na(meatnew) | is.na(Sodium), NA, dashscore),
 	dashscore_pctile = cut(dashscore, breaks = c(-Inf, unique(quantile(dashscore, probs = c(0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.47, 0.48, 0.49, 0.50, 0.51, 0.52, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.93, 0.94, 0.95), na.rm = TRUE)), Inf), labels = FALSE, right = TRUE),
 	dashpts = case_when(dashscore > 0 & dashscore < 17 ~ 0, dashscore >= 17 & dashscore < 21 ~ 25, dashscore >= 21 & dashscore < 26 ~ 50, dashscore >= 26 & dashscore < 31 ~ 80, dashscore >= 31 ~ 100, TRUE ~ NA_real_)
