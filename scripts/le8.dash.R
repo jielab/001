@@ -39,17 +39,20 @@ dat <- dat0 %>% mutate( # 热量 🌋
 	energy_total = rowMeans(select(., starts_with("p100002_")), na.rm = TRUE)
 )
 
-dat <- bulk_rowMeans(dat, veg_fields_names) %>% mutate( # 蔬菜 🥦 
+dat <- bulk_rowMeans(dat, veg_fields_names) # 蔬菜 🥦 
+dat <- dat %>% mutate( 
 	Vegetables = rowSums2(select(., sub(".*\\|", "", veg_fields_names)), na.rm = TRUE),
 	Vegetablesnew = ifelse(rowSums2(is.na(select(., starts_with("p103990_")))) > 0 & is.na(Vegetables), 0, Vegetables)
 ) 
 
-dat <- bulk_rowMeans(dat, fruit_fields_names) %>% mutate( # 水果🍓
+dat <- bulk_rowMeans(dat, fruit_fields_names) # 水果🍓
+dat <- dat %>% mutate( 
 	Fruits = rowSums2(select(., sub(".*\\|", "", fruit_fields_names)), na.rm = TRUE),
 	Fruitsnew = ifelse(rowSums2(is.na(select(., starts_with("p104400_")))) > 0 & is.na(Fruits), 0, Fruits)
 ) 
 
-dat <- bulk_rowMeans(dat, nut_fields_names) %>% mutate( # 坚果🌲
+dat <- bulk_rowMeans(dat, nut_fields_names) # 坚果🌲
+dat <- dat %>% mutate( 
 	nut = rowSums2(select(., sub(".*\\|", "", nut_fields_names)), na.rm = TRUE),
 	nutnew = ifelse(rowSums2(is.na(select(., starts_with("p102400_")))) > 0 & is.na(nut), 0, nut)
 )
@@ -64,7 +67,8 @@ dat <- dat %>% mutate(
     Crispbread = rowMeans(select(., starts_with("p101250_")), na.rm = TRUE),
     Oatcakes = rowMeans(select(., starts_with("p101260_")), na.rm = TRUE),
     Otherbread = rowMeans(select(., starts_with("p101270_")), na.rm = TRUE)
-) %>% mutate(
+) 
+dat <- dat %>% mutate(
 	grains = rowSums2(select(., c(sub(".*\\|", "", veg_fields_names), "Slicedbread", "Baguette", "Bap", "Breadroll", "Wholemealpasta", "Crispbread", "Oatcakes", "Otherbread")), na.rm = TRUE),
 	grainsnew = ifelse(rowSums2(is.na(select(., starts_with("p100760_")))) > 0 & is.na(grains), 0, grains)
 )
@@ -90,19 +94,23 @@ dat <- dat %>% mutate( # 🐄🥛
     hardcheese = rowMeans(select(., starts_with("p102810_")), na.rm = TRUE),
     cheesespread = rowMeans(select(., starts_with("p102850_")), na.rm = TRUE),
     Cottagecheese = rowMeans(select(., starts_with("p102870_")), na.rm = TRUE)
-) %>% mutate(
+) 
+dat <- dat %>% mutate( 
     cheese = rowSums2(select(., hardcheese, cheesespread, Cottagecheese), na.rm = TRUE),
     cheesenew = ifelse((!is.na(p102800_i0) | !is.na(p102800_i1) | !is.na(p102800_i2) |  !is.na(p102800_i3) | !is.na(p102800_i4)) & is.na(cheese), 0, cheese)
-) %>% mutate(
+) 
+dat <- dat %>% mutate(
     lowfatdairy = rowSums2(select(., Milk, Yogurt, cheesenew), na.rm = TRUE)
 )
 
-dat <- bulk_rowMeans(dat, sugar_fields_names) %>% mutate( # 🍬🥤
+dat <- bulk_rowMeans(dat, sugar_fields_names) # 🍬🥤
+dat <- dat %>% mutate( 
 	sugar = rowSums2(select(., sub(".*\\|", "", sugar_fields_names)), na.rm = TRUE),
 	sugarnew = ifelse(rowSums2(is.na(select(., starts_with("p100020_")))) > 0 & is.na(sugar), 0, sugar)
 ) 
 
-dat <- bulk_rowMeans(dat, meat_fields_names) %>% mutate( # 红肉🥩
+dat <- bulk_rowMeans(dat, meat_fields_names) # 红肉🥩
+dat <- dat %>% mutate(
 	meat = rowSums2(select(., sub(".*\\|", "", meat_fields_names)), na.rm = TRUE),
 	meatnew = ifelse(rowSums2(is.na(select(., starts_with("p103000_")))) > 0 & is.na(meat), 0, meat),
 ) 
