@@ -1,4 +1,3 @@
-# 说明：在mutate()里面生成的新变量
 pacman::p_load(tidyverse, lubridate, purrr)
 source("D:/scripts/ukb/le8.dash.fields")
 
