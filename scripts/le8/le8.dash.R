@@ -34,10 +34,13 @@ dat0 <- read.table(paste0(indir,"/rap/le8.pku.tab.gz"), sep="\t", header=TRUE, f
 )
 str(dat0, list.len=800); sapply(dat0, class);  
 
-dat0 <- dat0 %>% mutate( across(
-	.cols = matches(paste0("i", 0:4, "$")) & !matches(paste0("p20085_i", 0:4)),
-	.fns = ~ ifelse(get(paste0("p20085_i", substr(cur_column(), 2, 2))) %in% c(3, 4, 6), NA, .)
-))
+dat0 <- dat0 %>% mutate(
+  across(.cols = matches("i0$") & !matches("p20085_i0"),.fns = ~ ifelse(p20085_i0 %in% c(3, 4, 6), NA, .)),
+  across(.cols = matches("i1$") & !matches("p20085_i1"),.fns = ~ ifelse(p20085_i1 %in% c(3, 4, 6), NA, .)),
+  across(.cols = matches("i2$") & !matches("p20085_i2"),.fns = ~ ifelse(p20085_i2 %in% c(3, 4, 6), NA, .)),
+  across(.cols = matches("i3$") & !matches("p20085_i3"),.fns = ~ ifelse(p20085_i3 %in% c(3, 4, 6), NA, .)),
+  across(.cols = matches("i4$") & !matches("p20085_i4"),.fns = ~ ifelse(p20085_i4 %in% c(3, 4, 6), NA, .))
+)
 lapply(dat0, function(x) any(is.nan(x))) # 🏮看是否有NaN 
 
 
