@@ -6,37 +6,36 @@ indir="D:/data/ukb/phe"
 pick_first_number <- function(x) {
 	as.numeric(strsplit(x, "\\|")[[1]][1]) # for strings such as "1|2|3"
 }
-rowSums2 <- function(x, na.rm = TRUE) { # 🏮 如果所有的row都是NA，那么结果也是NA，而不是0
+
+rowSums2 <- function(x, na.rm = TRUE) { # 🏮 如果所有的row都是NA，那么结果也要NA，而不是0
   row_sums <- rowSums(x, na.rm = na.rm)
   row_sums[row_sums == 0 & rowSums(is.na(x)) == ncol(x)] <- NA
   return(row_sums)
 }
+
 bulk_rowMeans <- function(dat, fields_names) {
 	dat %>% mutate( purrr::imap_dfc(fields_names, function(x, name) {
-	prefix <- strsplit(x, "\\|")[[1]][1]
-	new_col <- rowMeans(select(dat, starts_with(prefix)), na.rm = TRUE)
-	setNames(as.data.frame(new_col), strsplit(x, "\\|")[[1]][2])
-	})) %>% mutate_all(~ ifelse(is.nan(.), NA, .)) # 🏮 non-numeric 的数据，会被转换成 NaN，而不是NA
+	prefix <- strsplit(x, "\\|")[[1]][1]; new_col <- rowMeans(select(dat, starts_with(prefix)), na.rm = TRUE)
+	setNames(as.data.frame(new_col), strsplit(x, "\\|")[[1]][2]) }))
 }
+
 replace_if_equal <- function(dat, var_list, num) {
-  sapply(var_list, function(pair) {
-    fields <- strsplit(pair, "\\|")[[1]]
-    ifelse(dat[[fields[1]]] == num, dat[[fields[2]]], 0)
-  })
+  sapply(var_list, function(pair) { fields <- strsplit(pair, "\\|")[[1]]; ifelse(dat[[fields[1]]]==num, dat[[fields[2]]], 0) })
 }
 
 
 dat0 <- read.table(paste0(indir,"/rap/le8.pku.tab.gz"), sep="\t", header=TRUE, flush=TRUE) %>% mutate(
 	across(where(is.numeric), ~ case_when(. == 555 ~ 0.5, . == 444 ~ 0.25, . == 200 ~ 2, . == 300 ~ 3, . == 400 ~ 4, . == 500 ~ 5, . == 600 ~ 6, TRUE ~ .))
-) 
-	
-dat0 <- dat0 %>% mutate(
-	across(.cols = matches("i0$") & !matches("p20085_i0"),.fns = ~ ifelse(p20085_i0 %in% c(3, 4, 6), NA, .)),
-	across(.cols = matches("i1$") & !matches("p20085_i1"),.fns = ~ ifelse(p20085_i1 %in% c(3, 4, 6), NA, .)),
-	across(.cols = matches("i2$") & !matches("p20085_i2"),.fns = ~ ifelse(p20085_i2 %in% c(3, 4, 6), NA, .)),
-	across(.cols = matches("i3$") & !matches("p20085_i3"),.fns = ~ ifelse(p20085_i3 %in% c(3, 4, 6), NA, .)),
-	across(.cols = matches("i4$") & !matches("p20085_i4"),.fns = ~ ifelse(p20085_i4 %in% c(3, 4, 6), NA, .))
 )
+str(dat0, list.len=800); sapply(dat0, class);  
+
+dat0 <- dat0 %>% mutate( across(
+	.cols = matches(paste0("i", 0:4, "$")) & !matches(paste0("p20085_i", 0:4)),
+	.fns = ~ ifelse(get(paste0("p20085_i", substr(cur_column(), 2, 2))) %in% c(3, 4, 6), NA, .)
+))
+lapply(dat0, function(x) any(is.nan(x)))
+# 🏮 如果有NaN，可用 mutate_all(~ ifelse(is.nan(.), NA, .)) 或者 dat0 <- data.frame(lapply(dat0, function(x) { if (is.numeric(x)) { x[is.nan(x)] <- NA } return(x) }))
+
 
 dat <- dat0 %>% mutate( # 热量 🌋
 	energy_total = rowMeans(select(., starts_with("p100002_")), na.rm = TRUE)
@@ -96,10 +95,10 @@ dat <- dat %>% mutate( # 🐄🥛
     Milk = rowMeans(select(., starts_with("milk_")), na.rm = TRUE),
     hardcheese = rowMeans(select(., starts_with("p102810_")), na.rm = TRUE),
     cheesespread = rowMeans(select(., starts_with("p102850_")), na.rm = TRUE),
-    Cottagecheese = rowMeans(select(., starts_with("p102870_")), na.rm = TRUE)
+    cottagecheese = rowMeans(select(., starts_with("p102870_")), na.rm = TRUE)
 ) 
 dat <- dat %>% mutate( 
-    cheese = rowSums2(select(., hardcheese, cheesespread, Cottagecheese), na.rm = TRUE),
+    cheese = rowSums2(select(., hardcheese, cheesespread, cottagecheese), na.rm = TRUE),
 	cheesenew= ifelse((rowSums(across(starts_with("p102800_i"), ~ !is.na(.))) > 0 & is.na(cheese)), 0, cheese)
 ) 
 dat <- dat %>% mutate(
@@ -123,6 +122,7 @@ dat <- dat %>% mutate( # 盐 ⛵
 )
 
 dash <- dat %>% select(eid, vegetablenew, fruitnew, nutnew, grainnew, lowfatdairy, sugarnew, meatnew, sodium)
+lapply(dash, function(x) any(is.nan(x))) # 🏮看是否有NaN 
 
 dash <- dash %>% mutate(
 	quinvegetable = ntile(vegetablenew, 5),
