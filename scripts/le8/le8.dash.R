@@ -32,7 +32,7 @@ replace_if_equal <- function(dat, var_list, num) {
 dat0 <- read.table(paste0(indir,"/rap/le8.pku.tab.gz"), sep="\t", header=TRUE, flush=TRUE) %>% mutate(
 	across(where(is.numeric), ~ case_when(. == 555 ~ 0.5, . == 444 ~ 0.25, . == 200 ~ 2, . == 300 ~ 3, . == 400 ~ 4, . == 500 ~ 5, . == 600 ~ 6, TRUE ~ .))
 )
-str(dat0, list.len=800); sapply(dat0, class);  
+# str(dat0, list.len=800); sapply(dat0, class);  
 
 dat0 <- dat0 %>% mutate(
   across(.cols = matches("i0$") & !matches("p20085_i0"),.fns = ~ ifelse(p20085_i0 %in% c(3, 4, 6), NA, .)),
@@ -76,7 +76,7 @@ dat <- dat %>% mutate(
     Crispbread = rowMeans2(select(., starts_with("p101250_"))),
     Oatcakes = rowMeans2(select(., starts_with("p101260_"))),
     Otherbread = rowMeans2(select(., starts_with("p101270_")))
-) 
+)
 dat <- dat %>% mutate(
 	grain = rowSums2(select(., c(sub(".*\\|", "", porriage_fields_names), "Slicedbread", "Baguette", "Bap", "Breadroll", "Wholemealpasta", "Crispbread", "Oatcakes", "Otherbread"))),
 	grainnew= ifelse((rowSums(across(starts_with("p100760_i"), ~ !is.na(.)), na.rm=TRUE) > 0 & is.na(grain)), 0, grain)
@@ -87,7 +87,9 @@ dat <- dat %>% mutate( # 🐄🥛
     yogurt_1 = ifelse(p20106_i1 == 210, p102090_i1, ifelse(p20106_i1 == 211, 0, NA)),
     yogurt_2 = ifelse(p20106_i2 == 210, p102090_i2, ifelse(p20106_i2 == 211, 0, NA)),
     yogurt_3 = ifelse(p20106_i3 == 210, p102090_i3, ifelse(p20106_i3 == 211, 0, NA)),
-    yogurt_4 = ifelse(p20106_i4 == 210, p102090_i4, ifelse(p20106_i4 == 211, 0, NA)),
+    yogurt_4 = ifelse(p20106_i4 == 210, p102090_i4, ifelse(p20106_i4 == 211, 0, NA))
+)
+dat <- dat %>% mutate(
     Yogurt = rowMeans2(select(., starts_with("yogurt_"))),
     milk_0 = ifelse(p100920_i0 %in% c(2102, 2103), p100520_i0, 0),
     milk_1 = ifelse(p100920_i1 %in% c(2102, 2103), p100520_i1, 0),
@@ -98,12 +100,14 @@ dat <- dat %>% mutate( # 🐄🥛
     milk_1 = ifelse(is.na(p100920_i1), NA, milk_1),
     milk_2 = ifelse(is.na(p100920_i2), NA, milk_2),
     milk_3 = ifelse(is.na(p100920_i3), NA, milk_3),
-    milk_4 = ifelse(is.na(p100920_i4), NA, milk_4),
+    milk_4 = ifelse(is.na(p100920_i4), NA, milk_4)
+)
+dat <- dat %>% mutate(
     Milk = rowMeans2(select(., starts_with("milk_"))),
     hardcheese = rowMeans2(select(., starts_with("p102810_"))),
     cheesespread = rowMeans2(select(., starts_with("p102850_"))),
     cottagecheese = rowMeans2(select(., starts_with("p102870_")))
-) 
+)
 dat <- dat %>% mutate( 
     cheese = rowSums2(select(., hardcheese, cheesespread, cottagecheese)),
 	cheesenew= ifelse((rowSums(across(starts_with("p102800_i"), ~ !is.na(.))) > 0 & is.na(cheese)), 0, cheese)
