@@ -71,7 +71,7 @@ dat <- dat %>% mutate(
     Otherbread = rowMeans(select(., starts_with("p101270_")), na.rm = TRUE)
 ) 
 dat <- dat %>% mutate(
-	grain = rowSums2(select(., c(sub(".*\\|", "", veg_fields_names), "Slicedbread", "Baguette", "Bap", "Breadroll", "Wholemealpasta", "Crispbread", "Oatcakes", "Otherbread")), na.rm = TRUE),
+	grain = rowSums2(select(., c(sub(".*\\|", "", porriage_fields_names), "Slicedbread", "Baguette", "Bap", "Breadroll", "Wholemealpasta", "Crispbread", "Oatcakes", "Otherbread")), na.rm = TRUE),
 	grainnew= ifelse((rowSums(across(starts_with("p100760_i"), ~ !is.na(.))) > 0 & is.na(grain)), 0, grain)
 )
 
