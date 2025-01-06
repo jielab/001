@@ -133,27 +133,35 @@ dat <- dat %>% mutate( # 盐 ⛵
 )
 
 dash <- dat %>% select(eid, vegetablenew, fruitnew, nutnew, grainnew, lowfatdairy, sugarnew, meatnew, sodium)
-lapply(dash, function(x) any(is.nan(x))) # 🏮看是否有NaN 
+lapply(dash, function(x) any(is.nan(x))) # 🏮看是否有NaN
+write.table(dash, "ukb.le8.dash.tsv", append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 
+
+# Assuming your data frame is named dash
+# Create quintiles for each variable
 dash <- dash %>% mutate(
-	quinvegetable = ntile(vegetablenew, 5),
-	quinfruit = ntile(fruitnew, 5),
-	quinnut = ntile(nutnew, 5),
-	quingrain = ntile(grainnew, 5),
-	quinlowfatdairy = ntile(lowfatdairy, 5),
-	quinsugar = ntile(sugarnew, 5),
-	quinmeat = ntile(meatnew, 5),
-	quinsodium = ntile(sodium, 5),
-	quinsugar = ifelse(!is.na(quinsugar), 6 - quinsugar, NA),
-	quinmeat = ifelse(!is.na(quinmeat), 6 - quinmeat, NA),
-	quinsodium_new = ifelse(!is.na(quinsodium), 6 - quinsodium, NA)
+    quinvegetable = ntile(vegetablenew, 5),
+    quinfruit = ntile(fruitnew, 5),
+    quinnut = ntile(nutnew, 5),
+    quingrain = ntile(grainnew, 5),
+    quinlowfatdairy = ntile(lowfatdairy, 5),
+    quinsugar = ntile(sugarnew, 5),
+    quinmeat = ntile(meatnew, 5),
+    quinsodium = ntile(sodium, 5)
 )
-
+dash <- dash %>% mutate( # Reverse coding for specific variables
+    quinsugar = ifelse(!is.na(quinsugar), 6 - quinsugar, NA),
+    quinmeat = ifelse(!is.na(quinmeat), 6 - quinmeat, NA),
+    quinsodium_new = ifelse(!is.na(quinsodium), 6 - quinsodium, NA)
+)
+dash <- dash %>%mutate(dashscore = rowSums(select(., quinvegetable, quinfruit, quinnut, quingrain, quinlowfatdairy, quinsugar, quinmeat, quinsodium), na.rm = TRUE))
+dash$dashscore[apply(is.na(select(dash, vegetablenew, fruitnew, nutnew, grainnew, lowfatdairy, sugarnew, meatnew, sodium)), 1, any)] <- NA
+count_complete <- sum(complete.cases(dash[, c("quinvegetable", "quinfruit", "quinnut", "quingrain", "quinlowfatdairy", "quinsugar", "quinmeat", "quinsodium")]))
+dashscore_percentiles <- quantile(dash$dashscore, probs = c(0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.47, 0.48, 0.49, 0.50, 0.51, 0.52, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.93, 0.94, 0.95), na.rm = TRUE)
+summary(dashscore_percentiles)
 dash <- dash %>% mutate(
-	dashscore = rowSums2(select(., c("quinvegetable", "quinfruit", "quinnut", "quingrain", "quinlowfatdairy", "quinsugar", "quinmeat", "quinsodium"))),
-	dashscore = ifelse(is.na(vegetablenew) | is.na(fruitnew) | is.na(nutnew) | is.na(grainnew) | is.na(lowfatdairy) | is.na(sugarnew) | is.na(meatnew) | is.na(sodium), NA, dashscore),
-	dashscore_pctile = cut(dashscore, breaks = c(-Inf, unique(quantile(dashscore, probs = c(0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.47, 0.48, 0.49, 0.50, 0.51, 0.52, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.93, 0.94, 0.95), na.rm = TRUE)), Inf), labels = FALSE, right = TRUE),
-	dashpts = case_when(dashscore > 0 & dashscore < 17 ~ 0, dashscore >= 17 & dashscore < 21 ~ 25, dashscore >= 21 & dashscore < 26 ~ 50, dashscore >= 26 & dashscore < 31 ~ 80, dashscore >= 31 ~ 100, TRUE ~ NA_real_)
+    newdashscore = case_when(dashscore > 0 & dashscore < 17 ~ 1, dashscore >= 17 & dashscore < 21 ~ 2, dashscore >= 21 & dashscore < 26 ~ 3, dashscore >= 26 & dashscore < 31 ~ 4, dashscore >= 31 ~ 5, TRUE ~ NA_real_),
+    dashpts = case_when(dashscore > 0 & dashscore < 17 ~ 0, dashscore >= 17 & dashscore < 21 ~ 25, dashscore >= 21 & dashscore < 26 ~ 50, dashscore >= 26 & dashscore < 31 ~ 80, dashscore >= 31 ~ 100, TRUE ~ NA_real_)
 )
 
 saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.rds"))
