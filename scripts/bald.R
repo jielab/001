@@ -12,37 +12,56 @@ dat <- dat0 %>% filter(ethnic_cat=="White", sex==1) %>% mutate(
 )
 table(dat$sexf_cat); table(dat$sexp_cat)
 
+covs <- "age bmi smoke_status alcohol_status deprivation sexf_cat sexp_cat bb_TES bb_SHBG bb_VITD bb_IGF1" %>% strsplit(" ") %>% unlist()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Table 1: 基本信息及Pheno关联
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-library(compareGroups); descrTable( bald ~ age +bmi +bb_TES +smoke_status +alcohol_status +deprivation +IPAQ_activity, data=dat, digits=1)
-library(gtsummary); dat %>% filter(sex==1) %>% dplyr::select(bald, age, bmi, smoke_status, alcohol_status, deprivation, IPAQ_activity, bb_TES) %>% tbl_summary(by=bald, missing="no") %>% add_p()
-fit12 <- glm(bald12 ~ sexf_cat+sexp_cat + age+bmi +bb_TES, data=dat, family="binomial")
-fit13 <- glm(bald13 ~ sexf_cat+sexp_cat + age+bmi +bb_TES, data=dat, family="binomial")
-fit14 <- glm(bald14 ~ sexf_cat+sexp_cat + age+bmi +bb_TES, data=dat, family="binomial")
-library(forestmodel); forest_model(model_list=list(fit12, fit13, fit14), covariates=c("sexf_cat","sexp_cat", "age", "bmi", "bb_TES"), merge_models=T)
-library(sjPlot); plot_models(fit12, fit13, fit14, std.est="std", axis.lim=c(0.75,1.25), show.values=TRUE, show.p=TRUE, p.shape=FALSE)
-fit <- lm(age_fsex ~ factor(bald) +sexp_cat +age +bmi +smoke_status +alcohol_status +IPAQ_activity +bb_SHBG+bb_TES, data=dat); summary(fit)
-fit <- nnet::multinom(bald ~ sexf_cat +sexp_cat +age +bmi +smoke_status +alcohol_status +IPAQ_activity +bb_SHBG+bb_TES, data=dat); summary(fit)
+library(compareGroups); descrTable(formula=as.formula(paste(c("bald ~ ", paste(covs, collapse="+")), collapse="")), data=dat, digits=1)
+library(gtsummary); dat %>% filter(sex==1) %>% select(all_of(c("bald", covs))) %>% tbl_summary(by=bald, missing="no") %>% add_p()
+Y="bald12"; fit <- glm(formula=as.formula(paste(c(Y, " ~ ", paste(covs, collapse="+")), collapse="")), data=dat, family="binomial"); summary(fit)
+library(forestmodel); forest_model(fit)
+# fit <- lm(age_fsex ~ factor(bald) +..., data=dat); 
+# fit <- nnet::multinom(bald ~ covs, data=dat)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Proteome🥚关联
+# Proteome🥚的PCA和cluster
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+set.seed(123)
 prots <- grep("prot_", names(dat), value=T)
-covariates <- c("age", "bmi", "smoke_status", "alcohol_status",  "deprivation", "IPAQ_activity", "bb_TES")
-Y="bald14"
+dat <- dat[!apply(dat[prots], 1, function(x) all(is.na(x))), ] # 去掉没有任何蛋白质数据的人
+dat1 <- dat %>% select(all_of(prots)) # 只保留protein的所有列
+	print(mis.top <- dat1 %>% summarise(across(everything(), ~ mean(is.na(.)))) %>% gather(variable, missing_rate) %>% arrange(desc(missing_rate)) %>% head(., 20))
+	to_exclude <- mis.top[mis.top$missing_rate>0.25, "variable"]
+	dat1 <- dat1 %>% select(-all_of(to_exclude)) # 去掉缺失数据太多的protein
+	prots=setdiff(prots, to_exclude) # 更新 protein 名单
+	names(dat1) <- gsub("prot_", "", names(dat1))
+dat1 <- as.data.frame(lapply(dat1, function(x) { x[is.na(x)] <- mean(x, na.rm=TRUE); return(x)})) # 填补protein缺失数据
+	dat1 <- t(dat1); pca_result <- prcomp(dat1, scale.=TRUE) # t()之后就能计算🥚PCA，否则计算🙍的PCA
+	screeplot(pca_result, main="Scree Plot of PCA", col="blue", type="lines")
+	biplot(pca_result, main="PCA Biplot")
+	kmeans_result <- kmeans(dat1, centers=3)
+	dat1$cluster <- factor(kmeans_result$cluster)
+	dat1.pca <- data.frame(pca_result$x)
+	dat1.pca$cluster <- factor(kmeans_result$cluster)
+	ggplot(dat1.pca, aes(x=PC1, y=PC2, color=cluster)) + geom_point(alpha=0.6) +labs(title="", x="PC1", y="PC2") + theme_minimal()
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Proteome🥚的关联
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Y="bald12"
+prots <- grep("prot_", names(dat), value=T) # 🏮 prot_ met_ bb_ bc_
 res <- data.frame(Protein=character(), BETA=numeric(), P=numeric(), stringsAsFactors=FALSE)
 for (X in prots) {
 	print(X)
 	if (sum(!is.na(dat[[X]])) < 10000) {
 		res <- rbind(res, data.frame(Protein=X, BETA=NA, P=NA))
 	} else {
-		formula <- as.formula(paste(Y, "~", X, "+", paste(covariates, collapse=" + ")))
-		model <- glm(formula, data=dat, family="binomial")
-		beta <- summary(model)$coefficients[2, 1]
-		pval <- summary(model)$coefficients[2, 4] 
+		model <- glm(as.formula(paste(Y, "~", X, "+", paste(covs, collapse=" + "))), data=dat, family="binomial")
+		beta <- summary(model)$coef[2, 1]
+		pval <- summary(model)$coef[2, 4] 
 		res <- rbind(res, data.frame(Protein=X, BETA=beta, P=pval))
 	}
 }
@@ -110,7 +129,7 @@ surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 热力图 🌋
+# Proteome与常见病的热力图 🌋
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ggpairs(tips, mapping=aes(color=sex), columns=c("total_bill", "time", "tip"))
 library(ComplexHeatmap); library(GGally) # BiocManager::install(version="3.20")
