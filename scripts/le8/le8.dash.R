@@ -118,7 +118,9 @@ dat <- dat %>% mutate(
 
 dat <- bulk_rowMeans(dat, sugar_fields_names) # 🍬🥤
 dat <- dat %>% mutate( 
-	sugar = rowSums2(select(., sub(".*\\|", "", sugar_fields_names))),
+	sugar = rowSums2(select(., sub(".*\\|", "", sugar_fields_names)))
+) 
+dat <- dat %>% mutate(
 	sugarnew= ifelse((rowSums(across(starts_with("p100020_i"), ~ !is.na(.))) > 0 & is.na(sugar)), 0, sugar)
 ) 
 
