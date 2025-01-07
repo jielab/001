@@ -29,7 +29,8 @@ replace_if_equal <- function(dat, var_list, num) {
 }
 
 
-dat0 <- read.table(paste0(indir,"/rap/le8.pku.tab.gz"), sep="\t", header=TRUE, flush=TRUE) %>% mutate(
+dat0 <- read.table("D:/github/001/scripts/le8/le8.pku.raw.gz", sep="\t", fill=TRUE, header=TRUE) 
+dat0 <- dat0 %>% mutate(
 	across(where(is.numeric), ~ case_when(. == 555 ~ 0.5, . == 444 ~ 0.25, . == 200 ~ 2, . == 300 ~ 3, . == 400 ~ 4, . == 500 ~ 5, . == 600 ~ 6, TRUE ~ .))
 )
 # str(dat0, list.len=800); sapply(dat0, class);  
@@ -136,7 +137,10 @@ dat <- dat %>% mutate( # 盐 ⛵
 
 dash <- dat %>% select(eid, vegetablenew, fruitnew, nutnew, grainnew, lowfatdairy, sugarnew, meatnew, sodium)
 lapply(dash, function(x) any(is.nan(x))) # 🏮看是否有NaN
-write.table(dash, "ukb.le8.dash.tsv", append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
+write.table(dash, "ukb.le8.dash.R.tsv", append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
+pku <- read.table("D:/github/001/scripts/le8/le8.pku.dash-out.9col", sep="\t", fill=TRUE, header=TRUE) 
+
+
 
 
 # Assuming your data frame is named dash
