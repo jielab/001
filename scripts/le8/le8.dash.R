@@ -36,13 +36,13 @@ dat0 <- dat0 %>% mutate(
 # str(dat0, list.len=800); sapply(dat0, class);  
 
 dat0 <- dat0 %>% mutate(
-  across(.cols = matches("i0$") & !matches("p20085_i0"),.fns = ~ ifelse(p20085_i0 %in% c(3, 4, 6), NA, .)),
-  across(.cols = matches("i1$") & !matches("p20085_i1"),.fns = ~ ifelse(p20085_i1 %in% c(3, 4, 6), NA, .)),
-  across(.cols = matches("i2$") & !matches("p20085_i2"),.fns = ~ ifelse(p20085_i2 %in% c(3, 4, 6), NA, .)),
-  across(.cols = matches("i3$") & !matches("p20085_i3"),.fns = ~ ifelse(p20085_i3 %in% c(3, 4, 6), NA, .)),
-  across(.cols = matches("i4$") & !matches("p20085_i4"),.fns = ~ ifelse(p20085_i4 %in% c(3, 4, 6), NA, .))
+  across(.cols = matches("i0$") & !matches("p20085_i0") & !matches("p100020_i0"), .fns = ~ ifelse(p20085_i0 %in% c(3, 4, 6), NA, .)),
+  across(.cols = matches("i1$") & !matches("p20085_i1") & !matches("p100020_i1"), .fns = ~ ifelse(p20085_i1 %in% c(3, 4, 6), NA, .)),
+  across(.cols = matches("i2$") & !matches("p20085_i2") & !matches("p100020_i2"), .fns = ~ ifelse(p20085_i2 %in% c(3, 4, 6), NA, .)),
+  across(.cols = matches("i3$") & !matches("p20085_i3") & !matches("p100020_i3"), .fns = ~ ifelse(p20085_i3 %in% c(3, 4, 6), NA, .)),
+  across(.cols = matches("i4$") & !matches("p20085_i4") & !matches("p100020_i4"), .fns = ~ ifelse(p20085_i4 %in% c(3, 4, 6), NA, .))
 )
-lapply(dat0, function(x) any(is.nan(x))) # 🏮看是否有NaN 
+# lapply(dat0, function(x) any(is.nan(x))) # 🏮看是否有NaN 
 
 
 dat <- dat0 %>% mutate( # 热量 🌋
@@ -122,7 +122,8 @@ dat <- dat %>% mutate(
 	sugar = rowSums2(select(., sub(".*\\|", "", sugar_fields_names)))
 ) 
 dat <- dat %>% mutate(
-	sugarnew= ifelse((rowSums(across(starts_with("p100020_i"), ~ !is.na(.))) > 0 & is.na(sugar)), 0, sugar)
+#	sugarnew= ifelse(any(!is.na(c("p100020_i0", "p100020_i1", "p100020_i2", "p100020_i3", "p100020_i4")) && is.na(sugarnew)), 0, sugar) 
+	sugarnew= ifelse((rowSums2(across(starts_with("p100020_i"), ~ !is.na(.))) > 0 & is.na(sugar)), 0, sugar)
 ) 
 
 dat <- bulk_rowMeans(dat, meat_fields_names) # 红肉🥩
@@ -136,15 +137,10 @@ dat <- dat %>% mutate( # 盐 ⛵
 )
 
 dash <- dat %>% select(eid, vegetablenew, fruitnew, nutnew, grainnew, lowfatdairy, sugarnew, meatnew, sodium)
-lapply(dash, function(x) any(is.nan(x))) # 🏮看是否有NaN
 write.table(dash, "ukb.le8.dash.R.tsv", append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
-pku <- read.table("D:/github/001/scripts/le8/le8.pku.dash-out.9col", sep="\t", fill=TRUE, header=TRUE) 
+# pku <- read.table("D:/github/001/scripts/le8/le8.pku.dash-out.9col", sep="\t", fill=TRUE, header=TRUE) 
+# pku <- read_excel("D:/github/001/scripts/le8/le8.pku.all-out.xlsx")
 
-
-
-
-# Assuming your data frame is named dash
-# Create quintiles for each variable
 dash <- dash %>% mutate(
     quinvegetable = ntile(vegetablenew, 5),
     quinfruit = ntile(fruitnew, 5),
@@ -155,19 +151,14 @@ dash <- dash %>% mutate(
     quinmeat = ntile(meatnew, 5),
     quinsodium = ntile(sodium, 5)
 )
-dash <- dash %>% mutate( # Reverse coding for specific variables
+dash <- dash %>% mutate(
     quinsugar = ifelse(!is.na(quinsugar), 6 - quinsugar, NA),
     quinmeat = ifelse(!is.na(quinmeat), 6 - quinmeat, NA),
-    quinsodium_new = ifelse(!is.na(quinsodium), 6 - quinsodium, NA)
+    quinsodium = ifelse(!is.na(quinsodium), 6 - quinsodium, NA)
 )
-dash <- dash %>%mutate(dashscore = rowSums(select(., quinvegetable, quinfruit, quinnut, quingrain, quinlowfatdairy, quinsugar, quinmeat, quinsodium), na.rm = TRUE))
+dash <- dash %>% mutate(dashscore = rowSums(select(., quinvegetable, quinfruit, quinnut, quingrain, quinlowfatdairy, quinsugar, quinmeat, quinsodium), na.rm=TRUE))
 dash$dashscore[apply(is.na(select(dash, vegetablenew, fruitnew, nutnew, grainnew, lowfatdairy, sugarnew, meatnew, sodium)), 1, any)] <- NA
-count_complete <- sum(complete.cases(dash[, c("quinvegetable", "quinfruit", "quinnut", "quingrain", "quinlowfatdairy", "quinsugar", "quinmeat", "quinsodium")]))
-dashscore_percentiles <- quantile(dash$dashscore, probs = c(0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.47, 0.48, 0.49, 0.50, 0.51, 0.52, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.93, 0.94, 0.95), na.rm = TRUE)
-summary(dashscore_percentiles)
-dash <- dash %>% mutate(
-    newdashscore = case_when(dashscore > 0 & dashscore < 17 ~ 1, dashscore >= 17 & dashscore < 21 ~ 2, dashscore >= 21 & dashscore < 26 ~ 3, dashscore >= 26 & dashscore < 31 ~ 4, dashscore >= 31 ~ 5, TRUE ~ NA_real_),
-    dashpts = case_when(dashscore > 0 & dashscore < 17 ~ 0, dashscore >= 17 & dashscore < 21 ~ 25, dashscore >= 21 & dashscore < 26 ~ 50, dashscore >= 26 & dashscore < 31 ~ 80, dashscore >= 31 ~ 100, TRUE ~ NA_real_)
-)
+# dash <- dash %>% arrange(dashscore)
+dash <- dash %>% mutate(dashpts = case_when(dashscore > 0 & dashscore < 17 ~ 0, dashscore >= 17 & dashscore < 21 ~ 25, dashscore >= 21 & dashscore < 26 ~ 50, dashscore >= 26 & dashscore < 31 ~ 80, dashscore >= 31 ~ 100, TRUE ~ NA_real_))
 
 saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.rds"))
