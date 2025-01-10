@@ -22,7 +22,7 @@ zcat ABC.gwas.gz | awk 'NR==1 || $NF<5e-8 {b=sprintf("%.0f",$3/1e5); print $1,$2
 > 对应的R代码如下🔔🏮
 ```
 dat <- read.table("GWAS.gz", header=T) %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+06))
-dat %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
+dat %>% group_by(CHR, mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
 ```
 <br/>
 
