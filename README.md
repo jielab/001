@@ -15,13 +15,13 @@
 > 所以下载后解压后需要将那个 .map 文件先用 liftOver 转化为 b37 格式，然后用 PLINK 生成 bed/bim/fam 文件。
 > 这个基因数据可供 LDSC 和 GSMR 等软件使用。
 > 通过LD的计算来找到GWAS数据里面的independent top hits，计算量很大。如果不考虑 SNP之间的LD，只考虑距离，假设GWAS的第1，2，3 列分别是 SNP, CHR, POS，最后一列是P，可以用下面这个简单的代码来寻找GWAS数据里面每1MB区间的top SNP。
-```
-cat XXX.txt | awk 'NR==1 || $NF<5e-8 {b=int($3/1e+05)+1; print $1,$2,$3,b,$4}' | \
+
+cat XXX.txt | awk 'NR==1 || $NF<=5e-8 {x=$3/1e+05; y=int(x); b=(x>y?y+1:y); print $1,$2,$3,b,$4}' | \
 	sort -k 2,2n -k 4,4n -k 5,5g | awk '{block=$2"."$4; if (arr[block] !="Y") print $0; arr[block] ="Y"}'
 ```
 > 对应的R代码如下🔔🏮
 ```
-dat <- read.table("GWAS.gz", header=T) %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+05))
+dat <- read.table("XXX.txt", header=T) %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+05))
 dat1 <- dat %>% group_by(CHR, mb) %>% slice(which.min(P)) %>% ungroup()
 ```
 <br/>
