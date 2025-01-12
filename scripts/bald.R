@@ -2,6 +2,7 @@ pacman::p_load(data.table, tidyverse, lubridate, survival, vivid, rcssci)
 
 dir0='D:/'
 source(paste0(dir0, '/scripts/f/f.R'))
+
 dat0 <- readRDS(file=paste0(dir0, "/data/ukb/phe/Rdata/all.plus.rds")); sum(!is.na(dat0$date_death))
 dat <- dat0 %>% filter(ethnic_cat=="White", sex==1) %>% mutate(
 	bald12=ifelse(bald==1,0, ifelse(bald==2,1,NA)),
@@ -53,34 +54,24 @@ dat1 <- as.data.frame(lapply(dat1, function(x) { x[is.na(x)] <- mean(x, na.rm=TR
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Y="bald12"
 prots <- grep("prot_", names(dat), value=T) # 🏮 prot_ met_ bb_ bc_
-res <- data.frame(Protein=character(), BETA=numeric(), P=numeric(), stringsAsFactors=FALSE)
+res <- data.frame(prot=character(), BETA=numeric(), P=numeric(), stringsAsFactors=FALSE)
 for (X in prots) {
-	print(X)
 	if (sum(!is.na(dat[[X]])) < 10000) {
-		res <- rbind(res, data.frame(Protein=X, BETA=NA, P=NA))
+		res <- rbind(res, data.frame(prot=X, BETA=NA, P=NA))
 	} else {
 		model <- glm(as.formula(paste(Y, "~", X, "+", paste(covs, collapse=" + "))), data=dat, family="binomial")
-		beta <- summary(model)$coef[2, 1]
-		pval <- summary(model)$coef[2, 4] 
-		res <- rbind(res, data.frame(Protein=X, BETA=beta, P=pval))
+		res <- rbind(res, data.frame(prot=X, BETA=summary(model)$coef[2,1], P=summary(model)$coef[2,4]))
 	}
 }
-sum(!is.na(res$BETA))
-res$Standardized_BETA <- scale(res$BETA)
-significance_threshold <- 0.05
-res$Color <- with(res, ifelse(P < significance_threshold & Standardized_BETA > 0, "Positive Significant", ifelse(P < significance_threshold & Standardized_BETA < 0, "Negative Significant", "Not Significant")))
-res <- res[order(res$P), ]
-top5 <- head(res, 5)
-	res$Label <- toupper(gsub("prot_", "", ifelse(res$Protein %in% top5$Protein, res$Protein, "")))
-	top5_data <- subset(res, Label != "")
-ggplot(res, aes(x=Standardized_BETA, y=-log10(P), color=Color)) + geom_point(size=2) +
-	scale_color_manual(values=c("Positive Significant"="purple", "Negative Significant"="green", "Not Significant"="gray")) +
-	geom_text(data=top5_data, aes(label=Label), hjust=0, vjust=-1.5, size=3.5, color="black", fontface="bold") +
-	geom_segment(data=top5_data, aes(x=Standardized_BETA + 0.05, y=-log10(P) + 1, xend=Standardized_BETA, yend=-log10(P)), color="black") +
-	geom_hline(yintercept=-log10(significance_threshold), linetype="dashed", linewidth=1.2) +
-	geom_vline(xintercept=0, linetype="solid", linewidth=1.2) + theme_minimal() +
-	labs(x="Standardized beta", y="-log10(P)", title=Y) +
-	theme(axis.text=element_text(size=12, face="bold"), axis.title=element_text(size=14, face="bold"), axis.line=element_line(linewidth=1.2), legend.position="none", plot.title=element_text(size=16, face="bold", hjust=0.5))
+valcano(res, "prot", "BETA", "P", 0.05)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Proteome🥚的 cisMr 🏮
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Y="bald14"
+res <- read.table("D:/analysis/assoc.sum/bald.cisMr.log", header=TRUE) %>% filter(Y== !!Y) # 🍬
+valcano(res, "X", "BETA", "P", 0.05)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

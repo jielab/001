@@ -10,6 +10,23 @@ hardcall <- function(x) ifelse(x<0.5, 0, ifelse(x<1.5, 1, 2))
 expo <- function(x) 1.1^x
 
 
+valcano <- function( # 🌋
+  res, prot, BETA, P, sig.level) {
+	res$BETA.std <- scale(res$BETA)
+	res$color <- with(res, ifelse(P < sig.level & BETA.std > 0, "positive", ifelse(P < sig.level & BETA.std < 0, "negative", "NS")))
+	res <- res[order(res$P), ]
+	top5 <- head(res, 5); top5$label=toupper(gsub("prot_", "", top5[[prot]]))
+	ggplot(res, aes(x=BETA.std, y=-log10(P), color=color)) + geom_point(size=2) +
+		scale_color_manual(values=c("positive"="purple", "negative"="green", "NS"="gray")) +
+		geom_text(data=top5, aes(label=label), hjust=0, vjust=-1.5, size=3.5, color="black", fontface="bold") +
+	#	geom_segment(data=top5, aes(x=BETA.std + 0.05, y=-log10(P) + 1, xend=BETA.std, yend=-log10(P)), color="black") +
+		geom_hline(yintercept=-log10(sig.level), linetype="dashed", color="red", linewidth=1.2) +
+		geom_vline(xintercept=0, linetype="dotted", linewidth=1.2) + theme_minimal() +
+		labs(x="Standardized beta", y="-log10(P)", title=Y) +
+		theme(axis.text=element_text(size=12, face="bold"), axis.title=element_text(size=14, face="bold"), axis.line=element_line(linewidth=1.2), legend.position="none", plot.title=element_text(size=16, face="bold", hjust=0.5))
+}
+
+
 allele.qc <- function( # 🏮
   a1,a2,ref1,ref2) {
 	flip1=ref1; flip1[ref1=="A"]="T"; flip1[ref1=="T"]="A"; flip1[ref1=="G"]="C"; flip1[ref1=="C"]="G"
@@ -50,12 +67,12 @@ run_mr2s <- function( # 🏮 常规的 TwoSampleMR
 		write.table(dat.X.iv, paste0(dir.X, '/', X, '.NEW.top.snp'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 	}
 
-	if(nrow(dat.X.iv)==0) {write(paste(X,Y, "SKIP: data X has no IV !!"), file=log_file, append=FALSE); next}	
+	if(nrow(dat.X.iv)==0) {write(paste(X,Y, "SKIP: data X has no IV !!"), file=log_file, append=FALSE); return(NULL)}	
 	dat.X <- dat.X.raw %>% merge(dat.X.iv) 
 		dat.X <- IV.filter(dat.X, "CHR", "POS", "EAF", "BETA", "N") %>% 
 		format_data(type='exposure', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
 	dat.Y.4x <- subset(dat.Y.raw, SNP %in% dat.X$SNP) 
-		if(nrow(dat.Y.4x)==0) {write(paste(X,Y, "SKIP: IV SNPs don't exist in Y!!"), file=log_file, append=FALSE); next}	
+		if(nrow(dat.Y.4x)==0) {write(paste(X,Y, "SKIP: IV SNPs don't exist in Y!!"), file=log_file, append=FALSE); return(NULL)}	
 		dat.Y.4x <- dat.Y.4x %>% format_data(type='outcome', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome=Y)		
 	dat.XY <- harmonise_data(dat.X, dat.Y.4x, action=1) 
 	write.table(dat.XY, paste0(label, '.dat'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
@@ -79,7 +96,7 @@ run_cisMr <- function( # 🏮 参考 https://github.com/ZhaotongL/cisMR-paper/bl
 	dat.X <- dat.X.raw %>% filter(CHR==chr, POS>=(pos0-flank), POS<=(pos1+flank)) %>% select(SNP,EA,NEA,EAF,BETA,SE,P,N); names(dat.X) <- header
 	dat.Y <- dat.Y.raw %>% filter(SNP %in% dat.X$SNP) %>% select(SNP,EA,NEA,EAF,BETA,SE,P); dat.Y$N <- 100000; names(dat.Y) <- header.y
 	dat.XY <- merge(dat.X, dat.Y, by='SNP')
-		if(nrow(dat.XY)==0) {write(paste('SKIP:', X, Y, 'merged data is empty'), file=log_file, append=TRUE); next}
+		if(nrow(dat.XY)==0) {write(paste('SKIP:', X, Y, 'merged data is empty'), file=log_file, append=TRUE); return(NULL)}
 		remove_flip = allele.qc(dat.XY$A1, dat.XY$A2, dat.XY$A1.y, dat.XY$A2.y)
 		dat.XY$b[which(remove_flip$sign_flip)] = -dat.XY$b[which(remove_flip$sign_flip)]
 		dat.XY$freq[which(remove_flip$sign_flip)] = 1-dat.XY$freq[which(remove_flip$sign_flip)]
@@ -90,8 +107,8 @@ run_cisMr <- function( # 🏮 参考 https://github.com/ZhaotongL/cisMR-paper/bl
 		fwrite(dat.Y, paste0(Y,'.4gcta'), sep='\t')
 					
 	X.cojo.fn <- paste0(dir.X.cojo, '/', X, '.jma.cojo')
-		if(!file.exists(X.cojo.fn)) { write(paste('SKIP:', X, dir.X.cojo, '/', X, '.jma.cojo files does not exist'), file=log_file, append=TRUE); next }
-		X.cojo <- fread(X.cojo.fn); if(length(X.cojo$SNP)<3) {write(paste('SKIP:', X, 'jma.cojo files less than 3 records'), file=log_file, append=TRUE); next}
+		if(!file.exists(X.cojo.fn)) { write(paste('SKIP:', X, dir.X.cojo, '/', X, '.jma.cojo files does not exist'), file=log_file, append=TRUE); return(NULL) }
+		X.cojo <- fread(X.cojo.fn); if(length(X.cojo$SNP)<3) {write(paste('SKIP:', X, 'jma.cojo files less than 3 records'), file=log_file, append=TRUE); return(NULL)}
 	
 	Y.cojo.fn <- paste0(Y, '.jma.cojo')
 		Y.cojo.cmd <- paste("gcta", bfile, "--cojo-file", paste0(Y,'.4gcta'), "--cojo-slct --cojo-p 5e-8 --out", Y); system(Y.cojo.cmd)
@@ -100,7 +117,7 @@ run_cisMr <- function( # 🏮 参考 https://github.com/ZhaotongL/cisMR-paper/bl
 	write.table(IV, paste0(X, '.iv'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=FALSE)
 	
 	XY.cojo.cmd = paste("gcta", bfile, "--cojo-file", paste0(X,'.4gcta'), "--extract", paste0(X, ".iv --cojo-joint --out"), X) # 🏮
-		p = system(XY.cojo.cmd, intern=FALSE); if(p==1) { write(paste('SKIP:', X, Y, '--cojo-joint does not run'), file=log_file, append=TRUE); next }
+		p = system(XY.cojo.cmd, intern=FALSE); if(p==1) { write(paste('SKIP:', X, Y, '--cojo-joint does not run'), file=log_file, append=TRUE); return(NULL) }
 	
 	LD_mat = fread(paste0(X, '.ldr.cojo'))
 	LD_mat = LD_mat[,2:(ncol(LD_mat)-1)]; LD_mat = as.matrix(LD_mat); rownames(LD_mat) = colnames(LD_mat)
@@ -135,8 +152,8 @@ run_coloc <- function( # 🏮
 	dat.X <- dat.X.raw %>% filter(CHR==chr, POS>=(pos0-flank), POS<=(pos1+flank)) %>% format_data(type='exposure', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
 	dat.Y <- dat.Y.raw %>% filter(CHR==chr, POS>=(pos0-flank), POS<=(pos1+flank)) %>% format_data(type='outcome', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome=Y)		
 	dat.XY <- harmonise_data(dat.X, dat.Y, action=1)
-	if(nrow(dat.XY)==0) {write(paste('SKIP:', X, Y, 'merged data is empty'), file=log_file, append=TRUE); next}
-	if (min(dat.XY$pval.outcome) >1e-5) { write(paste(X, Y, min(dat.XY$pval.outcome), "SKIP: the minimum P-value in data Y is not significant"), file=log_coloc, append=TRUE); next}
+	if(nrow(dat.XY)==0) {write(paste('SKIP:', X, Y, 'merged data is empty'), file=log_file, append=TRUE); return(NULL)}
+	if (min(dat.XY$pval.outcome) >1e-5) { write(paste(X, Y, min(dat.XY$pval.outcome), "SKIP: the minimum P-value in data Y is not significant"), file=log_coloc, append=TRUE); return(NULL)}
 	
 	dat.coloc.X <- dat.XY %>% {list(type="quant", snp=.$SNP, position=.$pos.exposure, MAF=.$eaf.exposure, N=.$samplesize.exposure, beta=.$beta.exposure, varbeta =.$se.exposure^2, pvalues=.$pval.exposure)}
 	dat.coloc.Y <- dat.XY %>% {list(type="cc", snp=.$SNP, position=.$pos.outcome, MAF=.$eaf.outcome, N=500000, beta=.$beta.outcome, varbeta =.$se.outcome^2, pvalues=.$pval.outcome)}
