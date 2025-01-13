@@ -51,6 +51,7 @@ for (Y in Ys) { # 🙍
 		run_mr2s(label, X, dir.X, dat.X.raw, Y, dir.Y, dat.Y.raw)
 		run_mr2s(label, Y, dir.Y, dat.Y.raw, X, dir.X, dat.X.raw) 
 	}
+	p.X2Y <- read.table(paste0(label,".mr.log"), header=TRUE)[1,"P.ivw"]
 
 	if (cisMr==1) { # cisMr 🏮
 		chrPos <- subset(glist, V4==X)
@@ -60,7 +61,7 @@ for (Y in Ys) { # 🙍
 		run_cisMr(label, chr, flank, pos0, pos1, X, dat.X.raw, dir.X.cojo, Y, dat.Y.raw)
 	}
 	
-	if (coloc==1) { # coloc 🏮
+	if (coloc==1 & p.X2Y <=5e-05) { # coloc 🏮
 		chrPos <- subset(glist, V4==X)
 		if (nrow(chrPos)!=1) { write(paste(X,Y,nrow(dat.X.raw), "SKIP:", X, "does not have positions"), file=paste0(label,'.cisMr.log'), append=FALSE); next }
 		chr=chrPos[1,1]; flank=100000; pos0=chrPos[1,2]; pos1=chrPos[1,3]
@@ -68,7 +69,7 @@ for (Y in Ys) { # 🙍
 		run_coloc(label, chr, flank, pos0, pos1, X, dat.X.raw, Y, dat.Y.raw)
 	}
 		
-	if(mrMed==1 & p.X2Y <=0.05) { # mrMed 🏮
+	if(mrMed==1 & p.X2Y <=5e-02) { # mrMed 🏮
 		write("X M Y n-IV BETA.xy P.xy TE P.TE ACME P.ACME ADE P.ADE Prop P.Prop", file=paste0(label,'.mrMed.log'), append=FALSE)
 		for (file.M in Ms.full) { run_mrMed(label, X, dat.X.raw, file.M, Y, dat.Y.raw) }
 	}
