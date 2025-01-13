@@ -205,8 +205,20 @@ GWAS-PRS-MR ”三驾马车“ 入门：
 <br/>
 
 
-一些有用、有趣的实用工具：
+R集锦
 > - [The R Graph Gallery](https://r-graph-gallery.com/index.html)
 > - [Top 100 R resources on COVID-19 Coronavirus](https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/)
+
+Linux小妙招🏂
+```
+  批量删除文件： ls | grep -vE "\.log$|\.dat$" | xargs rm -f
+  后台执行命令： 2>&1； 在HPC上后台提交： nohup sh assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
+  后台多线程下载： apt-get install aria2;  sudo screen -S jack -d -m aria2c -x 4 -i files.txt; 然后查看 sudo screen -r jack
+  基于某一列生成多个文件： awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
+  将duplicate改名唯一： awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr20.bim.COPY 
+    --set-all-var-ids to generate new IDs based on position and alleles, to avoid duplicate IDs
+  将文件每列读入变量中： cut -f 1,4 $file | while IFS=$'\t' read -r pheno_code file_url; do file_name=$(basename $file_url); file_ext=${file_name##*.}
+  tabix -pbed; tabix -s1 -b2 -e2; bedtools intersect -a -b -wa
+```
 <br/>
 <br/>
