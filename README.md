@@ -205,27 +205,27 @@ GWAS-PRS-MR ”三驾马车“ 入门：
 <br/>
 
 
-R集锦
+R集锦🏂
 ```
 > packageVersion("XY"); remove.packages("XY"); update.packages(ask=FALSE, checkBuilt=TRUE)
 > install.packages("XY", repos="http://cran.rstudio.com/", dependencies=TRUE)
-> 本机： Windows底部 “搜索” 写 env，在“环境变量”里 将 R_LIBS_USER 设为 D:\software_win\R_lib
-> HPC： source /share/apps/anaconda3/2020.7/bin/activate /work/sph-huangj/.conda/envs/R4.4.2
-        export R_LIBS=/work/sph-huangj/.conda/envs/R4.4.2/lib/R/library:/work/sph-huangj/.conda/envs/R/lib/R/library:$R_LIBS
-> 画图集锦： https://r-graph-gallery.com/index.html
-> R新冠地图：https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/
+> 本机: Windows底部 “搜索” 写 env，在“环境变量”里 将 R_LIBS_USER 设为 D:\software_win\R_lib
+> HPC: source /share/apps/anaconda3/2020.7/bin/activate /work/sph-huangj/.conda/envs/R4.4.2
+       export R_LIBS=/work/sph-huangj/.conda/envs/R4.4.2/lib/R/library:/work/sph-huangj/.conda/envs/R/lib/R/library:$R_LIBS
+> 画图集锦: https://r-graph-gallery.com/index.html
+> R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/
 ```
 
 Linux小妙招🏂
 ```
-> 批量删除文件： ls | grep -vE "\.log$|\.dat$" | xargs rm -f
-> 后台执行命令： 2>&1； 在HPC上后台提交： nohup sh assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
-> 后台多线程下载： apt-get install aria2;  sudo screen -S jack -d -m aria2c -x 4 -i files.txt; 然后查看 sudo screen -r jack
-> 基于某一列生成多个文件： awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
-> 将duplicate改名唯一： awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr20.bim.COPY 
-  或者  --set-all-var-ids to generate new IDs based on position and alleles, to avoid duplicate IDs
-> 将文件每列读入变量中： cut -f 1,4 $file | while IFS=$'\t' read -r pheno_code file_url; do file_name=$(basename $file_url); file_ext=${file_name##*.}
-> tabix -pbed; tabix -s1 -b2 -e2; bedtools intersect -a -b -wa
+> 批量删除文件: ls | grep -vE "\.log$|\.dat$" | xargs rm -f
+> 后台执行命令: 2>&1； 在HPC上后台提交： nohup sh assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
+> 后台多线程下载: apt-get install aria2;  sudo screen -S jack -d -m aria2c -x 4 -i files.txt; 然后查看 sudo screen -r jack
+> 基于某一列生成多个文件: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
+> 将duplicate改名唯一: awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr20.bim.COPY 
+  或者: plink2 --set-all-var-ids to generate new IDs based on position and alleles, to avoid duplicate IDs
+> 将文件每列读入变量中: cut -f 1,4 $file | while IFS=$'\t' read -r pheno_code file_url; do file_name=$(basename $file_url); file_ext=${file_name##*.}
+> 给bed文件加索引: tabix -pbed; tabix -s1 -b2 -e2; bedtools intersect -a -b -wa
 ```
 <br/>
 <br/>
