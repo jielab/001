@@ -206,8 +206,15 @@ GWAS-PRS-MR ”三驾马车“ 入门：
 
 
 R集锦
-> - [The R Graph Gallery](https://r-graph-gallery.com/index.html)
-> - [Top 100 R resources on COVID-19 Coronavirus](https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/)
+```
+packageVersion("XY"); remove.packages("XY"); update.packages(ask=FALSE, checkBuilt=TRUE)
+install.packages("XY", repos="http://cran.rstudio.com/", dependencies=TRUE)
+本机： Windows底部 “搜索” 写 env，在“环境变量”里 将 R_LIBS_USER 设为 D:\software_win\R_lib
+HPC： source /share/apps/anaconda3/2020.7/bin/activate /work/sph-huangj/.conda/envs/R4.4.2
+HPC： export R_LIBS=/work/sph-huangj/.conda/envs/R4.4.2/lib/R/library:/work/sph-huangj/.conda/envs/R/lib/R/library:$R_LIBS
+> 画图集锦： https://r-graph-gallery.com/index.html
+> R新冠地图：https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/
+```
 
 Linux小妙招🏂
 ```
