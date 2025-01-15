@@ -38,7 +38,7 @@ awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr1.bim
 ```
 <br/>
 
-## #1.4. 使用 deepvariant 生成VCF数据.
+## #1.3. 使用 deepvariant 生成VCF数据.
 > DeepVariant安装
 >> 1. 远程链接服务器 172.18.42.37:33899
 >> 2. VMware Workstation构建虚拟机，安装Linux Ubuntu 24.04.1 LTS。
