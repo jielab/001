@@ -113,12 +113,12 @@ done
    (3) BETA|SE|P出现“三缺一” 的情况： b = se * qnorm(p/2); se = abs(b/qnorm(p/2)); se = (CI_upper - CI_lower)/(1.96*2); p = 2*pnorm(-abs(b/se))
 ```
 
-> 对检查没问题的GWAS，可能继续进行以下“三步”加工：
+> 对检查没问题的GWAS，可能继续进行以下“五步”加工：
 ```
 1. liftOver 
 	dat=x.vitad
 	awk 'NR >1 {print "chr"$9, $10-1, $10, $1}' $dat | sed 's/^chr23/^chrX/' > $dat.tolift
-	liftOver $dat.tolift files/hg38ToHg19.over.chain.gz $dat.lifted $dat.unmapped
+	liftOver $dat.tolift files/hg19ToHg38.over.chain.gz $dat.lifted $dat.unmapped
 	awk 'BEGIN{print "CHR POS SNP"}{print $1,$3,$4}' $dat.lifted | sed -e 's/^chr//; s/ /\t/g; s/  */\t/g' > $dat.lifted.3col
 2. 跟其他数据合并 ⛄
 	python scripts/library/join_file.py -i "$dat,TAB,0 $dat.lifted.3col,TAB,2" -o $dat.NEW.tmp
@@ -132,6 +132,10 @@ done
 5. 索引🔍 
 	tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz
 ```
+
+QC和加工后的数据，进行一些简单的check，比如看某个SNP是否是GRCH38.
+> ![FUMA](./images/rs7412.png) 
+
 
 最后，不论是内源性还是外源性的GWAS数据，本课题组建议将所有列名标准化，bash代码如下。
 ```
