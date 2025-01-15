@@ -102,21 +102,38 @@ done
 ## #3.3. GWAS的管理、QC、注释
 > 对每一个GWAS，首先进行以下“三点”检查：
 ```
-1. 用 zcat GWAS.gz | awk '{print NF}' | sort -nu | wc -l 文件每一行的列数目是一样的。 一定要扣好第一粒纽扣🤲。可用 sed 's/^\t/NA\t/; s/\t\t/\tNA\t/g; s/\t\t/\tNA\t/g; s/\t$/\tNA/' 解决。
-2. 如果文件不是按照CHR和POS排序🏮，pheweb 会报错，可用sort -k 1,1V -k 2,2n。 -V是为了把chrX和chrY排到最后，但是需要把第一行先写到新文件里。
+1. 确保文件每一行的列数目是一样的。将连续空格中插入NA，扣好第一粒纽扣。
+	zcat GWAS.gz | awk '{print NF}' | sort -nu | wc -l 
+	sed 's/^\t/NA\t/; s/\t\t/\tNA\t/g; s/\t\t/\tNA\t/g; s/\t$/\tNA/'。
+2. 按照CHR和POS排序，否则pheweb 会报错
+	sort -k 1,1V -k 2,2n # -V是为了把chrX和chrY排到最后，但是需要把第一行先写到新文件里。
 3. GWAS数据本身的问题：
    (1) Allele 最好是大写，awk 和 R 都有 toupper()功能。
-   (2) P值最好不要小于1e-312。 要不然，awk 会把其当成0，有一些软件（比如LDSC）也会报错，这个时候要么用Z值，要么人为将这些P值设为1e-300。
-   (3) BETA|SE|P出现“三缺一” 的情况，可用： b = se * qnorm(p/2); se = abs(b/qnorm(p/2)); se = (CI_upper - CI_lower)/(1.96*2); p = 2*pnorm(-abs(b/se))
-```
-如果生成的GWAS数据超过1G，导致无法上传到pheweb那样的软件，可用下面代码对数据进行瘦身。
-```
-zcat $dat.gz | cut -f 2-6,10,13 | awk '{if (NR!=1) {$5=sprintf("%.4f",$5); $6=sprintf("%.4f",$6)} print $0}' | bgzip > $dat.lean.gz
+   (2) P值最好不要小于1e-312，awk 会把其当成0，有一些软件（比如LDSC）也会报错，这个时候要么用Z值，要么人为将这些P值设为1e-300。
+   (3) BETA|SE|P出现“三缺一” 的情况： b = se * qnorm(p/2); se = abs(b/qnorm(p/2)); se = (CI_upper - CI_lower)/(1.96*2); p = 2*pnorm(-abs(b/se))
 ```
 
-> 经过QC后的GWAS数据，可用 <b>tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz</b> 生成索引文件。
-> 本课题组建议用如下标准的column名称：🐂<b>SNP CHRPOS CHR POS EA NEA EAF N BETA SE Z P</b>🐎。
-可用下面的 bash 代码实现：
+> 对检查没问题的GWAS，可能继续进行以下“三步”加工：
+```
+1. liftOver 
+	dat=x.vitad
+	awk 'NR >1 {print "chr"$9, $10-1, $10, $1}' $dat | sed 's/^chr23/^chrX/' > $dat.tolift
+	liftOver $dat.tolift files/hg38ToHg19.over.chain.gz $dat.lifted $dat.unmapped
+	awk 'BEGIN{print "CHR POS SNP"}{print $1,$3,$4}' $dat.lifted | sed -e 's/^chr//; s/ /\t/g; s/  */\t/g' > $dat.lifted.3col
+2. 跟其他数据合并 ⛄
+	python scripts/library/join_file.py -i "$dat,TAB,0 $dat.lifted.3col,TAB,2" -o $dat.NEW.tmp
+	sed -i 's/  */\t/g' $dat.NEW.tmp; awk '$NF=="NA"' $dat.NEW.tmp | wc -l
+	cut -f 1-10,12 $dat.NEW.tmp | sed '1 s/POS/POS.b38/' > $dat.NEW.txt
+3. 添加 rsID 🧢
+	用户也可以在pheweb网站下载 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid.py; dos2unix add_rsid.py，然后运行如下示例命令。
+	python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d files/dbsnp/rsids-v154-hg19.tsv.gz -o out.tsv
+4. 瘦身 🏃‍
+	zcat $dat.gz | awk '{if (NR!=1) {$5=sprintf("%.4f",$5); $6=sprintf("%.4f",$6)} print $0}' | bgzip > $dat.lean.gz
+5. 索引🔍 
+	tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz
+```
+
+最后，不论是内源性还是外源性的GWAS数据，本课题组建议将所有列名标准化，bash代码如下。
 ```
 Arr1=("SNP" "CHR" "POS" "EA" "NEA" "EAF" "N" "BETA" "SE" "P")
 Arr2=("snp|rsid|variant_id" "chr|chrom|chromosome" "pos|bp|base_pair" "ea|alt|eff.allele|effect_allele|a1|allele1" "nea|ref|allele0|a2|other_allele|" "eaf|a1freq|effect_allele_freq" "n|Neff" "beta" "se|standard_error" "p|pval|p_bolt_lmm")
@@ -131,19 +148,15 @@ dat=XYZ.gz
 replacement=c('SNP', 'CHR', 'POS','EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P') 
 pattern=c('^snp$|^rsid$|variant_id', '^chr$|^chrom', '^bp$|^pos$|^position|^base_pair', '^ea$|^alt$|^a1$|^effect_allele$', '^nea$|^ref|^allele0$|^a2$|^other_allele', '^eaf$|a1freq|effect_allele_freq', '^n$|Neff', '^beta$|^effect$', '^se$|standard_error', '^p$|^pval$|^p_bolt_lmm')
 names(dat) <- stringi::stri_replace_all_regex(toupper(names(dat)), pattern=toupper(pattern), replacement=replacement, vectorize_all=FALSE)
-
 ```
-> 最后，可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 实现可视化🏮。日本版本[pheweb.jp](pheweb.jp)。中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
+
+> 📺可视化，可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) 。日本版本[pheweb.jp](pheweb.jp)，中国版本的是本课题组建立的 [pheweb.cn](pheweb.cn)。
 > Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。。
 ```
 修改前：rsids = [rsid['rsid'] for rsid in rsid_group if cpra['ref'] == rsid['ref'] and are_match(cpra['alt'], rsid['alt'])]
 修改后：rsids = [rsid['rsid'] for rsid in rsid_group if (cpra['ref'] == rsid['ref'] and are_match(cpra['alt'], rsid['alt'])) or (cpra['ref'] == rsid['alt'] and are_match(cpra['alt'], rsid['ref']))]
 ```
 > 
-用户也可以在得到[pheweb网站](https://resources.pheweb.org)上的 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid.py; dos2unix add_rsid.py，然后运行如下示例命令。注意:--sep 后面有双引号。
-```
-python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d files/dbsnp/rsids-v154-hg19.tsv.gz -o out.tsv
-```
 > 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 
 <br/>
 
