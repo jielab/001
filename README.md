@@ -195,34 +195,25 @@ names(dat) <- stringi::stri_replace_all_regex(toupper(names(dat)), pattern=toupp
 
 # # 参考文献和网站
 
-基因注释信息浏览器：
+基因注释信息🔍
+```
 > - 非常经典的 dbSNP: https://www.ncbi.nlm.nih.gov/snp/   
 > - 非常经典的 UCSC genome browser: https://www.genome.ucsc.edu/ 
 > - 美国精准医学All of Us：https://www.researchallofus.org/ 和 https://databrowser.researchallofus.org/   
 > - 密西根大学公卫学院 TopMed browser: https://bravo.sph.umich.edu/ 
 > - 一天发了7篇 NATURE系列文章的Gnomad项目的 browser: https://gnomad.broadinstitute.org/ 
-> - 带”Global“的 GlobalBiobankEngine：https://github.com/rivas-lab 
+```
 
+GWAS-PRS-MR ”三驾马车“ 入门指南🐎：
+```
+> GWAS入门： 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
+	[芬兰赫尔辛基大学 GWAS 课程](https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/)
+	🏮中文版 [gwaslab.org](https://gwaslab.org)
+> PRS入门. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
+> MR入门： 2022. Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
+```
 
-GWAS-PRS-MR ”三驾马车“ 入门：
-
-> GWAS:
-> > - Y 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
-> > - [芬兰赫尔辛基大学 GWAS 课程](https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/)
-> > - 🏮中文版🏮[gwaslab.org](https://gwaslab.org)
-
-> PRS:
-> > - Y 2019. Lancet Respiratory Medicine. [Identification of risk loci and a polygenic risk score for lung cancer: a large-scale prospective cohort study in Chinese populations](pubmed.ncbi.nlm.nih.gov/31326317/)
-> > - Y 2020. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
-
-> MR：
-> > - Y 2017. 一篇解读我的PRIMe方法的文章 Ele Zeggini. [Statistical methods to detect pleiotropy in human complex traits](https://pubmed.ncbi.nlm.nih.gov/29093210/)
-> > - Y 2022. 入门必读 Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
-
-<br/>
-
-
-R集锦🏂
+R 🛵
 ```
 > packageVersion("XY"); remove.packages("XY"); update.packages(ask=FALSE, checkBuilt=TRUE)
 > install.packages("XY", repos="http://cran.rstudio.com/", dependencies=TRUE)
@@ -233,8 +224,11 @@ R集锦🏂
 > R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/
 ```
 
-Linux小妙招🏂
+Linux🏂
 ```
+> 安装Linux: 用管理员权限打开cmd, 运行 wsl --install. 遇到 press any key to continue，运行 netsh winsock reset
+  在 ~/.bashrc:  export PATH="XYZ:$PATH"; export R_LIBS="/mnt/d/software_lin/R_lib" 
+  apt install bcftools samtools tabix; pip install XXX; conda install
 > 批量删除文件: ls | grep -vE "\.log$|\.dat$" | xargs rm -f
 > 后台执行命令: 2>&1； 在HPC上后台提交： nohup sh assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
 > 后台多线程下载: apt-get install aria2;  sudo screen -S jack -d -m aria2c -x 4 -i files.txt; 然后查看 sudo screen -r jack
