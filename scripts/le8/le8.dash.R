@@ -138,8 +138,6 @@ dat <- dat %>% mutate( # 盐 ⛵
 
 dash <- dat %>% select(eid, vegetablenew, fruitnew, nutnew, grainnew, lowfatdairy, sugarnew, meatnew, sodium)
 write.table(dash, "ukb.le8.dash.R.tsv", append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
-# pku <- read.table("D:/github/001/scripts/le8/le8.pku.dash-out.9col", sep="\t", fill=TRUE, header=TRUE) 
-# pku <- read_excel("D:/github/001/scripts/le8/le8.pku.all-out.xlsx")
 
 dash <- dash %>% mutate(
     quinvegetable = ntile(vegetablenew, 5),
@@ -148,7 +146,7 @@ dash <- dash %>% mutate(
     quingrain = ntile(grainnew, 5),
     quinlowfatdairy = ntile(lowfatdairy, 5),
     quinsugar = ntile(sugarnew, 5),
-    quinmeat = ntile(meatnew, 5),
+    quinmeat = quantile(meatnew, 5),
     quinsodium = ntile(sodium, 5)
 )
 dash <- dash %>% mutate(
