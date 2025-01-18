@@ -116,12 +116,12 @@ done
 > 对检查没问题的GWAS，可能继续进行以下“五步”加工：
 ```
 1. liftOver 🚜
-	dat=x.vitad; zcat $dat.gz | sort -k 1,1V -k 2,2n > $dat.tmp0
-    python add_rsid.py -i $dat.tmp0 --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d ~/data/dbsnp/rsids-v154-hg19.tsv.gz -o $dat.tmp1
-    cat $dat.tmp1 | awk 'NR >1 {print "chr"$1, $2 -1, $2, $9}' | sed 's/^chr23/chrX/' > $dat.tolift
-    liftOver $dat.tolift /work/sph-huangj/files/hg19ToHg38.over.chain.gz $dat.lifted $dat.unmapped
-    cut -f 3,4 $dat.lifted > $dat.snp_pos
-    python ~/scripts/f/join_file.py -i "$dat.tmp1,TAB,8 $dat.snp_pos,TAB,1" -o $dat.tmp2
+	dat=XYZ; head -1 $dat.txt > $dat.sorted; tail -n +2 $dat.txt | sort -k 1,1V -k 2,2n > $dat.sorted
+	python ~/scripts/f/add_rsid.py -i $dat.sorted --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d ~/data/dbsnp/rsids-v154-hg19.tsv.gz -o $dat.tmp1
+	cat $dat.tmp1 | awk 'NR >1 {print "chr"$1, $2 -1, $2, $9}' | sed 's/^chr23/chrX/' > $dat.tolift
+	liftOver $dat.tolift /work/sph-huangj/files/hg19ToHg38.over.chain.gz $dat.lifted $dat.unmapped
+	cut -f 3,4 $dat.lifted > $dat.snp_pos
+	python ~/scripts/f/join_file.py -i "$dat.tmp1,TAB,8 $dat.snp_pos,TAB,1" -o $dat.tmp2
 2. 跟其他数据合并 ⛄
 	python scripts/library/join_file.py -i "$dat,TAB,0 $dat.lifted.3col,TAB,2" -o $dat.NEW.tmp
 	sed -i 's/  */\t/g' $dat.NEW.tmp; awk '$NF=="NA"' $dat.NEW.tmp | wc -l
