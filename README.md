@@ -122,6 +122,7 @@ done
 	liftOver $dat.tolift /work/sph-huangj/files/hg19ToHg38.over.chain.gz $dat.lifted $dat.unmapped
 	cut -f 3,4 $dat.lifted > $dat.snp_pos
 	python ~/scripts/f/join_file.py -i "$dat.tmp1,TAB,8 $dat.snp_pos,TAB,1" -o $dat.tmp2
+	cut -d " " -f 1-10 $dat.tmp2 | sed '1s/POS/POS.37/; 1s/NA/POS/' | gzip -f > clean/$dat.gz
 2. 跟其他数据合并 ⛄
 	python scripts/library/join_file.py -i "$dat,TAB,0 $dat.lifted.3col,TAB,2" -o $dat.NEW.tmp
 	sed -i 's/  */\t/g' $dat.NEW.tmp; awk '$NF=="NA"' $dat.NEW.tmp | wc -l
