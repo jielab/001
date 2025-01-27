@@ -229,7 +229,7 @@ R 🛵
 
 Linux🏂
 ```
-> 安装Linux: 用管理员权限打开cmd, 运行 wsl --install. 遇到 press any key to continue，运行 netsh winsock reset
+> 安装Linux: 用管理员权限打开cmd, 运行 wsl --install，或者 wsl --import。 遇到 press any key to continue，运行 netsh winsock reset
   在 ~/.bashrc:  export PATH="XYZ:$PATH"; export R_LIBS="/mnt/d/software_lin/R_lib" 
   apt install bcftools samtools tabix; pip install XXX; conda install
 > 批量删除文件: ls | grep -vE "\.log$|\.dat$" | xargs rm -f
