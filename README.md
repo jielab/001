@@ -198,7 +198,7 @@ names(dat) <- stringi::stri_replace_all_regex(toupper(names(dat)), pattern=toupp
 > 2. 用 fread和fwrite 比 read.table 和 write.table 更快，但fwrite默认输出带quote。
 > 3. EAF如果是0，fwrite 会将其视为NA，输出后TXT就是一个空格，导致数据少了一列。
 > 4. gcta –cojo-slct 生成的 .ldr.cojo 文件最后多出一列TAB。
-> 5. 添加代码，处理两个输入GWAS，其中一个或者两个都不存在 EAF 和 N 的问题
+> 5. 添加代码，处理两个输入GWAS，其中一个或者两个都不存在 EAF 和 N 的问题。
 > 6. 连着用几个 %>%，缩减代码，最后实际上失控了。
 > 7. 用 group() 之后，如果后面没有跟上 ungroup()，后面会出问题。
 > 8. 用 plink，运行 .bim 文件中用 X。但是 gcta 必须用 23。
