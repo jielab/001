@@ -192,6 +192,19 @@ names(dat) <- stringi::stri_replace_all_regex(toupper(names(dat)), pattern=toupp
 ## #4.4. 两个或多个GWAS之间的 Mendelian Randomization 分析
 > 如果有个体数据，可以用 [OneSampleMR包](https://cran.r-project.org/web/packages/OneSampleMR/index.html)。如果只有已发表的summary数据，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/8-449)。
 > 工具变量，一般需要去掉 F_stats <10 或者位于 <b>[MHC区间]</b> 【chr6:28477897-33448354 [(GRCh37)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC?asm=GRCh37), chr6:28510120-33480577 [(GRCh38)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC)】 的SNP。
+> 使用别人发表了的现成的R包，看似简单，但是每一步都需要 check 和 check。实际当中遇到的问题如下：
+```
+> 1. 用 allele.qc，协调两组数据的 BETA和EAF，但是输出文件依然是原来的EA和 NEA。
+> 2. 用 fread和fwrite 比 read.table 和 write.table 更快，但fwrite默认输出带quote。
+> 3. EAF如果是0，fwrite 会将其视为NA，输出后TXT就是一个空格，导致数据少了一列。
+> 4. gcta –cojo-slct 生成的 .ldr.cojo 文件最后多出一列TAB。
+> 5. 添加代码，处理两个输入GWAS，其中一个或者两个都不存在 EAF 和 N 的问题
+> 6. 连着用几个 %>%，缩减代码，最后实际上失控了。
+> 7. 用 group() 之后，如果后面没有跟上 ungroup()，后面会出问题。
+> 8. 用 plink，运行 .bim 文件中用 X。但是 gcta 必须用 23。
+> 9. 注意HLA的GRCh37或GRCh37的确切 chr:start-end。
+>10. 最后可能发现软件跑出来的结果有重大问题，不“鲁棒” https://github.com/ZhaotongL/cisMRcML/issues/6
+```
 <br/>
 <br/>
 
