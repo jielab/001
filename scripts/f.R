@@ -3,54 +3,51 @@ replacement=c('SNP', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'P')
 
 rb <- function(x) (if(is.null(x)) return(NA) else round(x,3))
 rp <- function(x) (if(is.null(x)) return(NA) else signif(x,2))
-inormal <- function(x) qnorm((rank(x, na.last="keep") - 0.5) / sum(!is.na(x)))
+inormal <- function(x) qnorm((rank(x, na.last='keep') - 0.5) / sum(!is.na(x)))
 std <- function(x) (x - mean(x,na.rm=T)) / sd(x,na.rm=T)
 remove_outlier <- function(x) (ifelse((x > (mean(x,na.rm=TRUE) + 3*sd(x,na.rm=TRUE)) | x < (mean(x,na.rm=TRUE) - 3*sd(x,na.rm=TRUE))), NA, x))
 hardcall <- function(x) ifelse(x<0.5, 0, ifelse(x<1.5, 1, 2))
 expo <- function(x) 1.1^x
-
-
-valcano <- function( # 🌋
-  res, prot, BETA, P, sig.level) {
-	res$BETA.std <- scale(res$BETA)
-	res$color <- with(res, ifelse(P < sig.level & BETA.std > 0, "positive", ifelse(P < sig.level & BETA.std < 0, "negative", "NS")))
-	res <- res[order(res$P), ]
-	top5 <- head(res, 5); top5$label=toupper(gsub("prot_", "", top5[[prot]]))
-	ggplot(res, aes(x=BETA.std, y=-log10(P), color=color)) + geom_point(size=2) +
-		scale_color_manual(values=c("positive"="purple", "negative"="green", "NS"="gray")) +
-		geom_text(data=top5, aes(label=label), hjust=0, vjust=-1.5, size=3.5, color="black", fontface="bold") +
-	#	geom_segment(data=top5, aes(x=BETA.std + 0.05, y=-log10(P) + 1, xend=BETA.std, yend=-log10(P)), color="black") +
-		geom_hline(yintercept=-log10(sig.level), linetype="dashed", color="red", linewidth=1.2) +
-		geom_vline(xintercept=0, linetype="dotted", linewidth=1.2) + theme_minimal() +
-		labs(x="Standardized beta", y="-log10(P)", title=Y) +
-		theme(axis.text=element_text(size=12, face="bold"), axis.title=element_text(size=14, face="bold"), axis.line=element_line(linewidth=1.2), legend.position="none", plot.title=element_text(size=16, face="bold", hjust=0.5))
+scale10 <- function(x) {
+  scale_f <- function(y) {scaled <- scale(y); scaled <- 2 + (scaled - min(scaled)) * (10-2) / (max(scaled) - min(scaled)); return(scaled[-1])}
+  if (max(x) < 10) {return(x)} else {x_scaled <- ifelse(x<=2, x, scale_f(c(2,x))); return(x_scaled)}
 }
 
 
-allele.qc <- function(a1, a2, ref1, ref2) {
-    flip_single <- function(allele) {
-	if (allele=="A") return("T")
-	if (allele=="T") return("A")
-	if (allele=="G") return("C")
-	if (allele=="C") return("G")
-	return(allele)
-    }
-	flip1 <- sapply(ref1, flip_single)
-	flip2 <- sapply(ref2, flip_single)
-	snp <- list()
-	snp$keep <- !(a1=="A" & a2=="T") & !(a1=="T" & a2=="A") & !(a1=="C" & a2=="G") & !(a1=="G" & a2=="C")
-	snp$keep[!grepl("^[ATGC]+$", a1)] <- F
-	snp$keep[!grepl("^[ATGC]+$", a2)] <- F
-	snp$exact_match <- (a1==ref1 & a2==ref2)
-	snp$sign_flip <- (a1==ref2 & a2==ref1) | (a1==flip2 & a2==flip1)
-	snp$strand_flip <- (a1==flip1 & a2==flip2) | (a1==flip2 & a2==flip1)
-	snp$keep[!(snp$exact_match | snp$sign_flip | snp$strand_flip)] <- F
-	return(snp)
+bbplot <- function( # 🏄‍ 
+  label, Y, X, dat, BETA1_col, BETA2_col, BETA_compare, P1_col, P2_col, P_compare, sig.level) {
+	dat$X <- dat[[X]]; dat$BETA1 <- scale(dat[[BETA1_col]]); dat$BETA2 <- scale(dat[[BETA2_col]])
+	dat$P1 <- dat[[P1_col]]; dat$P2 <- dat[[P2_col]]
+	dat1 <- dat %>% filter(P1 <=sig.level, !is.na(P1), !is.na(P2)) %>% 
+		mutate(Plog10.1=scale10(-log10(P1)), Plog10.2=scale10(-log10(P2)))
+	top5 <- dat1 %>% arrange(desc(Plog10.1)) %>% head(5)
+	if (BETA_compare=="Yes") { gg <- ggplot(dat1, aes(x=BETA1, y=BETA2)) 
+	} else if (P_compare=="Yes") { gg <- ggplot(dat1, aes(x=Plog10.1, y=Plog10.2))}
+	gg + geom_point(size=2, shape=1) + ggtitle(label) + geom_text(data=top5, aes(label=X), size=3, color='darkblue', fontface='bold') + 
+		theme_minimal() + theme(axis.text = element_text(size=14, face='bold'), axis.title = element_text(size=14, face='bold'), axis.line=element_line(linewidth=1.2), legend.position='none', plot.title=element_text(size=16, face='bold', hjust=0.5))
+}
+
+
+valcano <- function( # 🌋
+  label, dat, X_col, BETA_col, P_col, sig.level) {
+	dat$X <- dat[[X_col]]
+	dat$BETA <- scale(dat[[BETA_col]])
+	dat$P <- dat[[P_col]]
+	dat <- dat %>% mutate(color=ifelse(P < sig.level & BETA > 0, 'positive', ifelse(P < sig.level & BETA < 0, 'negative', 'NS')))
+	top5 <- dat %>% arrange(P) %>% head(5); top5$X=toupper(gsub('prot_', '', top5$X))
+	ggplot(dat, aes(x=BETA, y=-log10(P), color=color)) + geom_point(size=2) +
+		scale_color_manual(values=c('positive'='purple', 'negative'='green', 'NS'='gray')) +
+		geom_text(data=top5, aes(label=X), hjust=0, vjust=-1.5, size=3, color='darkblue', fontface='bold') +
+	#	geom_segment(data=top5, aes(x=BETA + 0.05, y=-log10(P) + 1, xend=BETA, yend=-log10(P)), color='black') +
+		geom_hline(yintercept=-log10(sig.level), linetype='dashed', color='red', linewidth=1.2) +
+		geom_vline(xintercept=0, linetype='dotted', linewidth=1.2) + 
+		labs(x='Standardized beta', y='-log10(P)', title=label) +
+		theme_minimal() + theme(axis.text=element_text(size=12, face='bold'), axis.title=element_text(size=14, face='bold'), axis.line=element_line(linewidth=1.2), legend.position='none', plot.title=element_text(size=16, face='bold', hjust=0.5))
 }
 
 
 IV.filter <- function(dat, CHR_col, POS_col, AF_col, BETA_col, N_col) {
-	filter1 <- dat[[CHR_col]]==6 & dat[[POS_col]] >=28510120 & dat[[POS_col]] <=33480577
+	filter1 <- dat[[CHR_col]]==6 & dat[[POS_col]] >=28510120 & dat[[POS_col]] <=33480577 
 	dat$R2 <- 2 * dat[[AF_col]] * (1-dat[[AF_col]]) * (dat[[BETA_col]]^2)
 	dat$F_stat <- dat$R2 * (dat[[N_col]]-2) / (1-dat$R2)
 	filter2 <- dat$F_sta < 10
@@ -59,81 +56,89 @@ IV.filter <- function(dat, CHR_col, POS_col, AF_col, BETA_col, N_col) {
 
 
 run_mr2s <- function( # 🏮 常规的 TwoSampleMR
-  analysis, label, X, dir.X, dat.X.raw, IV.file, IV_filter, Y, dir.Y, dat.Y.raw) { 
+  analysis, p_t, label, X, dir.X, dat.X.raw, IV.file, IV_filter, Y, dir.Y, dat.Y.raw) { 
   
-	log_file <- paste0(label, ".mr.log")
-	if (IV.file != "NO") {
-		dat.X.iv <- read.table(IV.file, header=T); names(dat.X.iv) <- "SNP"
+	pval_t <- as.numeric(paste0('5e-', p_t))
+	log_file <- paste0(label, '.mr.log')
+	if (IV.file != 'NO') {
+		dat.X.iv <- read.table(IV.file, header=T); names(dat.X.iv) <- 'SNP'
 	} else if (file.exists(paste0(dir.X, '/', X, '.top.snp'))) {
-		dat.X.iv <- read.table(paste0(dir.X, '/', X, '.top.snp'), header=T); names(dat.X.iv) <- "SNP" 
-	} else if (file.exists(paste0(dir.X, '/', X, '.NEW.top.snp'))) {
-		dat.X.iv <- read.table(paste0(dir.X, '/', X, '.NEW.top.snp'), header=T)
+		dat.X.iv <- read.table(paste0(dir.X, '/', X, '.top.snp'), header=T); names(dat.X.iv) <- 'SNP' 
+	} else if (file.exists(paste0(dir.X, '/', X, '.NEW.', p_t, '.top.snp'))) {
+		dat.X.iv <- read.table(paste0(dir.X, '/', X, '.NEW.', p_t, '.top.snp'), header=T)
 	} else {
-		dat.X.sig <- dat.X.raw %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+05))
-		dat.X.iv <- dat.X.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
-		write.table(dat.X.iv, paste0(dir.X, '/', X, '.NEW.top.snp'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
+		dat.X.iv <- dat.X.raw %>% filter(P<=pval_t) %>% mutate(mb=ceiling(POS/1e+05))
+                dat.X.iv <- dat.X.iv %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select('SNP')
+		write.table(dat.X.iv, paste0(dir.X, '/', X, '.NEW.', p_t, '.top.snp'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 	}
 
-	if (nrow(dat.X.iv)==0) {write(paste(analysis, X,Y, "SKIP: data X has no IV !!"), file=log_file, append=TRUE); return(NULL)}	
-	dat.X <- dat.X.raw %>% merge(dat.X.iv) 
-		if (IV_filter==1) { dat.X <- IV.filter(dat.X, "CHR", "POS", "EAF", "BETA", "N") }
-		if (nrow(dat.X)==0) {write(paste(analysis, X,Y, "SKIP: data X is empty after IV filter!!"), file=log_file, append=TRUE); return(NULL)}
+	if (nrow(dat.X.iv)==0) {write(paste('SKIP:', analysis, X,Y, 'X has no IV !!'), file=log_file, append=TRUE); return(NULL)}	
+	dat.X <- dat.X.raw %>% merge(dat.X.iv); if (!'N' %in% names(dat.X)) {dat.X$N=100000}
+		if (IV_filter==1) { dat.X <- IV.filter(dat.X, 'CHR', 'POS', 'EAF', 'BETA', 'N') }
+		if (nrow(dat.X)==0) {write(paste('SKIP:', analysis, X,Y, 'X is empty after IV filter!!'), file=log_file, append=TRUE); return(NULL)}
 		dat.X <- dat.X %>% format_data(type='exposure', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P')
-	dat.Y.4x <- subset(dat.Y.raw, SNP %in% dat.X$SNP) 
-		if(nrow(dat.Y.4x)==0) {write(paste(analysis, X,Y, "SKIP: IV SNPs don't exist in Y!!"), file=log_file, append=TRUE); return(NULL)}	
+	dat.Y.4x <- subset(dat.Y.raw, SNP %in% dat.X$SNP); if (!'N' %in% names(dat.Y.4x)) {dat.Y.4x$N=100000} 
+		if(nrow(dat.Y.4x)==0) {write(paste('SKIP:', analysis, X,Y, 'IV SNPs do NOT exist in Y!!'), file=log_file, append=TRUE); return(NULL)}	
 		dat.Y.4x <- dat.Y.4x %>% format_data(type='outcome', snp_col='SNP', chr_col='CHR', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P')
 	dat.XY <- harmonise_data(dat.X, dat.Y.4x, action=1) 
 	write.table(dat.XY, paste0(label, '.dat'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 
-	fit.X2Y <- mr(dat.XY, method_list=c("mr_wald_ratio", "mr_ivw"))
+	fit.X2Y <- mr(dat.XY, method_list=c('mr_wald_ratio', 'mr_ivw'))
 	beta.X2Y <- fit.X2Y$b; se.X2Y <- fit.X2Y$se; p.X2Y <- fit.X2Y$pval
 	p.hetero <- mr_heterogeneity(dat.XY)$Q_pval
 	p.pleio <- mr_pleiotropy_test(dat.XY)$pval
 	write(paste(analysis, X,Y, nrow(dat.XY), rb(beta.X2Y), rb(se.X2Y), rp(p.X2Y), rp(p.hetero[1]), rp(p.hetero[2]), rp(p.pleio), rp(min(dat.XY$pval.outcome))), file=log_file, append=TRUE)
+	return(p.X2Y)
 }
 
 
 run_cisMr <- function( # 🏮 参考 https://github.com/ZhaotongL/cisMR-paper/blob/main/process_ARIC.R
-  label, chr, flank, pos0, pos1, X, dat.X.raw, dir.X.cojo, Y, dat.Y.raw) {
+  analysis, p_t, label, chr, flank, pos0, pos1, X, dat.X.raw, dir.X.cojo, Y, dat.Y.raw) {
 
-	p_t <- 5e-06
-	log_file <- paste0(label, ".cisMr.log")
+	pval_t <- as.numeric(paste0('5e-', p_t))
+	log_file <- paste0(label, '.cisMr.log')
+	pos0=as.numeric(pos0); pos1=as.numeric(pos1)
+	bfile <- paste('--bfile', paste0(dir.X.cojo, '/', X)) 
 	
-	cols <- c('SNP', 'POS', 'EA', 'NEA', 'EAF', 'BETA', 'SE', 'P', 'N')
-	cols.y <- c(cols[1], paste0(cols[-1], ".y"))
-	bfile <- paste("--bfile", paste0(dir.X.cojo, "/", X)) 
+	dat.X <- dat.X.raw %>% filter(CHR==chr, POS>=(pos0-flank), POS<=(pos1+flank)); if (!'N' %in% names(dat.X)) {dat.X$N=100000}
+	dat.Y <- dat.Y.raw %>% filter(SNP %in% dat.X$SNP) %>% mutate(N=100000); if (!'N' %in% names(dat.Y)) {dat.X$N=100000}
+	dat.X <- dat.X %>% format_data(type='exposure', snp_col='SNP', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P')
+	dat.Y <- dat.Y %>% format_data(type='outcome',  snp_col='SNP', pos_col='POS', effect_allele_col='EA', other_allele_col='NEA', eaf_col='EAF', samplesize_col='N', beta_col='BETA', se_col='SE', pval_col='P')
+	dat.X[is.na(dat.X)] <- 0; dat.Y[is.na(dat.Y)] <- 0 # 上面的命令会将0变成NA，所以调回来🏮
+	dat.XY <- harmonise_data(dat.X, dat.Y, action=1)
+		if (nrow(dat.XY)==0) {write(paste('SKIP:', analysis, X, Y, 'merged data is empty'), file=log_file, append=TRUE); return(NULL)}
+		if (min(dat.XY$pval.exposure) > pval_t) { write(paste('SKIP:', analysis, X, Y, 'X .4gcta file has no significant SNPs'), file=log_file, append=TRUE); return(NULL) }
+		if (all(is.na(dat.XY$eaf.exposure)) & all(is.na(dat.XY$eaf.outcome))) {write(paste('ERROR:', analysis, X, Y, 'neither data has EAF'), file=log_file, append=TRUE); return(NULL)} 
+		dat.XY <- dat.XY %>% mutate(eaf.exposure = ifelse(is.na(eaf.exposure), eaf.outcome, eaf.exposure), eaf.outcome = ifelse(is.na(eaf.outcome), eaf.exposure, eaf.outcome))
+		dat.X.coloc <- dat.XY %>% {list(type='quant', snp=.$SNP, position=.$pos.exposure, MAF=.$eaf.exposure, N=.$samplesize.exposure, beta=.$beta.exposure, varbeta =.$se.exposure^2, pvalues=.$pval.exposure)}
+		dat.Y.coloc <- dat.XY %>% {list(type='cc', snp=.$SNP, position=.$pos.outcome, MAF=.$eaf.outcome, N=.$samplesize.outcome, beta=.$beta.outcome, varbeta =.$se.outcome^2, pvalues=.$pval.outcome)}
+		dat.X <- dat.XY %>% dplyr::select(SNP, effect_allele.exposure, other_allele.exposure, eaf.exposure, beta.exposure, se.exposure, pval.exposure, samplesize.exposure) 
+		dat.Y <- dat.XY %>% dplyr::select(SNP, effect_allele.outcome, other_allele.outcome, eaf.outcome, beta.outcome, se.outcome, pval.outcome, samplesize.outcome) 
+		names(dat.X) <- c('SNP', 'EA', 'NEA', 'EAF', 'BETA', 'SE', 'P', 'N'); fwrite(dat.X, paste0(label,'.X.4gcta'), sep='\t', na=0, quote=FALSE)
+		names(dat.Y) <- c('SNP', 'EA', 'NEA', 'EAF', 'BETA', 'SE', 'P', 'N'); fwrite(dat.Y, paste0(label,'.Y.4gcta'), sep='\t', na=0, quote=FALSE)
 	
-	dat.X <- dat.X.raw %>% filter(CHR==chr, POS>=(pos0-flank), POS<=(pos1+flank)) %>% select(all_of(cols))
-	dat.Y <- dat.Y.raw %>% filter(SNP %in% dat.X$SNP) %>% mutate(N=100000) %>% select(all_of(cols))
-
-	names(dat.Y) <- cols.y
-	dat.XY <- merge(dat.X, dat.Y, by='SNP') %>% filter(!is.na(BETA), !is.na(BETA.y), !is.nan(BETA), !is.nan(BETA.y), BETA !=0, BETA.y !=0)
-		if (nrow(dat.XY)==0) {write(paste('SKIP:', X, Y, 'merged data is empty'), file=log_file, append=TRUE); return(NULL)}
-		remove_flip = allele.qc(dat.XY$EA, dat.XY$NEA, dat.XY$EA.y, dat.XY$NEA.y)
-		dat.XY$BETA[which(remove_flip$sign_flip)] = -dat.XY$BETA[which(remove_flip$sign_flip)]
-		dat.XY$EAF[which(remove_flip$sign_flip)] = 1-dat.XY$EAF[which(remove_flip$sign_flip)]
-		dat.XY <- dat.XY[remove_flip$keep,]
-		if (min(dat.XY$P) > 5e-06) { write(paste('SKIP:', X, Y, 'X .4gcta file has no significant SNPs'), file=log_file, append=TRUE); return(NULL) }
-		dat.X <- dat.XY %>% select(all_of(cols)); dat.X$POS <- NULL # 后面的分析，不能有POS
-		dat.Y <- dat.XY %>% select(all_of(cols.y)); names(dat.Y) <- cols; dat.Y$POS <- NULL
-		fwrite(dat.X, paste0(X,'.4gcta'), sep='\t') 
-		fwrite(dat.Y, paste0(Y,'.4gcta'), sep='\t') 
-					
-	X.cojo.cmd <- paste("gcta", bfile, "--cojo-file", paste0(X,'.4gcta'), "--cojo-slct --cojo-p ", p_t, " --out", X)
-		X.cojo.fn <- paste0(X, '.jma.cojo')	
-		ecode = system(X.cojo.cmd, intern=FALSE); if(ecode!=0) { write(paste('ERROR:', X, Y, '--cojo-slct on X does not run'), file=log_file, append=TRUE); return(NULL) }
-		X.cojo <- fread(X.cojo.fn); if(length(X.cojo$SNP)<3) {write(paste('SKIP:', X, 'jma.cojo files less than 3 records'), file=log_file, append=TRUE); return(NULL)}
+	X.prefix <- paste0(X,'.',p_t)				
+	X.cojo.cmd <- paste0('gcta ', bfile, ' --cojo-file ', label,'.X.4gcta --cojo-slct --cojo-p ', pval_t, ' --out ', X.prefix); ecode = system(X.cojo.cmd, intern=FALSE)
+		if(ecode!=0) { write(paste('ERROR:', analysis, X, Y, '--cojo-slct on X does not run'), file=log_file, append=TRUE); return(NULL) }
+		X.cojo.fn <- paste0(X.prefix,'.jma.cojo')
+		X.cojo <- fread(X.cojo.fn); if(length(X.cojo$SNP)<3) {write(paste('SKIP:', analysis, X, Y, 'jma.cojo file has less than 3 records'), file=log_file, append=TRUE); return(NULL)}
 	
-	Y.cojo.cmd <- paste("gcta", bfile, "--cojo-file", paste0(Y,'.4gcta'), "--cojo-slct --cojo-p ", p_t, " --out", Y); system(Y.cojo.cmd, intern=FALSE)
-		Y.cojo.fn <- paste0(Y, '.jma.cojo')
-		if (file.exists(Y.cojo.fn) && file.info(Y.cojo.fn)$size > 0) {Y.cojo=fread(Y.cojo.fn); IV=union(X.cojo$SNP, Y.cojo$SNP)} else {IV=X.cojo$SNP}
-		write.table(IV, paste0(X, '.iv'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=FALSE)
-	
-	XY.cojo.cmd = paste("gcta", bfile, "--cojo-file", paste0(X,'.4gcta'), "--extract", paste0(X, ".iv --cojo-joint --out"), X) # 🏮
-		ecode = system(XY.cojo.cmd, intern=FALSE); if(ecode==1) { write(paste('ERROR:', X, Y, '--extract --cojo-joint on IV does not run'), file=log_file, append=TRUE); return(NULL) }
-	
-	LD_mat = fread(paste0(X, '.ldr.cojo'))
-	LD_mat = LD_mat[,2:(ncol(LD_mat)-1)]; LD_mat = as.matrix(LD_mat); rownames(LD_mat) = colnames(LD_mat)
+	Y.prefix <- paste0(Y,'.',X,'.',p_t)
+	Y.cojo.cmd <- paste0('gcta ', bfile, ' --cojo-file ', label,'.Y.4gcta --cojo-slct --cojo-p ', pval_t, ' --out ', Y.prefix); system(Y.cojo.cmd, intern=FALSE)
+		Y.cojo.fn <- paste0(Y.prefix,'.jma.cojo')
+		if (file.exists(Y.cojo.fn) && file.size(Y.cojo.fn) >0) {
+			Y.cojo = fread(Y.cojo.fn); IV = union(X.cojo$SNP, Y.cojo$SNP); IV.fn = paste0(label,'.',p_t,'.iv')
+			write.table(IV, IV.fn, append=FALSE, quote=FALSE, row.names=FALSE, col.names=FALSE)
+			XY.cojo.cmd = paste0('gcta ', bfile, ' --cojo-file ', label, '.X.4gcta --extract ', IV.fn, ' --cojo-slct --cojo-p ', pval_t, ' --out ', X.prefix); ecode=system(XY.cojo.cmd, intern=FALSE)
+			if (ecode==1) { write(paste('ERROR:', analysis, X, Y, '--extract --cojo-joint does not run'), file=log_file, append=TRUE); return(NULL) }
+		} else {
+			IV=X.cojo$SNP
+		}
+			
+	LD_mat.fn = paste0(X.prefix, '.ldr.cojo')
+	LD_mat_cmd = paste("sed -i 's/\t$//'", LD_mat.fn); system(LD_mat_cmd)
+	LD_mat = fread(LD_mat.fn)
+	LD_mat = LD_mat[,2:ncol(LD_mat)]; LD_mat = as.matrix(LD_mat); rownames(LD_mat) = colnames(LD_mat)
 	
 	dat.X <- dat.X %>% filter(SNP %in% colnames(LD_mat))
 		dat.X$cor = dat.X$BETA / sqrt(dat.X$BETA^2 + (dat.X$N-2) * dat.X$SE^2)
@@ -153,35 +158,33 @@ run_cisMr <- function( # 🏮 参考 https://github.com/ZhaotongL/cisMR-paper/bl
 		b_exp=dat.mr$exp_df$bJ, b_out=dat.mr$out_df$bJ, Sig_exp_inv=Sig_exp_inv, Sig_out_inv=Sig_out_inv, maxit=200, n=dat.mr$N1, 
 		random_start=5, min_theta_range=-0.1, max_theta_range=0.1, num_pert=100, random_start_pert=5, random_seed=12345
 	)
-	write(paste(X, Y, nrow(dat.X), rb(res$BIC_DP_theta), rb(res$BIC_DP_se), rp(res$BIC_DP_p)), file=log_file, append=TRUE)
+	write(paste(analysis, X, Y, length(IV), rb(res$BIC_DP_theta), rb(res$BIC_DP_se), rp(res$BIC_DP_p)), file=log_file, append=TRUE)
 
-	if (res$BIC_DP_p > 1e-05) {return(NULL)}
-	log_file <- paste0(label, ".coloc.log")
-	write("X Y n-SNP H0 H1 H2 H3 H4", file=log_file, append=FALSE)		
-	if (min(dat.XY$P.y) >1e-5) { write(paste(X, Y, min(dat.XY.$P.y), "SKIP: the minimum P-value in data Y is not significant"), file=log_file, append=TRUE); return(NULL)}
-	dat.X.coloc <- dat.XY %>% {list(type="quant", snp=.$SNP, position=.$POS, MAF=.$EAF, N=.$N, beta=.$BETA, varbeta =.$SE^2, pvalues=.$P)}
-	dat.Y.coloc <- dat.XY %>% {list(type="cc", snp=.$SNP, position=.$POS.y, MAF=.$EAF.y, N=.$N.y, beta=.$BETA.y, varbeta =.$SE.y^2, pvalues=.$P.y)}
+	log_file <- paste0(label, '.coloc.log')
+	if (p_t != "08") {return(NULL)} # 只有08的时候运行coloc，06就不运行了
+	if (res$BIC_DP_p > 1e-05) {write(paste('SKIP:', analysis, X, Y, 'cisMr P is not significant'), file=log_file, append=TRUE); return(NULL)}
+	if (min(dat.XY$pval.outcome) >1e-5) { write(paste('SKIP:', analysis, X, Y, 'Y minimum P is not significant'), file=log_file, append=TRUE); return(NULL)}
 	fit.coloc <- coloc::coloc.abf(dat.X.coloc, dat.Y.coloc)
-	res <- paste(signif(fit.coloc$summary, 3),collapse=" ") # nsnps H0 H1 H2 H3 H4 
+	res <- paste(signif(fit.coloc$summary, 3),collapse=' ') # nsnps H0 H1 H2 H3 H4 
 	write(paste(X, Y, nrow(dat.XY), res), file=log_file, append=TRUE)
-	if (fit.coloc$summary[6] >0.5) { pdf(paste0(label,".coloc.pdf")); sensitivity(fit.coloc,"H4>0.5"); dev.off() }
+	if (fit.coloc$summary[6] >0.5) { pdf(paste0(label,'.coloc.pdf')); sensitivity(fit.coloc,'H4>0.5'); dev.off() }
 }
 
 
-run_mrMed <- function( # 🏮 devtools::install_github("scllin/mrMed") 
+run_mrMed <- function( # 🏮 devtools::install_github('scllin/mrMed') 
   label, X, dat.X.raw, file.M, Y, dat.Y.raw) { 
 
-	log_file <- paste0(label, ".mrMed.log")
+	log_file <- paste0(label, '.mrMed.log')
 	dir.M <- dirname(file.M)
 	M <- sub('\\.gz$', '', basename(file.M))
 	
 	if (file.exists(paste0(dir.X, '/', X, '.top.snp'))) {
-		dat.X.iv <- read.table(paste0(dir.X, '/', X, '.top.snp'), header=T); names(dat.X.iv) <- "SNP" 
+		dat.X.iv <- read.table(paste0(dir.X, '/', X, '.top.snp'), header=T); names(dat.X.iv) <- 'SNP' 
 	} else if (file.exists(paste0(dir.X, '/', X, '.NEW.top.snp'))) {
 		dat.X.iv <- read.table(paste0(dir.X, '/', X, '.NEW.top.snp'), header=T)
 	} else {
 		dat.X.sig <- dat.X.raw %>% filter(P<=5e-08) %>% mutate(mb=ceiling(POS/1e+05))
-		dat.X.iv <- dat.X.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select("SNP")
+		dat.X.iv <- dat.X.sig %>% group_by(mb) %>% slice(which.min(P)) %>% ungroup() %>% select('SNP')
 		write.table(dat.X.iv, paste0(dir.X, '/', X, '.NEW.top.snp'), append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 	}
 	
@@ -201,7 +204,7 @@ run_mrMed <- function( # 🏮 devtools::install_github("scllin/mrMed")
 	dat.X.mv <- dat.X.raw %>% merge(dat.XnM.iv) %>% format_data(type='exposure', snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.exposure=X)
 	dat.M.mv <- dat.M.raw %>% merge(dat.XnM.iv) 
 	if (nrow(dat.M.mv)==0) {
-		write(paste(X, Y, M, "SKIP: there is no SNP in dat.M.mv"), file=log_file, append=TRUE); return()
+		write(paste('SKIP:', X, Y, M, 'no SNP in dat.M.mv'), file=log_file, append=TRUE); return()
 	} else {
 		dat.M.mv <- dat.M.mv %>% format_data(type='outcome',  snp_col='SNP', effect_allele_col='EA', other_allele_col='NEA', beta_col='BETA', se_col='SE', pval_col='P') %>% mutate(id.outcome =M)
 	}
@@ -209,23 +212,23 @@ run_mrMed <- function( # 🏮 devtools::install_github("scllin/mrMed")
 	dat.XY.mv <- harmonise_data(dat.X.mv, dat.Y.mv, action=1)
 	dat.XM.mv <- harmonise_data(dat.X.mv, dat.M.mv, action=1); names(dat.XM.mv) <- gsub('outcome', 'mediator', names(dat.XM.mv))
 	dat <- merge(dat.XM.mv, dat.XY.mv, by='SNP')
-	if (nrow(dat)==0) { write(paste(X, Y, M, "SKIP: X-M-Y harmonized data is empty"), file=log_file, append=TRUE); return()}
+	if (nrow(dat)==0) { write(paste('SKIP:', X, Y, M, 'X-M-Y harmonized data is empty'), file=log_file, append=TRUE); return()}
 	bad_row <- subset(dat, effect_allele.exposure.x != effect_allele.exposure.y) %>% nrow()
-	if (bad_row !=0) { write(paste(X, Y, M, "ERR: X-M-Y have inconsistent alleles"), file=log_file, append=TRUE); return()}
-	names(dat) <- gsub("\\.x$", "", names(dat)); dat <- subset(dat, select=!grepl("\\.y", names(dat)))
+	if (bad_row !=0) { write(paste(X, Y, M, 'ERR: X-M-Y have inconsistent alleles'), file=log_file, append=TRUE); return()}
+	names(dat) <- gsub('\\.x$', '', names(dat)); dat <- subset(dat, select=!grepl('\\.y', names(dat)))
 	
 	dat1 <- dat # mrMed 方法 
-	names(dat1) <- stri_replace_all_regex(names(dat1), pattern=c("exposure", "mediator", "outcome"), replacement=c("X", "M", "Y"), vectorize_all=FALSE)
+	names(dat1) <- stri_replace_all_regex(names(dat1), pattern=c('exposure', 'mediator', 'outcome'), replacement=c('X', 'M', 'Y'), vectorize_all=FALSE)
 	dat1 <- dat1 %>% mutate (
 		Gx = ifelse(dat$SNP %in% IV$SNP, 1, 0), Gx_plum = Gx, # 可加上 “& pval.M >5e-08”, 用于 X -> M或Y
 		Gm = 1, Gm_plum = Gm, # 可考虑 ifelse(dat$SNP %in% dat.M.iv$SNP, 1, 0), 用于 M -> Y 
 		G_mvmr = ifelse(Gx_plum==0 & Gm_plum==0, 0, 1)
 	)
 	
-	if ( max(dat1$Gx) * max(dat1$Gm)==0 ) { write(paste(X, Y, M, "mrMed data has 0 rows for Gx or Gm"), file=log_file, append=TRUE); return() }
-	res <- try( {mrMed(dat_mrMed=dat1, method_list="Prod_IVW_0")}, silent=TRUE )	
-	if (inherits(res, "try-error")) { write(paste(X, Y, M, "ERR: mrMed gives ERROR message"), file=log_file, append=TRUE); return() }
-	X_str=paste0(X, "(", nrow(IV), ")"); M_str=paste0(M, "(", nrow(dat.M.iv), ")");
+	if ( max(dat1$Gx) * max(dat1$Gm)==0 ) { write(paste(X, Y, M, 'mrMed data has 0 rows for Gx or Gm'), file=log_file, append=TRUE); return() }
+	res <- try( {mrMed(dat_mrMed=dat1, method_list='Prod_IVW_0')}, silent=TRUE )	
+	if (inherits(res, 'try-error')) { write(paste('ERROR:', X, Y, M, 'mrMed gives ERROR message'), file=log_file, append=TRUE); return() }
+	X_str=paste0(X, '(', nrow(IV), ')'); M_str=paste0(M, '(', nrow(dat.M.iv), ')');
 	write(paste(X_str, M_str, Y, nrow(dat.XY), rb(beta.X2Y), rp(p.X2Y), 
 		paste(rb(res$TE$b), rp(res$TE$p), rb(res$IE$b), rp(res$IE$p), rb(res$DE$b), rp(res$DE$p), rb(res$rho$b), rp(res$rho$p))
 		), file=log_file, append=TRUE
