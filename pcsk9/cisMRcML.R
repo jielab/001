@@ -30,4 +30,4 @@ dat.mr = list(b_exp=dat.X$bJ, b_out=dat.Y$bJ, N1=median(dat.X$N), N2=median(dat.
 		random_start=5, min_theta_range=-0.1, max_theta_range=0.1, num_pert=100, random_start_pert=5, random_seed=12345
 	)
 
-print(paste(p_t, X, Y, length(IV), rb(res$BIC_DP_theta), rb(res$BIC_DP_se), rp(res$BIC_DP_p)))
+print(paste(p_t, length(IV), res$BIC_DP_theta, res$BIC_DP_se, res$BIC_DP_p))
