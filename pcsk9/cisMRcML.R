@@ -1,6 +1,6 @@
 library(cisMRcML); library(tidyverse); library(data.table)
 
-p_t="06" # p_t="08" 
+p_t="08" # p_t="08" 
 
 chr=1; pos0=55039447; pos1=55064852; flank=100000
 	X.cojo <- read.table(paste0("5e-", p_t, ".jma.cojo"), header=T)
