@@ -15,7 +15,7 @@ scale10 <- function(x) {
 
 
 bbplot <- function( # 🏄‍ 
-  label, Y, X, dat, BETA1_col, BETA2_col, BETA_compare, P1_col, P2_col, P_compare, sig.level) {
+  label, X, dat, BETA1_col, BETA2_col, BETA_compare, P1_col, P2_col, P_compare, sig.level) {
 	dat$X <- dat[[X]]; dat$BETA1 <- scale(dat[[BETA1_col]]); dat$BETA2 <- scale(dat[[BETA2_col]])
 	dat$P1 <- dat[[P1_col]]; dat$P2 <- dat[[P2_col]]
 	dat1 <- dat %>% filter(P1 <=sig.level, !is.na(P1), !is.na(P2)) %>% 
@@ -158,7 +158,7 @@ run_cisMr <- function( # 🏮 参考 https://github.com/ZhaotongL/cisMR-paper/bl
 		b_exp=dat.mr$exp_df$bJ, b_out=dat.mr$out_df$bJ, Sig_exp_inv=Sig_exp_inv, Sig_out_inv=Sig_out_inv, maxit=200, n=dat.mr$N1, 
 		random_start=5, min_theta_range=-0.1, max_theta_range=0.1, num_pert=100, random_start_pert=5, random_seed=12345
 	)
-	write(paste(analysis, X, Y, length(IV), rb(res$BIC_DP_theta), rb(res$BIC_DP_se), rp(res$BIC_DP_p)), file=log_file, append=TRUE)
+	write(paste(analysis, p_t, X, Y, length(IV), rb(res$BIC_DP_theta), rb(res$BIC_DP_se), rp(res$BIC_DP_p)), file=log_file, append=TRUE)
 
 	log_file <- paste0(label, '.coloc.log')
 	if (p_t != "08") {return(NULL)} # 只有08的时候运行coloc，06就不运行了

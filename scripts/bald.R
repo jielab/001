@@ -2,8 +2,13 @@ pacman::p_load(data.table, tidyverse, lubridate, survival, vivid, rcssci)
 
 dir0='D:/'
 source(paste0(dir0, '/scripts/f/f.R'))
-
 dat0 <- readRDS(file=paste0(dir0, "/data/ukb/phe/Rdata/all.plus.rds")); dat0$bb_shbg.tp53.rs1042522_C <- NULL
+covs <- "age bmi smoke_status alcohol_status deprivation sexf_cat sexp_cat bb_TES bb_SHBG bb_VITD bb_IGF1" %>% strsplit(" ") %>% unlist()
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Table 1: 基本信息及Pheno关联
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% filter(ethnic_cat=="White", sex==1) %>% mutate(
 	bald12=ifelse(bald==1,0, ifelse(bald==2,1,NA)),
 	bald13=ifelse(bald==1,0, ifelse(bald==3,1,NA)),
@@ -12,13 +17,6 @@ dat <- dat0 %>% filter(ethnic_cat=="White", sex==1) %>% mutate(
 	sexp_cat=factor(ifelse(sex_partner<=1, "low", ifelse(sex_partner<=10, "average", "high")),levels=c("low", "average", "high"))
 )
 table(dat$sexf_cat); table(dat$sexp_cat)
-
-covs <- "age bmi smoke_status alcohol_status deprivation sexf_cat sexp_cat bb_TES bb_SHBG bb_VITD bb_IGF1" %>% strsplit(" ") %>% unlist()
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Table 1: 基本信息及Pheno关联
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 library(compareGroups); descrTable(formula=as.formula(paste(c("bald ~ ", paste(covs, collapse="+")), collapse="")), data=dat, digits=1)
 library(gtsummary); dat %>% filter(sex==1) %>% select(all_of(c("bald", covs))) %>% tbl_summary(by=bald, missing="no") %>% add_p()
 Y="bald12"; fit <- glm(formula=as.formula(paste(c(Y, " ~ ", paste(covs, collapse="+")), collapse="")), data=dat, family="binomial"); summary(fit)
@@ -31,33 +29,30 @@ library(forestmodel); forest_model(fit)
 # Proteome🥚的表型关联和cisMr结果比较
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Xs <- grep("prot_", names(dat), value=T) # 🏮 prot_ met_ bb_ bc_
+res <- data.frame(Y=character(), X=character(), BETA=numeric(), SE=numeric(), P=numeric(), stringsAsFactors=FALSE)
 for (Y in c("bald12", "bald13", "bald14")) {
-	res <- data.frame(X=character(), BETA=numeric(), SE=numeric(), P=numeric(), stringsAsFactors=FALSE)
-	for (X in Xs) {
-		print(X)
+	for (X in Xs) { print(X)
 		if (sum(!is.na(dat[[X]])) < 10000) {
-			res <- rbind(res, data.frame(X=X, BETA=NA, SE=NA, P=NA))
+			res <- rbind(res, data.frame(Y=Y, X=X, BETA=NA, SE=NA, P=NA))
 		} else {
 			model <- glm(as.formula(paste(Y, "~", X, "+", paste(covs, collapse=" + "))), data=dat, family="binomial")
-			if (!is.na(model$coef[[X]])) {res <- rbind(res, data.frame(X=X, BETA=rb(summary(model)$coef[2,1]), SE=rb(summary(model)$coef[2,2]), P=rp(summary(model)$coef[2,4])))}
+			if (!is.na(model$coef[[X]])) {res <- rbind(res, data.frame(Y=Y, X=X, BETA=rb(summary(model)$coef[2,1]), SE=rb(summary(model)$coef[2,2]), P=rp(summary(model)$coef[2,4])))}
 		}
 	}
-	write.table(res, paste0(Y,".txt"), append=FALSE, quote=FALSE, row.names=FALSE)
 	pdf(paste0(Y,".pdf")); print(valcano(Y, res, "X", "BETA", "P", 0.05)); dev.off()
 }
-i=0
-for (Y in c("bald12", "bald13", "bald14")) {
-	dat1 <- read.table(paste0(Y,".txt"), header=TRUE) %>% # 基于表型的关联性分析结果
-		mutate(X=toupper(gsub('prot_', '', X)))
-		names(dat1)[-1] <- paste0(names(dat1)[-1], ".", Y, ".Phe")
-	dat2 <- read.table(paste0("D:/analysis/assoc.sum/", Y, ".cisMr.log"), header=FALSE) %>% # 基于cisMR的分析结果
-		filter(V1=="cisMRcML.08") %>% select(-c(1,3,4)) # 🍬 Y== !!Y
-		names(dat2) <- c("X", paste0(c("BETA", "SE", "P"), ".", Y, ".Mr"))
-	dat12 <- merge(dat1, dat2, by="X", all=TRUE)
-	i=i+1; if (i==1) {dat <- dat12} else {dat <- merge(dat, dat12, by="X", all=TRUE)}
-}
-bbplot("bald12 Phe/Mr, compare BETA", "bald12", "X", dat, "BETA.bald12.Phe", "BETA.bald12.Mr", "Yes", "P.bald12.Phe", "P.bald12.Mr", "No", 0.05)	
-bbplot("bald12 Mr/Phe, compare P",    "bald12", "X", dat, "BETA.bald12.Mr", "BETA.bald12.Phe", "No", "P.bald12.Mr", "P.bald12.Phe", "Yes", 0.05)	
+write.table(res, "bald.assoc.txt", append=FALSE, quote=FALSE, row.names=FALSE)
+dat.phe <- read.table("bald.assoc.txt", header=TRUE) %>% # 基于表型的关联性分析结果
+	mutate(X=toupper(gsub('prot_', '', X)))
+	names(dat.phe)[3:5] <- paste0(names(dat.phe)[3:5], ".Phe")
+dat.mr <- read.table("bald.cisMr.log", header=TRUE) %>% # 基于cisMR的分析结果
+	filter(p_t==8) %>% select(-c(1,2,5)) # 🍬 Y== !!Y
+	names(dat.mr)[3:5] <- paste0(names(dat.mr)[3:5], ".Mr")
+dat <- merge(dat.phe, dat.mr, by=c("Y","X"), all=TRUE) %>% 
+	pivot_wider(names_from=Y, values_from=-c(Y, X), names_glue="{Y}.{.value}")
+bbplot("bald12 Phe^Mr BETA", "X", dat, "bald12.BETA.Phe", "bald12.BETA.Mr", "Yes", "bald12.P.Phe", "bald12.P.Mr", "No", 0.05)	
+bbplot("bald12 Mr^Phe P",    "X", dat, "bald12.BETA.Mr", "bald12.BETA.Phe", "No", "bald12.P.Mr", "bald12.P.Phe", "Yes", 0.05)	
+bbplot("bald12^bald13 Mr P", "X", dat, "bald12.BETA.Mr", "bald13.BETA.Phe", "No", "bald12.P.Mr", "bald13.P.Mr",  "Yes", 0.05)	
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
