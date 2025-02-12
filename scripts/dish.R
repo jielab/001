@@ -1,7 +1,7 @@
 # Source https://github.com/Ben-JWL/DISH/tree/master/DISH
 library(tidyverse)
 
-dir1="D:/scripts/main"
+dir1="D:/data/ldref"
 output ="hla.imputed.txt"; lambda=0.15
 
 dat = read.table(paste0(dir1,"/EUR_sample.txt"), header=T) %>% mutate(
