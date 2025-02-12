@@ -1,0 +1,39 @@
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##fileurl=https://github.com/MRCIEU/gwas-vcf-specification/blob/master/example.vcf.txt
+##filedate="07/09/2020"
+##gwasformat=GWAS-VCFv1.2
+##source=Gwas2VCFv1.2.0
+##reference=ftp://ftp.broadinstitute.org/bundle/b37/human_g1k_v37.fasta.gz
+##contig=<ID=1,length=249250621,assembly=GRCh37.p13>
+##contig=<ID=2,length=243199373,assembly=GRCh37.p13>
+##contig=<ID=3,length=198022430,assembly=GRCh37.p13>
+##contig=<ID=4,length=191154276,assembly=GRCh37.p13>
+##contig=<ID=5,length=180915260,assembly=GRCh37.p13>
+##contig=<ID=6,length=171115067,assembly=GRCh37.p13>
+##contig=<ID=7,length=159138663,assembly=GRCh37.p13>
+##contig=<ID=8,length=146364022,assembly=GRCh37.p13>
+##contig=<ID=9,length=141213431,assembly=GRCh37.p13>
+##contig=<ID=10,length=135534747,assembly=GRCh37.p13>
+##contig=<ID=11,length=135006516,assembly=GRCh37.p13>
+##contig=<ID=12,length=133851895,assembly=GRCh37.p13>
+##contig=<ID=13,length=115169878,assembly=GRCh37.p13>
+##contig=<ID=14,length=107349540,assembly=GRCh37.p13>
+##contig=<ID=15,length=102531392,assembly=GRCh37.p13>
+##contig=<ID=16,length=90354753,assembly=GRCh37.p13>
+##contig=<ID=17,length=81195210,assembly=GRCh37.p13>
+##contig=<ID=18,length=78077248,assembly=GRCh37.p13>
+##contig=<ID=19,length=59128983,assembly=GRCh37.p13>
+##contig=<ID=20,length=63025520,assembly=GRCh37.p13>
+##contig=<ID=21,length=48129895,assembly=GRCh37.p13>
+##contig=<ID=22,length=51304566,assembly=GRCh37.p13>
+##contig=<ID=X,length=155270560,assembly=GRCh37.p13>
+##contig=<ID=Y,length=59373566,assembly=GRCh37.p13>
+##INFO=<ID=RSID,Number=1,Type=String,Description="dbSNP identifier",Source="https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz",Version="153">
+##study=<ID="12345678",Source="PubMed",Description="Bibliographic citation of main publication",URL="https://pubmed.ncbi.nlm.nih.gov/12345678">
+##trait=<ID="EFO0004340",Description="Body mass index",Source="EFO",Version="3.14.0",Type="continuous",Test="linear",Unit="SD",Population="European",TotalSamples=461460,TotalVariants=9851866,VariantsNotRead=0,HarmonisedVariants=9851866,VariantsNotHarmonised=0,SwitchedAlleles=9851866,FileUrl="https://gwas.mrcieu.ac.uk/files/ukb-b-19953/ukb-b-19953.vcf.gz",FileDate="24/04/2020">
+##trait=<ID="EFO0001360",Description="type II diabetes mellitus",Source="EFO",Version="3.14.0",Type="binary",Test="logistic",Population="European",TotalSamples=462933,TotalCases=2972,TotalVariants=9851866,VariantsNotRead=0,HarmonisedVariants=9851866,VariantsNotHarmonised=0,SwitchedAlleles=9851866,FileUrl="https://gwas.mrcieu.ac.uk/files/ukb-b-13806/ukb-b-13806.vcf.gz",FileDate="24/04/2020">
+##FORMAT=<ID=ES,Number=A,Type=Float,Description="Effect size estimate relative to the alternative allele">
+##bcftools_pgsVersion=1.21+htslib-1.21
+##bcftools_pgsCommand=pgs -Ov -o test.vcf --log test.log -b 5e-08 example.vcf.gz 1kg_ldgm.AFR.bcf 1kg_ldgm.EAS.bcf 1kg_ldgm.EUR.bcf 1kg_ldgm.AMR.bcf 1kg_ldgm.SAS.bcf; Date=Sun Feb  2 11:12:54 2025
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	EFO0004340_pgsx_a0.5_b5e-08	EFO0001360_pgsx_a0.5_b5e-08	EFO0001361_pgsx_a0.5_b5e-08	EFO0001362_pgsx_a0.5_b5e-08	EFO0001363_pgsx_a0.5_b5e-08
