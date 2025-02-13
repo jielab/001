@@ -8,9 +8,8 @@ chr=1; pos0=55039447; pos1=55064852; flank=100000
 	IV = union(X.cojo$SNP, Y.cojo$SNP)
 		
 LD_mat.fn = paste0("5e-", p_t, '.ldr.cojo')
-	LD_mat_cmd = paste("sed -i 's/\t$//'", LD_mat.fn); system(LD_mat_cmd)
 	LD_mat = fread(LD_mat.fn)
-	LD_mat = LD_mat[,2:ncol(LD_mat)]; LD_mat = as.matrix(LD_mat); rownames(LD_mat) = colnames(LD_mat)
+	LD_mat = LD_mat[,2:(ncol(LD_mat)-1)]; LD_mat = as.matrix(LD_mat); rownames(LD_mat) = colnames(LD_mat)
 	
 dat.X <- read.table("X.4gcta", header=T) %>% filter(SNP %in% colnames(LD_mat))
 	dat.X$cor = dat.X$BETA / sqrt(dat.X$BETA^2 + (dat.X$N-2) * dat.X$SE^2)
