@@ -1,6 +1,6 @@
 library(cisMRcML); library(tidyverse); library(data.table)
 
-p_t="08" # p_t="08" 
+p_t="06" # p_t="08" 
 
 chr=1; pos0=55039447; pos1=55064852; flank=100000
 	X.cojo <- read.table(paste0("5e-", p_t, ".jma.cojo"), header=T)
@@ -12,11 +12,13 @@ LD_mat.fn = paste0("5e-", p_t, '.ldr.cojo')
 	LD_mat = LD_mat[,2:(ncol(LD_mat)-1)]; LD_mat = as.matrix(LD_mat); rownames(LD_mat) = colnames(LD_mat)
 	
 dat.X <- read.table("X.4gcta", header=T) %>% filter(SNP %in% colnames(LD_mat))
+	dat.X = dat.X[match(colnames(LD_mat), dat.X$SNP),] # 必须的🏮
 	dat.X$cor = dat.X$BETA / sqrt(dat.X$BETA^2 + (dat.X$N-2) * dat.X$SE^2)
 	dat.X$se_cor = dat.X$SE * dat.X$cor/dat.X$BETA
 	dat.X$bJ = solve(LD_mat) %*% dat.X$cor
 	
 dat.Y = read.table("Y.4gcta", header=T) %>% filter(SNP %in% colnames(LD_mat))
+	dat.Y = dat.Y[match(colnames(LD_mat), dat.Y$SNP),] # 必须的🏮
     dat.Y$cor = dat.Y$BETA / sqrt(dat.Y$BETA^2 + (dat.Y$N-2) * dat.Y$SE^2)
     dat.Y$se_cor = dat.Y$SE * dat.Y$cor/dat.Y$BETA
     dat.Y$bJ = solve(LD_mat) %*% dat.Y$cor
