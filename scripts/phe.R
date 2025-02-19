@@ -14,7 +14,7 @@ replace_code <- function(code, mapping_df) {
 vip.dat <- read.table(paste0(indir,"/common/ukb.vip.dat"), header=FALSE, flush=TRUE)
 	vip.dat$V1[duplicated(vip.dat$V1)]; vip.dat$V2[duplicated(vip.dat$V2)] #check duplication
 phe0 <- read.delim(paste0(indir,"/rap/vip.tab.gz"), sep="\t", header=T) # 不能用 read.table 🈲
-	names(phe0) <- names(phe0) %>% gsub("_i0_a0$|_i0$", "", .) %>% gsub("_", ".", .)
+	names(phe0) <- names(phe0) %>% gsub("_i0$", "", .) %>% gsub("_", ".", .)
 	setdiff(vip.dat$V1, names(phe0)); setdiff(names(phe0), vip.dat$V1)
 	# phe0 <- phe0 %>% crosswalkr::renamefrom(cw_file=vip.dat, raw=V1, clean=V2, drop_extra=F)
 	names(phe0) <- sapply(names(phe0), replace_code, mapping_df = vip.dat) %>% as.character()
