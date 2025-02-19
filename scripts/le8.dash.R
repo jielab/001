@@ -137,7 +137,7 @@ dat <- dat %>% mutate( # 盐 ⛵
 )
 
 dash <- dat %>% select(eid, vegetablenew, fruitnew, nutnew, grainnew, lowfatdairy, sugarnew, meatnew, sodium)
-saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.rds"))
+saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.semi.rds"))
 write.table(dash, "ukb.le8.dash.R.tsv", append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 
 QUIN <- c("vegetablenew", "fruitnew", "nutnew", "grainnew", "lowfatdairy", "sugarnew", "meatnew", "sodium")
