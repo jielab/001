@@ -15,7 +15,7 @@ dat=vip # dat met le8 等
 	fgrep -wf $dat.id pheno.id.uniq | wc -l
 	fgrep -vwf pheno.id.uniq $dat.id | head # 显示UKB里面没有的
 	fgrep -nwf $dat.id pheno.id.2col | awk '$2 !~/_/ || $2 ~/_i0/' > $dat.id.tmp # 如果完全match，不考虑_i⭐，那就 fgrep -nwf $dat.id pheno.id
-	grep -nwE "p93|p94|p4079|4080|6177|6153" pheno.id.2col >> $dat.id.tmp # 这些变量不仅仅需要baseline的数据 
+	grep -nwE "p93|p94|p4079|p4080|p6177|p6153" pheno.id.2col >> $dat.id.tmp # 这些变量不仅仅需要baseline的数据 
 	sort $dat.id.tmp | uniq | awk -F ":" '{print $1}' | tr '\n' ',' | sed 's/,$//' | xargs -n1 -I % cut -f % raw/pheno.tab | gzip -f > $dat.tab.gz
 
 # 一个 data field，多个column的数据
