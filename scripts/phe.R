@@ -218,7 +218,7 @@ prs0 <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T)
 for (t in c("phe", "icd", "srd", "le8", "pca", "gen", "prs", "hla", "prot", "met")) {
 	assign(t, readRDS(paste0(indir, '/Rdata/ukb.', t, '.rds')))
 }
-dat0 <- Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, icd, srd, pca, gen, prs))
+dat0 <- Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, icd, srd, le8, pca, gen, prs))
 	dat0$icdDate_vte <- as.Date(apply(subset(dat0, select=c(icdDate_dvt, icdDate_pe)), 1, FUN=min, na.rm=T)) # 🏮
 	vip.srd <- read.table(paste0(indir,"/common/ukb.vip.srd"), header=F, flush=T) %>% rename(trait=V1, code=V2)
 	for (t in vip.srd$trait) {
