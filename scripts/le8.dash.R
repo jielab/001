@@ -2,8 +2,8 @@ pacman::p_load(tidyverse, lubridate, purrr)
 
 dir0="D:"
 indir=paste0(dir0, "/data/ukb/phe")
-source(paste0(dir0, "/scripts/ukb/le8.dash.fields")
-source(paste0(dir0, '/scripts/ukb/phe.f.R'))
+source(paste0(dir0, "/scripts/ukb/le8.dash.fields"))
+source(paste0(dir0, '/scripts/f/phe.f.R'))
 
 dat0 <- read.table("D:/github/001/scripts/le8/le8.pku.raw.gz", sep="\t", fill=TRUE, header=TRUE) 
 dat0 <- dat0 %>% mutate(
@@ -138,6 +138,6 @@ dash <- dash %>% mutate(
 dash <- dash %>% mutate(dashscore = rowSums2(select(., quinvegetable, quinfruit, quinnut, quingrain, quinlowfatdairy, quinsugar, quinmeat, quinsodium)))
 dash$dashscore[apply(is.na(select(dash, vegetablenew, fruitnew, nutnew, grainnew, lowfatdairy, sugarnew, meatnew, sodium)), 1, any)] <- NA
 # dash <- dash %>% arrange(dashscore)
-dash <- dash %>% mutate( dashpts = case_when((dashscore >= 0 & dashscore < 17) ~ 0, (dashscore >= 17 & dashscore < 21) ~ 25, (dashscore >= 21 & dashscore < 26) ~ 50, (dashscore >= 26 & dashscore < 31) ~ 80, (dashscore >= 31) ~ 100, TRUE ~ NA_real_ ))
+dash <- dash %>% mutate( dash_pts = case_when((dashscore >= 0 & dashscore < 17) ~ 0, (dashscore >= 17 & dashscore < 21) ~ 25, (dashscore >= 21 & dashscore < 26) ~ 50, (dashscore >= 26 & dashscore < 31) ~ 80, (dashscore >= 31) ~ 100, TRUE ~ NA_real_ ))
 saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.rds"))
 

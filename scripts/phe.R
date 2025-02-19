@@ -2,7 +2,7 @@ pacman::p_load(data.table, tidyverse, stringr, crosswalkr, lubridate)
 
 dir0="D:"
 indir=paste0(dir0, "/data/ukb/phe")
-source(paste0(dir0, '/scripts/ukb/phe.f.R'))
+source(paste0(dir0, '/scripts/f/phe.f.R'))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # main PHE
@@ -26,11 +26,11 @@ phe <- phe %>% mutate(
 	across(grep("date", names(phe), value=T), ~as.Date(.x)),
 	across(grep("deprivation|date", names(phe), invert=T, value=T), ~ifelse(.x<0, NA, .x)), # 该命令也不适用于date变量
 	ethnic_cat = ifelse(ethnicity==2002,12, ifelse(ethnicity==2003,13, ifelse(ethnicity %in% c(2004,3004),6,  ifelse(grepl("^1",ethnicity),1, ifelse(grepl("^2",ethnicity),2, ifelse(grepl("^3",ethnicity),3, ifelse(grepl("^4",ethnicity),4, ethnicity))))))),
-	ethnic_cat = factor(ethnic_cat, levels=c(1,2,3,4,5,6,12,13), labels=c("White","Mixed","Asian","Black","Chinese","Other","White-Black", "White-Asian")),	
+	ethnic_cat = factor(ethnic_cat, levels=c(1,2,3,4,5,6,12,13), labels=c("White", "Mixed", "Asian", "Black","Chinese","Other","White-Black", "White-Asian")),	
 	age_cat = cut(age, breaks=seq(35,75,5)),
 	sex_cat = ifelse(sex==0, "female", "male"),
-	bmi_cat = cut(bmi, breaks=c(10,18.5,25,30,100), labels=c("lean","healthy","overweight","obese")),
-	bmi_cat = factor(bmi_cat, levels=c("healthy","lean","overweight","obese")),
+	bmi_cat = cut(bmi, breaks=c(10,18.5,25,30,100), labels=c("lean", "healthy", "overweight", "obese")),
+	bmi_cat = factor(bmi_cat, levels=c("healthy", "lean", "overweight", "obese")),
 	leg = height - chunk, leg_ratio = leg / chunk, chunk_ratio = chunk / leg,
 	leg_ratio_adj = leg_ratio / height, chunk_ratio_adj = chunk_ratio / height
 )
@@ -72,8 +72,10 @@ saveRDS(dat, paste0(indir,"/Rdata/ukb.icd.rds"))
 # SRD (self-report disease) (20002 和 87) 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 srd <- read.table(paste0(indir,"/rap/srd.tab"), header=T)
-srd.med <- srd %>% mutate(med_dm=as.integer(rowSums(across(starts_with("p20002_i0_"),  ~ . %in% c("1220", "1221", "1222", "1223")), na.rm = TRUE) > 0)) %>%
-	select(eid, med_dm)
+srd.drug <- srd %>% mutate( # 💊
+	drug.dm=as.integer(rowSums(across(starts_with("p20002_i0_"),  ~ . %in% c("1220", "1221", "1222", "1223")), na.rm = TRUE) > 0),
+	drug.hpt=as.integer(rowSums(across(starts_with("p20002_i0_"),  ~ . %in% c("1065","1072")), na.rm = TRUE) > 0)
+	) %>% select(eid, drug.dm, drug.hpt)
 srdTime <- read.table(paste0(indir,"/rap/srdTime.tab"), header=T)
 vip.srd <- read.table(paste0(indir,"/common/ukb.vip.srd"), header=F, flush=T) %>% rename(trait=V1, code=V2)
 dat=subset(srd, select="eid")
@@ -96,11 +98,13 @@ saveRDS(dat, paste0(indir,"/Rdata/ukb.srd.rds"))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # LE8
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-phe <- merge(phe, srd.med, by="eid")
-le8 <- phe %>% mutate(
+le8 <- merge(phe, srd.drug, by="eid") %>% mutate( 
+	drug.lipid = ifelse(rowSums(across(starts_with("drug.cmd"), ~ . %like% "1")) > 0, 1, 0)
+) # 上面两行都是为了提取 💊 的信息
+le8 <- le8 %>% mutate(
 	# 运动 🏃‍ MET minutes per week for moderate [22038] or vigorous [22039] activity
 	pa_mins = pa_mod + pa_vig * 2, 
-	PA_pts = case_when(pa_mins >=150 ~ 100, (pa_mins>=120 & pa_mins<150) ~ 90, (pa_mins>=90 & pa_mins<120) ~ 80, (pa_mins >=60 & pa_mins<90) ~ 60, (pa_mins>=30 & pa_mins<60) ~ 40, (pa_mins>= 1 & pa_mins< 30) ~ 20, pa_mins==0 ~ 0),
+	pa_pts = case_when(pa_mins >=150 ~ 100, (pa_mins>=120 & pa_mins<150) ~ 90, (pa_mins>=90 & pa_mins<120) ~ 80, (pa_mins >=60 & pa_mins<90) ~ 60, (pa_mins>=30 & pa_mins<60) ~ 40, (pa_mins>= 1 & pa_mins< 30) ~ 20, pa_mins==0 ~ 0),
 	# 吸烟 🚬 smoke_quit_age [p2897], smoke_history [p1249], smoke_in_house [p1259]
 	smoke_quit_age = ifelse(smoke_quit_age %in% c(-3, -1), NA, smoke_quit_age), 
 	smoke_history = ifelse(smoke_history==-3, NA, smoke_history), 
@@ -113,16 +117,14 @@ le8 <- phe %>% mutate(
 	sleep_pts = case_when(sleep_duration >= 7 & sleep_duration < 9 ~ 100, sleep_duration >= 9 & sleep_duration < 10 ~ 90, sleep_duration >= 6 & sleep_duration < 7 ~ 70, (sleep_duration >= 5 & sleep_duration < 6) | sleep_duration >= 10 ~ 40, sleep_duration >= 4 & sleep_duration < 5 ~ 20, sleep_duration >= 0 & sleep_duration < 4 ~ 0),
 	# BMI 🎈
 	bmi_pts = case_when(bmi>0 & bmi<25 ~ 100, bmi>=25 & bmi<30 ~ 70, bmi>=30 & bmi<35 ~ 30, bmi>= 35 & bmi<40 ~ 15, bmi>=40 ~ 0),
-	# 血脂 🍟  med_4cmd[6177] med_4cmd_plus[6153]
+	# 血脂 🍟  drug.cmd[6177] drug.cmd2[6153]
 	nonhdl = pmax((bb_TC-bb_HDL)*38.67, 0),
 	nonhdl_cat = case_when(nonhdl>= 0 & nonhdl<130 ~ 100, nonhdl>=130 & nonhdl<160 ~ 60, nonhdl>=160 & nonhdl<190 ~ 40, nonhdl>=190 & nonhdl<220 ~ 20, nonhdl>=220 ~ 0),
-
-	lipid_drug = ifelse(med_4cmd==1 | med_4cmd.i1==1 | med_4cmd.i2==1, 1, ifelse(med_4cmd_plus==1 | med_4cmd_plus.i1==1 | med_4cmd_plus.i2==1 | med_4cmd_plus.i3==1, 1, 0)),
-	nonhdl_pts = ifelse(lipid_drug==1 & nonhdl_cat>0, nonhdl_cat-20, nonhdl_cat),
+	nonhdl_pts = ifelse(drug.lipid==1 & nonhdl_cat>0, nonhdl_cat-20, nonhdl_cat),
 	# 血糖 🍬 dm_dr[2443], dm_gestational[4041]
 	hba1c_n = bb_HBA1C*0.0915 + 2.15,
-	diabetes_his = ifelse(dm_dr==1, 1, ifelse(dm_gestational==1, 1, ifelse(med_dm==1, 1, 0))),
-	hba1c_pts = case_when(diabetes_his==0 & hba1c_n>0 & hba1c_n<5.7 ~ 100, diabetes_his==0 & hba1c_n>=5.7 & hba1c_n<6.5 ~ 60, hba1c_n>0 & hba1c_n<7 ~ 40, hba1c_n>=7 & hba1c_n<8 ~ 30, hba1c_n>=8 & hba1c_n<9 ~ 20, hba1c_n>=9 & hba1c_n<10 ~ 10, hba1c_n>=10 ~ 0),
+	his.dm = ifelse(dm_dr==1, 1, ifelse(dm_gestational==1, 1, ifelse(drug.dm==1, 1, 0))),
+	hba1c_pts = case_when(his.dm==0 & hba1c_n>0 & hba1c_n<5.7 ~ 100, his.dm==0 & hba1c_n>=5.7 & hba1c_n<6.5 ~ 60, hba1c_n>0 & hba1c_n<7 ~ 40, hba1c_n>=7 & hba1c_n<8 ~ 30, hba1c_n>=8 & hba1c_n<9 ~ 20, hba1c_n>=9 & hba1c_n<10 ~ 10, hba1c_n>=10 ~ 0),
 	# 血压 🦆 sbp_man[93], dbp_man[94], dbp_auto[4079], sbp_auto[4080]
 	sbp_auto = rowMeans2(select(., c("sbp_auto.i0.a0", "sbp_auto.i0.a1"))),
 	sbp_manual = rowMeans2(select(., c("sbp_man.i0.a0", "sbp_man.i0.a1"))),
@@ -132,15 +134,16 @@ le8 <- phe %>% mutate(
 le8 <- le8 %>% mutate(
 	sbp = rowMeans2(select(., c("sbp_auto", "sbp_manual"))),
 	dbp = rowMeans2(select(., c("dbp_auto", "dbp_manual"))),
-	bp_cat = case_when(sbp>=160 | dbp>=100 ~ 0, (sbp=140 & sbp<160) | (dbp>=90 & dbp<100) ~ 25, (sbp>= 130 & sbp< 140) | (dbp>= 80 & dbp< 90) ~ 50, (sbp>=120 & sbp<130) & (dbp>=0 & dbp<80) ~ 75, sbp>0 & sbp<120 & dbp>0 & dbp<80 ~ 100)
+	bp_cat = case_when(sbp>=160 | dbp>=100 ~ 0, (sbp=140 & sbp<160) | (dbp>=90 & dbp<100) ~ 25, (sbp>= 130 & sbp< 140) | (dbp>= 80 & dbp< 90) ~ 50, (sbp>=120 & sbp<130) & (dbp>=0 & dbp<80) ~ 75, sbp>0 & sbp<120 & dbp>0 & dbp<80 ~ 100),
+	bp_pts=ifelse(drug.hpt==1 & bp_cat>0, bp_cat-20, bp_cat)
 )
 
-dash <- readRDS(paste0(indir,"/Rdata/ukb.dash.rds"))[,c("eid", "dashpts")] # 🍚
+dash <- readRDS(paste0(indir,"/Rdata/ukb.dash.rds"))[,c("eid", "dash_pts")] # 🍚
 le8 <- merge(le8, dash, by="eid")
 le8 <- le8 %>% rowwise() %>% # 🎇 汇总
-	mutate( LE8score = mean(c(dashpts, PA_pts, smoke_pts, sleep_pts, bmi_pts, nonhdl_pts, hba1c_pts, BP_pts), na.rm = FALSE)) %>% 
+	mutate( LE8score = mean(c(dash_pts, pa_pts, smoke_pts, sleep_pts, bmi_pts, nonhdl_pts, hba1c_pts, bp_pts), na.rm = FALSE)) %>% 
 	ungroup() %>% mutate(CVH_cat = case_when(LE8score < 50 & LE8score >= 0 ~ 0, LE8score < 80 & LE8score >= 50 ~ 1, LE8score >= 80 ~ 2 )) %>%
-	select(eid, LE8score, CVH_cat, dashpts, PA_pts, smoke_pts, sleep_pts, bmi_pts, nonhdl_pts, hba1c_pts, BP_pts)
+	select(eid, LE8score, CVH_cat, dash_pts, pa_pts, smoke_pts, sleep_pts, bmi_pts, nonhdl_pts, hba1c_pts, bp_pts)
 saveRDS(le8, paste0(indir,"/Rdata/ukb.le8.rds"))
 
 
@@ -212,7 +215,7 @@ prs0 <- read.table("D:/data/ukb/prs/all.prs.txt.gz", header=T, as.is=T)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # merge all together
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-for (t in c("phe", "icd", "srd", "pca", "gen", "prs", "hla", "prot", "met")) {
+for (t in c("phe", "icd", "srd", "le8", "pca", "gen", "prs", "hla", "prot", "met")) {
 	assign(t, readRDS(paste0(indir, '/Rdata/ukb.', t, '.rds')))
 }
 dat0 <- Reduce(function(x,y) merge(x,y,by="eid",all=T), list(phe, icd, srd, pca, gen, prs))
