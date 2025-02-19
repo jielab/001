@@ -1,6 +1,8 @@
 pacman::p_load(data.table, tidyverse, stringr, crosswalkr, lubridate)
-indir="D:/data/ukb/phe"
 
+dir0="D:"
+indir=paste0(dir0, "/data/ukb/phe")
+source(paste0(dir0, '/scripts/ukb/phe.f.R'))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # main PHE
@@ -111,26 +113,29 @@ le8 <- phe %>% mutate(
 	sleep_pts = case_when(sleep_duration >= 7 & sleep_duration < 9 ~ 100, sleep_duration >= 9 & sleep_duration < 10 ~ 90, sleep_duration >= 6 & sleep_duration < 7 ~ 70, (sleep_duration >= 5 & sleep_duration < 6) | sleep_duration >= 10 ~ 40, sleep_duration >= 4 & sleep_duration < 5 ~ 20, sleep_duration >= 0 & sleep_duration < 4 ~ 0),
 	# BMI 🎈
 	bmi_pts = case_when(bmi>0 & bmi<25 ~ 100, bmi>=25 & bmi<30 ~ 70, bmi>=30 & bmi<35 ~ 30, bmi>= 35 & bmi<40 ~ 15, bmi>=40 ~ 0),
-	# 血脂  med_4cmd[6177] med_4cmd_plus[6153]
+	# 血脂 🍟  med_4cmd[6177] med_4cmd_plus[6153]
 	nonhdl = pmax((bb_TC-bb_HDL)*38.67, 0),
 	nonhdl_cat = case_when(nonhdl>= 0 & nonhdl<130 ~ 100, nonhdl>=130 & nonhdl<160 ~ 60, nonhdl>=160 & nonhdl<190 ~ 40, nonhdl>=190 & nonhdl<220 ~ 20, nonhdl>=220 ~ 0),
+
 	lipid_drug = ifelse(med_4cmd==1 | med_4cmd.i1==1 | med_4cmd.i2==1, 1, ifelse(med_4cmd_plus==1 | med_4cmd_plus.i1==1 | med_4cmd_plus.i2==1 | med_4cmd_plus.i3==1, 1, 0)),
 	nonhdl_pts = ifelse(lipid_drug==1 & nonhdl_cat>0, nonhdl_cat-20, nonhdl_cat),
-	# 血糖: dm_dr[2443], dm_gestational[4041]
+	# 血糖 🍬 dm_dr[2443], dm_gestational[4041]
 	hba1c_n = bb_HBA1C*0.0915 + 2.15,
-	diabetes_his <- ifelse(dm_dr==1, 1, ifelse(dm_gestational==1, 1, ifelse(med_dm==1, 1, 0))),
+	diabetes_his = ifelse(dm_dr==1, 1, ifelse(dm_gestational==1, 1, ifelse(med_dm==1, 1, 0))),
 	hba1c_pts = case_when(diabetes_his==0 & hba1c_n>0 & hba1c_n<5.7 ~ 100, diabetes_his==0 & hba1c_n>=5.7 & hba1c_n<6.5 ~ 60, hba1c_n>0 & hba1c_n<7 ~ 40, hba1c_n>=7 & hba1c_n<8 ~ 30, hba1c_n>=8 & hba1c_n<9 ~ 20, hba1c_n>=9 & hba1c_n<10 ~ 10, hba1c_n>=10 ~ 0),
-	# 血压 sbp_man[93], dbp_man[94], dbp_auto[4079], sbp_auto[4080]
-	sbp_auto = rowMeans2(select(., c("sbp_auto", "sbp_auto.i1"))),
-	sbp_manual = rowMeans2(select(., c("sbp_man", "sbp_man.i1"))),
-	dbp_auto = rowMeans2(select(., c("dbp_auto", "dbp_auto.i1"))),
-	dbp_manual = rowMeans2(select(., c("dbp_man", "dbp_man.i1"))),
-	sbp_mean = rowMeans2(select(., c("sbp_auto", "sbp_manual"))),
-	dbp_mean = rowMeans2(select(., c("dbp_auto", "dbp_manual"))),
+	# 血压 🦆 sbp_man[93], dbp_man[94], dbp_auto[4079], sbp_auto[4080]
+	sbp_auto = rowMeans2(select(., c("sbp_auto.i0.a0", "sbp_auto.i0.a1"))),
+	sbp_manual = rowMeans2(select(., c("sbp_man.i0.a0", "sbp_man.i0.a1"))),
+	dbp_auto = rowMeans2(select(., c("dbp_auto.i0.a0", "dbp_auto.i0.a1"))),
+	dbp_manual = rowMeans2(select(., c("dbp_man.i0.a0", "dbp_man.i0.a1")))
+)
+le8 <- le8 %>% mutate(
+	sbp = rowMeans2(select(., c("sbp_auto", "sbp_manual"))),
+	dbp = rowMeans2(select(., c("dbp_auto", "dbp_manual"))),
 	bp_cat = case_when(sbp>=160 | dbp>=100 ~ 0, (sbp=140 & sbp<160) | (dbp>=90 & dbp<100) ~ 25, (sbp>= 130 & sbp< 140) | (dbp>= 80 & dbp< 90) ~ 50, (sbp>=120 & sbp<130) & (dbp>=0 & dbp<80) ~ 75, sbp>0 & sbp<120 & dbp>0 & dbp<80 ~ 100)
 )
 
-dash <- readRDS(paste0(indir,"/Rdata/ukb.dash.rds"))
+dash <- readRDS(paste0(indir,"/Rdata/ukb.dash.rds"))[,c("eid", "dashpts")] # 🍚
 le8 <- merge(le8, dash, by="eid")
 le8 <- le8 %>% rowwise() %>% # 🎇 汇总
 	mutate( LE8score = mean(c(dashpts, PA_pts, smoke_pts, sleep_pts, bmi_pts, nonhdl_pts, hba1c_pts, BP_pts), na.rm = FALSE)) %>% 
