@@ -147,7 +147,7 @@ for (i in QUIN) {
   quin_boundaries[3] <- ifelse(quin_boundaries[3] == 0, quin_boundaries[3] + 0.000002, quin_boundaries[3])
   quin_boundaries[4] <- ifelse(quin_boundaries[4] == 0, quin_boundaries[4] + 0.000003, quin_boundaries[4])
   quin_boundaries[5] <- ifelse(quin_boundaries[5] == 0, quin_boundaries[5] + 0.000004, quin_boundaries[5])
-  new_col_name <- paste0("quin2", gsub("new", "", i)) 
+  new_col_name <- paste0("quin", gsub("new", "", i)) 
   dash <- dash %>% mutate(!!sym(new_col_name) := as.numeric(cut(dash[[i]],breaks=quin_boundaries, include.lowest=TRUE,labels=c(1, 2, 3, 4, 5),right=TRUE)))
 }
 # 🏮 上面的代码，最好改成下面这样
