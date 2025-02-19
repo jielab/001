@@ -140,13 +140,7 @@ dash <- dat %>% select(eid, vegetablenew, fruitnew, nutnew, grainnew, lowfatdair
 saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.rds"))
 write.table(dash, "ukb.le8.dash.R.tsv", append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 
-# 🏮  下面是黄的代码
-#QUIN <- c("vegetablenew", "fruitnew", "nutnew", "grainnew", "lowfatdairy", "sugarnew", "meatnew", "sodium")
-#for (item in QUIN) {
-#  dash <- dash %>% mutate(!!paste0("quin", item) := ntile(.data[[item]], 5))
-#}
-
-# 🏮  下面是唐的代码
+QUIN <- c("vegetablenew", "fruitnew", "nutnew", "grainnew", "lowfatdairy", "sugarnew", "meatnew", "sodium")
 for (i in QUIN) {
   quin_boundaries <- quantile(dash[[i]], probs = c(0, 0.2, 0.4, 0.6, 0.8, 1), na.rm = TRUE)
   quin_boundaries[2] <- ifelse(quin_boundaries[2] == 0, quin_boundaries[2] + 0.000001, quin_boundaries[2])
@@ -154,8 +148,10 @@ for (i in QUIN) {
   quin_boundaries[4] <- ifelse(quin_boundaries[4] == 0, quin_boundaries[4] + 0.000003, quin_boundaries[4])
   quin_boundaries[5] <- ifelse(quin_boundaries[5] == 0, quin_boundaries[5] + 0.000004, quin_boundaries[5])
   new_col_name <- paste0("quin2", gsub("new", "", i)) 
-  dash <- dash %>% mutate(!!sym(new_col_name) := as.numeric(cut(dash[[i]],breaks = quin_boundaries, include.lowest = TRUE,labels = c(1, 2, 3, 4, 5),right = TRUE)))
+  dash <- dash %>% mutate(!!sym(new_col_name) := as.numeric(cut(dash[[i]],breaks=quin_boundaries, include.lowest=TRUE,labels=c(1, 2, 3, 4, 5),right=TRUE)))
 }
+# 🏮 上面的代码，最好改成下面这样
+#for (item in QUIN) { dash <- dash %>% mutate(!!paste0("quin", item) := ntile(.data[[item]], 5)) }
 
 dash <- dash %>% mutate(
     quinsugar = ifelse(!is.na(quinsugar), 6 - quinsugar, NA),
