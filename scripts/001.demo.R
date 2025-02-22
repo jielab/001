@@ -1,7 +1,7 @@
 pacman::p_load(data.table, tidyverse, lubridate, survival, rcssci)
 
 dir0='D:'
-source(paste0(dir0, '/scripts/f/main.f.R'))
+source(paste0(dir0, '/scripts/f/phe.f.R'))
 
 dat0 <- readRDS(file=paste0(dir0, "/data/ukb/phe/Rdata/all.plus.rds")); dat0$bb_shbg.tp53.rs1042522_C <- NULL
 covs_else <- "age sex bmi smoke_status alcohol_status PC1 PC2 PC3 PC4" %>% strsplit(" ") %>% unlist()
