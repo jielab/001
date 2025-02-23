@@ -31,8 +31,8 @@ dat.male <- subset(dat, sex==1)
 # Proteome🥚的表型关联
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Ys <- c("sle", "pancre_cancer", "bald12", "bald13", "bald14") #  
-res <- data.frame(Y=character(), X=character(), BETA=numeric(), SE=numeric(), P=numeric(), stringsAsFactors=FALSE)
 for (Y in Ys) {
+	res <- data.frame(Y=character(), X=character(), BETA=numeric(), SE=numeric(), P=numeric(), stringsAsFactors=FALSE)
 	print(Y); if (grepl("bald", Y)) covs=covs_bald else covs=covs_else
 	for (X in grep("bb_|bc_|hla_|prot_|met_", names(dat), value=T)) {
 	
@@ -59,7 +59,6 @@ for (Y in Ys) {
 	write.table(res, paste0(Y,".assoc.txt"), append=FALSE, quote=FALSE, row.names=FALSE)
 	gc()
 }
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,22 +95,23 @@ exdf <- data.frame(cbind(OR=c(1.21,0.90,1.02, 1.54,1.32,0.79,1.38,0.85,1.11, 1.5
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 表型关联和cisMr结果比较
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat.phe <- read.table("all.assoc.txt", header=TRUE) %>% 
-	mutate(X = paste0("prot_", toupper(sub("prot_", "", X))), Analysis="phe") 
-	Y="bald14"; valcano(Y, dat.phe[dat.phe$Y==Y,], "X", "BETA", "P", 0.05)
+dat.phe <- read.table(paste0(dir0, '/analysis/assoc.sum/all.assoc.txt'), header=TRUE) %>%
+	mutate(X = ifelse(X %like% "prot_", gsub("PROT_", "prot_", toupper(X)), X), Analysis="phe") 
+	Y="sle"; valcano(Y, dat.phe[dat.phe$Y==Y & dat.phe$X %like% "prot_", ], "X", "BETA", "P", 0.05) # 👀
 dat.mr <- read.table(paste0(dir0, '/analysis/assoc.sum/all.mr.log'), header=TRUE)[,c(1:4,6:8)] %>% rename(P=P.ivw)
 dat.cis <- read.table(paste0(dir0, '/analysis/assoc.sum/all.cisMr.log'), header=TRUE)[,-5] 
 dat.mr <- rbind(dat.mr, dat.cis) %>% mutate(X=paste0("prot_", X)) %>%
 	mutate(Analysis = paste(Analysis, sprintf("%02d", p_t), sep='.')) %>% select(-p_t) %>% 
 	mutate(Analysis = recode(Analysis, "gwIV.way1.08"="g1", "gwIV.way2.08"="g2", "cis.clump.06"="clp06", "cis.clump.08"="clp08", "Mr.08"="cml08", "Mr.06"="cml06"))
 dat.mr <- dat.mr[, colnames(dat.phe)] # 🏮
-dat <- rbind(dat.mr, dat.phe) %>% filter(Y %like% "bald") %>% 
-	pivot_wider(names_from=c(Y, Analysis), values_from=c(BETA, SE, P), names_glue="{Y}.{.value}.{Analysis}") 
-	names(dat)
-	bbplot("bald12 Clump^cML BETA", dat, "X", "bald12.BETA.clp08", "bald12.BETA.cml08", "yes", "bald12.P.clp08", "bald12.P.cml08", "no", 0.05)	
-	bbplot("bald12 Clump^cML P", dat, "X", "bald12.BETA.clp08", "bald12.BETA.cml08", "no", "bald12.P.clp08", "bald12.P.cml08", "yes", 0.05)	
-	bbplot("bald12 Phe^Mr BETA", dat, "X", "bald12.BETA.phe", "bald12.BETA.cml08", "yes", "bald12.P.phe", "bald12.P.cml08", "no", 0.05)	
-	bbplot("bald12 Phe^Mr BETA", dat, "X", "bald12.BETA.phe", "bald12.BETA.cml08", "no", "bald12.P.phe", "bald12.P.cml08", "yes", 0.05)	
+dat <- rbind(dat.mr, dat.phe); table(dat$Analysis)
+	Y="sle"; valcano(Y, dat[dat$Y==Y & dat$X %like% "prot_" & dat$Analysis=="cml08", ], "X", "BETA", "P", 0.05) # 👀
+dat1 <- dat %>% filter(Y %like% "sle") %>% 
+	pivot_wider(names_from=c(Y, Analysis), values_from=c(BETA, SE, P), names_glue="{Y}.{.value}.{Analysis}"); names(dat1)
+	bbplot("sle Clump^cML BETA", dat1, "X", "sle.BETA.clp08", "sle.BETA.cml08", "yes", "sle.P.clp08", "sle.P.cml08", "no", 0.05)	
+	bbplot("sle Clump^cML P", dat1, "X", "sle.BETA.clp08", "sle.BETA.cml08", "no", "sle.P.clp08", "sle.P.cml08", "yes", 0.05)	
+	bbplot("sle Phe^Mr BETA", dat1, "X", "sle.BETA.phe", "sle.BETA.cml08", "yes", "sle.P.phe", "sle.P.cml08", "no", 0.05)	
+	bbplot("sle Phe^Mr BETA", dat1, "X", "sle.BETA.phe", "sle.BETA.cml08", "no", "sle.P.phe", "sle.P.cml08", "yes", 0.05)	
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -126,7 +126,7 @@ drug <- merge(ppp, drug, by.x="UniProt", by.y="UNIPROT_ACCESSION") %>%
 	drug[duplicated(drug$X) | duplicated(drug$X, fromLast = TRUE), ]
 	drug <- drug[!duplicated(drug$X), ]
 dat <- merge(dat, drug, by="X", all.x=TRUE)
-write.table(dat, "bald.analysis.txt", sep="\t", append=FALSE, quote=FALSE, row.names=FALSE)
+write.table(dat, "X.merged.txt", sep="\t", append=FALSE, quote=FALSE, row.names=FALSE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
