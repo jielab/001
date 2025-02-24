@@ -7,8 +7,9 @@ dat0 <- readRDS(file=paste0(dir0, "/data/ukb/phe/Rdata/all.plus.rds")); dat0$bb_
 covs_else <- "age sex bmi smoke_status alcohol_status PC1 PC2 PC3 PC4" %>% strsplit(" ") %>% unlist()
 covs_bald <- "age bmi smoke_status alcohol_status bb_TES bb_SHBG bb_VITD bb_IGF1 PC1 PC2 PC3 PC4" %>% strsplit(" ") %>% unlist()
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Table 1: 基本信息及Pheno关联
+# Table 1: 基本信息
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% filter(ethnic_cat=="White") %>% mutate(
 	bald12=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==2,1,NA))),
@@ -18,17 +19,17 @@ dat <- dat0 %>% filter(ethnic_cat=="White") %>% mutate(
 	sexp_cat=factor(ifelse(sex_partner <=1, "low", ifelse(sex_partner<=10, "average", "high")),levels=c("low", "average", "high"))
 )
 table(dat$sex, dat$bald12); table(dat$sexp_cat)
-dat.male <- subset(dat, sex==1)
-	library(compareGroups); descrTable(formula=as.formula(paste(c("bald ~ ", paste(covs_bald, collapse="+")), collapse="")), data=dat, digits=1)
-	library(gtsummary); dat %>% filter(sex==1) %>% select(all_of(c("bald", covs_bald))) %>% tbl_summary(by=bald, missing="no") %>% add_p()
-	Y="bald12"; fit <- glm(formula=as.formula(paste(c(Y, " ~ ", paste(covs_bald, collapse="+")), collapse="")), data=dat, family="binomial"); summary(fit)
+dat1 <- subset(dat, sex==1)
+	library(compareGroups); descrTable(formula=as.formula(paste(c("bald ~ ", paste(covs_bald, collapse="+")), collapse="")), data=dat1, digits=1)
+	library(gtsummary); dat1 %>% select(all_of(c("bald", covs_bald))) %>% tbl_summary(by=bald, missing="no") %>% add_p()
+	Y="bald12"; fit <- glm(formula=as.formula(paste(c(Y, " ~ ", paste(covs_bald, collapse="+")), collapse="")), data=dat1, family="binomial"); summary(fit)
 	library(forestmodel); forest_model(fit)
 	# fit <- lm(age_fsex ~ factor(bald) +..., data=dat); 
 	# fit <- nnet::multinom(bald ~ covs_bald, data=dat)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Proteome🥚的表型关联
+# 批量运行🏃‍Proteome🥚的表型关联
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Ys <- c("sle", "pancre_cancer", "bald12", "bald13", "bald14") #  
 for (Y in Ys) {
@@ -41,6 +42,7 @@ for (Y in Ys) {
 	if (paste0("icdCt_", Y) %in% names(dat)) { # 存在发病日期，cox分析 🔫
 		dat1 <- dat %>% mutate(
 			Y_date=dat[[paste0('icdDate_',Y)]], Y_yes=ifelse(is.na(Y_date), 0,1),
+			X=dat[[X]],
 			#X_qt=cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
 			#X_qt=ifelse(X_qt=="q1", "low", ifelse(X_qt=="q5", "high", "middle")),
 			follow_end_day=fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
@@ -62,17 +64,15 @@ for (Y in Ys) {
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 核心结果展示🌳
+# Survival🏊‍相关分析结果展示🌳
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-rcssci_cox(data=dat1, time="follow_years", y="Y_yes", x="X", covs=c("age","sex"), prob=0.1, filepath= 'D:/tmp') # 🐂
-
-fit.cox %>% gtsummary::tbl_regression(exponentiate=TRUE) %>% plot()
-	km.obj <- survfit(surv.obj ~ X_qt, data=dat1) # KM 是不能带协变量的，M会被作为分层变量
-	# survdiff(surv.obj ~ X_qt, data=dat1) # log-rank test
-	# plot(km.obj, fun=function(x) 1-x)
+X="bb_VITD"; Y="cad" # 以这个为例，接上面的代码
+	rcssci_cox(data=dat1, time="follow_years", y="Y_yes", x="X", covs=c("age","sex"), prob=0.1, filepath= 'D:/tmp') # 🐂
+	km.obj <- survfit(surv.obj ~ smoke_status, data=dat1) # KM 是不能带协变量的，M会被作为分层变量
+	survdiff(surv.obj ~ smoke_status, data=dat1) # log-rank test
+	plot(km.obj, fun=function(x) 1-x)
 	survminer::ggsurvplot(km.obj, ylim=c(0,0.2), fun="event", pval=TRUE, risk.table=TRUE, ncensor.plot=TRUE, ggtheme=theme_bw(), palette=c("green","gray","orange"))
-	survminer::ggforest(fit.cox, main="", cpositions=c(0, 0.1, 0.3), fontsize=1.2, data=dat1)
-
+	survminer::ggforest(fit, main="", cpositions=c(0, 0.1, 0.3), fontsize=1.2, data=dat1)
 library(forplo) #🏮
 exdf <- data.frame(cbind(OR=c(1.21,0.90,1.02, 1.54,1.32,0.79,1.38,0.85,1.11, 1.58,1.80,2.27),LCI=c(0.82,0.61,0.66,1.08,0.91,0.48,1.15,0.39,0.91,0.99,1.48,0.92),UCI=c(1.79,1.34,1.57, 2.19,1.92,1.32,1.64,1.87,1.34, 2.54,2.19,5.59), groups=c(1,1,1, 2,2,2,2,2,2, 3,3,3)))
 	rownames(exdf) <- c('Barry, 2005', 'Frances, 2000', 'Rowley, 1995', 'Biro, 2000', 'Crowe, 2010', 'Harvey, 1996', 'Johns, 2004', 'Parr, 2002', 'Zhang, 2011', 'Flint, 1989', 'Mac Vicar, 1993', 'Turnbull, 1996')
@@ -80,10 +80,10 @@ exdf <- data.frame(cbind(OR=c(1.21,0.90,1.02, 1.54,1.32,0.79,1.38,0.85,1.11, 1.5
 
 ## 10年风险计算
 	#	XnM=factor(paste(M, X, sep="|"), levels=paste(rep(levels(M),each=3), rep(levels(X),3), sep="|")),
-	fit.cox <- coxph(surv.obj ~ X+M, data=dat1) 
+	fit <- coxph(surv.obj ~ X+M, data=dat1) 
 	dat1$risk <- nricens::get.risk.coxph(mdl, 10) # 每人的risk 🔔
 	dat2 <- expand.grid(X=levels(dat1$X), M=levels(dat1$M))
-	surv.pred <- survfit(fit.cox, newdata=dat2)
+	surv.pred <- survfit(fit, newdata=dat2)
 	surv.10y <- summary(surv.pred, times=10)
 	dat2 <- dat2 %>% mutate(risk=1-t(surv.10y$surv), ci_lower=t(1-surv.10y$upper), ci_upper=t(1-surv.10y$lower))
 	ggplot(dat2, aes(x=M, y =risk, fill=X)) + geom_bar(stat="identity", position=position_dodge(width=0.7), width=0.7) +
@@ -98,16 +98,18 @@ exdf <- data.frame(cbind(OR=c(1.21,0.90,1.02, 1.54,1.32,0.79,1.38,0.85,1.11, 1.5
 dat.phe <- read.table(paste0(dir0, '/analysis/assoc.sum/all.assoc.txt'), header=TRUE) %>%
 	mutate(X = ifelse(X %like% "prot_", gsub("PROT_", "prot_", toupper(X)), X), Analysis="phe") 
 	Y="sle"; valcano(Y, dat.phe[dat.phe$Y==Y & dat.phe$X %like% "prot_", ], "X", "BETA", "P", 0.05) # 👀
-dat.mr <- read.table(paste0(dir0, '/analysis/assoc.sum/all.mr.log'), header=TRUE)[,c(1:4,6:8)] %>% rename(P=P.ivw)
+dat.mr <- read.table(paste0(dir0, '/analysis/assoc.sum/all.mr.log'), header=TRUE)[,c(1:4,6:8)] %>% rename(P=P.ivw) %>% 
+	mutate(X_new=ifelse(Analysis %like% "way2", Y, X), Y_new=ifelse(Analysis %like% "way2", X, Y), X=X_new, Y=Y_new) %>% dplyr::select(-X_new, -Y_new)
 dat.cis <- read.table(paste0(dir0, '/analysis/assoc.sum/all.cisMr.log'), header=TRUE)[,-5] 
-dat.mr <- rbind(dat.mr, dat.cis) %>% mutate(X=paste0("prot_", X)) %>%
-	mutate(Analysis = paste(Analysis, sprintf("%02d", p_t), sep='.')) %>% select(-p_t) %>% 
+dat <- rbind(dat.mr, dat.cis) %>% mutate(X=paste0("prot_", X), Y=gsub("pancre", "pancre_cancer", Y)) %>%
+	mutate(Analysis = paste(Analysis, sprintf("%02d", p_t), sep='.')) %>% dplyr::select(-p_t) %>% 
 	mutate(Analysis = recode(Analysis, "gwIV.way1.08"="g1", "gwIV.way2.08"="g2", "cis.clump.06"="clp06", "cis.clump.08"="clp08", "Mr.08"="cml08", "Mr.06"="cml06"))
-dat.mr <- dat.mr[, colnames(dat.phe)] # 🏮
-dat <- rbind(dat.mr, dat.phe); table(dat$Analysis)
-	Y="sle"; valcano(Y, dat[dat$Y==Y & dat$X %like% "prot_" & dat$Analysis=="cml08", ], "X", "BETA", "P", 0.05) # 👀
+dat <- dat[, colnames(dat.phe)] # 🏮
+dat <- rbind(dat, dat.phe); table(dat$Analysis)
+	Y="pancre_cancer"; valcano(Y, dat[dat$Y==Y & dat$X %like% "prot_" & dat$Analysis=="cml08", ], "X", "BETA", "P", 0.05) # 👀
 dat1 <- dat %>% filter(Y %like% "sle") %>% 
 	pivot_wider(names_from=c(Y, Analysis), values_from=c(BETA, SE, P), names_glue="{Y}.{.value}.{Analysis}"); names(dat1)
+	valcano("sle", dat1, "X", "sle.BETA.g2", "sle.P.g2", 0.05) # 👀
 	bbplot("sle Clump^cML BETA", dat1, "X", "sle.BETA.clp08", "sle.BETA.cml08", "yes", "sle.P.clp08", "sle.P.cml08", "no", 0.05)	
 	bbplot("sle Clump^cML P", dat1, "X", "sle.BETA.clp08", "sle.BETA.cml08", "no", "sle.P.clp08", "sle.P.cml08", "yes", 0.05)	
 	bbplot("sle Phe^Mr BETA", dat1, "X", "sle.BETA.phe", "sle.BETA.cml08", "yes", "sle.P.phe", "sle.P.cml08", "no", 0.05)	
