@@ -13,7 +13,6 @@ dat0 <- readRDS(file=paste0(dir0, "/data/ukb/phe/Rdata/all.plus.rds")); dat0$bb_
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Table 1: 基本信息
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 dat <- dat0 %>% filter(ethnic_cat=="White") %>% mutate(
 	bald12=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==2,1,NA))),
 	bald13=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==3,1,NA))),
@@ -22,6 +21,13 @@ dat <- dat0 %>% filter(ethnic_cat=="White") %>% mutate(
 	sexp_cat=factor(ifelse(sex_partner <=1, "low", ifelse(sex_partner<=10, "average", "high")),levels=c("low", "average", "high"))
 )
 table(dat$sex, dat$bald12); table(dat$sexp_cat)
+dat1 <- dat %>% filter(sex==1) %>% drop_na(bald, prot_eda2r) 
+	dat1 %>% group_by(bald) %>% summarise(count=n(), mean=mean(prot_eda2r, na.rm=TRUE))
+	library(ggpubr); ggboxplot(dat1, x = "bald", y = "prot_eda2r", add = "mean_se", color = "bald") +
+		stat_compare_means(method = "anova", label = "p.format", label.x = 1.5, label.y = min(dat1$prot_eda2r) - (max(dat1$prot_eda2r) * 0.1)) + 
+		stat_compare_means(aes(label = paste0("p = ", round(after_stat(p), 3))), method = "t.test", ref.group = "1", comparisons = list(c("1", "2"), c("1", "3"), c("1", "4"))) +
+		stat_summary(fun = "mean", geom = "text", aes(label = round(after_stat(y), 2)), vjust = -1.5, color = "black") +theme_minimal()
+
 dat1 <- subset(dat, sex==1)
 	library(compareGroups); descrTable(formula=as.formula(paste(c("bald ~ ", paste(covs_bald, collapse="+")), collapse="")), data=dat1, digits=1)
 	library(gtsummary); dat1 %>% select(all_of(c("bald", covs_bald))) %>% tbl_summary(by=bald, missing="no") %>% add_p()
@@ -100,7 +106,7 @@ exdf <- data.frame(cbind(OR=c(1.21,0.90,1.02, 1.54,1.32,0.79,1.38,0.85,1.11, 1.5
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat.phe <- read.table(paste0(dir0, '/analysis/assoc.sum/all.assoc.txt'), header=TRUE) %>%
 	mutate(X = ifelse(X %like% "prot_", gsub("PROT_", "prot_", toupper(X)), X), Analysis="phe") 
-	Y="sle"; valcano(Y, dat.phe[dat.phe$Y==Y & dat.phe$X %like% "prot_", ], "X", "BETA", "P", 0.05) # 👀
+	Y="pancre_cancer"; valcano(Y, dat.phe[dat.phe$Y==Y & dat.phe$X %like% "prot_", ], "X", "BETA", "P", 0.05) # 👀
 dat.mr <- read.table(paste0(dir0, '/analysis/assoc.sum/all.mr.log'), header=TRUE)[,c(1:4,6:8)] %>% rename(P=P.ivw) %>% 
 	mutate(X_new=ifelse(Analysis %like% "way2", Y, X), Y_new=ifelse(Analysis %like% "way2", X, Y), X=X_new, Y=Y_new) %>% dplyr::select(-X_new, -Y_new)
 dat.cis <- read.table(paste0(dir0, '/analysis/assoc.sum/all.cisMr.log'), header=TRUE)[,-5] 
@@ -110,13 +116,13 @@ dat <- rbind(dat.mr, dat.cis) %>% mutate(X=paste0("prot_", X), Y=gsub("pancre", 
 dat <- dat[, colnames(dat.phe)] # 🏮
 dat <- rbind(dat, dat.phe); table(dat$Analysis)
 	Y="pancre_cancer"; valcano(Y, dat[dat$Y==Y & dat$X %like% "prot_" & dat$Analysis=="cml08", ], "X", "BETA", "P", 0.05) # 👀
-dat1 <- dat %>% filter(Y %like% "sle") %>% 
+dat1 <- dat %>% filter(Y %like% "pancre") %>% 
 	pivot_wider(names_from=c(Y, Analysis), values_from=c(BETA, SE, P), names_glue="{Y}.{.value}.{Analysis}"); names(dat1)
-	valcano("sle", dat1, "X", "sle.BETA.g2", "sle.P.g2", 0.05) # 👀
-	bbplot("sle Clump^cML BETA", dat1, "X", "sle.BETA.clp08", "sle.BETA.cml08", "yes", "sle.P.clp08", "sle.P.cml08", "no", 0.05)	
-	bbplot("sle Clump^cML P", dat1, "X", "sle.BETA.clp08", "sle.BETA.cml08", "no", "sle.P.clp08", "sle.P.cml08", "yes", 0.05)	
-	bbplot("sle Phe^Mr BETA", dat1, "X", "sle.BETA.phe", "sle.BETA.cml08", "yes", "sle.P.phe", "sle.P.cml08", "no", 0.05)	
-	bbplot("sle Phe^Mr BETA", dat1, "X", "sle.BETA.phe", "sle.BETA.cml08", "no", "sle.P.phe", "sle.P.cml08", "yes", 0.05)	
+	valcano("pancre_cancer", dat1, "X", "pancre_cancer.BETA.g1", "pancre_cancer.P.g1", 0.05) # 👀
+	bbplot("pancre_cancer Clump^cML BETA", dat1, "X", "pancre_cancer.BETA.clp08", "pancre_cancer.BETA.cml08", "yes", "pancre_cancer.P.clp08", "pancre_cancer.P.cml08", "no", 0.05)	
+	bbplot("pancre_cancer Clump^cML P", dat1, "X", "pancre_cancer.BETA.clp08", "pancre_cancer.BETA.cml08", "no", "pancre_cancer.P.clp08", "pancre_cancer.P.cml08", "yes", 0.05)	
+	bbplot("pancre_cancer Phe^Mr BETA", dat1, "X", "pancre_cancer.BETA.phe", "pancre_cancer.BETA.cml08", "yes", "pancre_cancer.P.phe", "pancre_cancer.P.cml08", "no", 0.05)	
+	bbplot("pancre_cancer Phe^Mr BETA", dat1, "X", "pancre_cancer.BETA.phe", "pancre_cancer.BETA.cml08", "no", "pancre_cancer.P.phe", "pancre_cancer.P.cml08", "yes", 0.05)	
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
