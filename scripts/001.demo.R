@@ -4,13 +4,16 @@ dir0='D:'
 source(paste0(dir0, '/scripts/f/phe.f.R'))
 
 dat0 <- readRDS(file=paste0(dir0, "/data/ukb/phe/Rdata/all.plus.rds")); dat0$bb_shbg.tp53.rs1042522_C <- NULL
-covs_else <- "age sex bmi smoke_status alcohol_status PC1 PC2 PC3 PC4" %>% strsplit(" ") %>% unlist()
-covs_bald <- "age bmi smoke_status alcohol_status bb_TES bb_SHBG bb_VITD bb_IGF1 PC1 PC2 PC3 PC4" %>% strsplit(" ") %>% unlist()
+	covs_else <- "age sex bmi smoke_status alcohol_status PC1 PC2 PC3 PC4" %>% strsplit(" ") %>% unlist()
+	covs_bald <- "age bmi smoke_status alcohol_status bb_TES bb_SHBG bb_VITD bb_IGF1 PC1 PC2 PC3 PC4" %>% strsplit(" ") %>% unlist()
+	hist(dat0$date_attend, breaks="months", freq=TRUE); hist(dat0$icdDate_sle, breaks="months", freq=TRUE)
+	plot(dat0$date_attend, dat0$icdDate_sle); dat0 %>% drop_na(date_attend, icdDate_sle) %>% nrow()
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Table 1: 基本信息
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 dat <- dat0 %>% filter(ethnic_cat=="White") %>% mutate(
 	bald12=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==2,1,NA))),
 	bald13=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==3,1,NA))),
