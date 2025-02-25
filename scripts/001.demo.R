@@ -23,10 +23,10 @@ dat <- dat0 %>% filter(ethnic_cat=="White") %>% mutate(
 table(dat$sex, dat$bald12); table(dat$sexp_cat)
 dat1 <- dat %>% filter(sex==1) %>% drop_na(bald, prot_eda2r) 
 	dat1 %>% group_by(bald) %>% summarise(count=n(), mean=mean(prot_eda2r, na.rm=TRUE))
-	library(ggpubr); ggboxplot(dat1, x = "bald", y = "prot_eda2r", add = "mean_se", color = "bald") +
-		stat_compare_means(method = "anova", label = "p.format", label.x = 1.5, label.y = min(dat1$prot_eda2r) - (max(dat1$prot_eda2r) * 0.1)) + 
-		stat_compare_means(aes(label = paste0("p = ", round(after_stat(p), 3))), method = "t.test", ref.group = "1", comparisons = list(c("1", "2"), c("1", "3"), c("1", "4"))) +
-		stat_summary(fun = "mean", geom = "text", aes(label = round(after_stat(y), 2)), vjust = -1.5, color = "black") +theme_minimal()
+	library(ggpubr); ggboxplot(dat1, x="bald", y="prot_eda2r", add="mean_se", color="bald") +
+		stat_compare_means(method="anova", label="p.format", label.x=1.5, label.y=min(dat1$prot_eda2r) - (max(dat1$prot_eda2r) * 0.1)) + 
+		stat_compare_means(aes(label=paste0("p=", round(after_stat(p), 3))), method="t.test", ref.group="1", comparisons=list(c("1", "2"), c("1", "3"), c("1", "4"))) +
+		stat_summary(fun="mean", geom="text", aes(label=round(after_stat(y), 2)), vjust=-1.5, color="black") +theme_minimal()
 
 dat1 <- subset(dat, sex==1)
 	library(compareGroups); descrTable(formula=as.formula(paste(c("bald ~ ", paste(covs_bald, collapse="+")), collapse="")), data=dat1, digits=1)
@@ -105,14 +105,14 @@ exdf <- data.frame(cbind(OR=c(1.21,0.90,1.02, 1.54,1.32,0.79,1.38,0.85,1.11, 1.5
 # 表型关联和cisMr结果比较
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat.phe <- read.table(paste0(dir0, '/analysis/assoc.sum/all.assoc.txt'), header=TRUE) %>%
-	mutate(X = ifelse(X %like% "prot_", gsub("PROT_", "prot_", toupper(X)), X), Analysis="phe") 
+	mutate(X=ifelse(X %like% "prot_", gsub("PROT_", "prot_", toupper(X)), X), Analysis="phe") 
 	Y="pancre_cancer"; valcano(Y, dat.phe[dat.phe$Y==Y & dat.phe$X %like% "prot_", ], "X", "BETA", "P", 0.05) # 👀
 dat.mr <- read.table(paste0(dir0, '/analysis/assoc.sum/all.mr.log'), header=TRUE)[,c(1:4,6:8)] %>% rename(P=P.ivw) %>% 
 	mutate(X_new=ifelse(Analysis %like% "way2", Y, X), Y_new=ifelse(Analysis %like% "way2", X, Y), X=X_new, Y=Y_new) %>% dplyr::select(-X_new, -Y_new)
 dat.cis <- read.table(paste0(dir0, '/analysis/assoc.sum/all.cisMr.log'), header=TRUE)[,-5] 
 dat <- rbind(dat.mr, dat.cis) %>% mutate(X=paste0("prot_", X), Y=gsub("pancre", "pancre_cancer", Y)) %>%
-	mutate(Analysis = paste(Analysis, sprintf("%02d", p_t), sep='.')) %>% dplyr::select(-p_t) %>% 
-	mutate(Analysis = recode(Analysis, "gwIV.way1.08"="g1", "gwIV.way2.08"="g2", "cis.clump.06"="clp06", "cis.clump.08"="clp08", "Mr.08"="cml08", "Mr.06"="cml06"))
+	mutate(Analysis=paste(Analysis, sprintf("%02d", p_t), sep='.')) %>% dplyr::select(-p_t) %>% 
+	mutate(Analysis=recode(Analysis, "gwIV.way1.08"="g1", "gwIV.way2.08"="g2", "cis.clump.06"="clp06", "cis.clump.08"="clp08", "Mr.08"="cml08", "Mr.06"="cml06"))
 dat <- dat[, colnames(dat.phe)] # 🏮
 dat <- rbind(dat, dat.phe); table(dat$Analysis)
 	Y="pancre_cancer"; valcano(Y, dat[dat$Y==Y & dat$X %like% "prot_" & dat$Analysis=="cml08", ], "X", "BETA", "P", 0.05) # 👀
@@ -134,7 +134,7 @@ drug <- merge(ppp, drug, by.x="UniProt", by.y="UNIPROT_ACCESSION") %>%
 	mutate(drug=ifelse(APPROVED_DRUG_TARG_CONF !="", "approved", ifelse(CLINICAL_DRUG_TARG_CONF !="", "clinical", ifelse(DRUG_POTENTIAL_TARGET !="", "potential", NA)))) %>%
 	select(ID, olink_target_fullname, drug) %>% mutate(ID=paste0("prot_", ID)) %>% arrange("drug")
 	names(drug) <- c("X", "olink_target", "drug")
-	drug[duplicated(drug$X) | duplicated(drug$X, fromLast = TRUE), ]
+	drug[duplicated(drug$X) | duplicated(drug$X, fromLast=TRUE), ]
 	drug <- drug[!duplicated(drug$X), ]
 dat <- merge(dat, drug, by="X", all.x=TRUE)
 write.table(dat, "X.merged.txt", sep="\t", append=FALSE, quote=FALSE, row.names=FALSE)
@@ -203,85 +203,38 @@ library(vivid)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 机器🤖学习📚
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 参考 https://star-protocols.cell.com/protocols/3440#bib1, https://github.com/MobinKhoramjoo/Biomarker-identification-by-multi-omics-analysis
-# pacman::p_load(impute, pcaMethods, globaltest, GlobalAncova, Rgraphviz, preprocessCore, genefilter, sva, limma, KEGGgraph, siggenes,BiocParallel, MSnbase, multtest, edgeR, fgsea, httr, RBGL, qs) 
-# devtools::install_github("xia-lab/MetaboAnalystR", build=TRUE, build_vignettes=TRUE, build_manual=TRUE, force=TRUE)
-pacman::p_load(readxl, MetaboAnalystR, ComplexHeatmap, circlize)
-cytokines <- read_excel("Data.xlsx", sheet = 'Cytokines')
-Proteins <- read_excel('Data.xlsx', sheet = 'Proteins')[,-(1:5)]
-Metabolites <- read_excel('Data.xlsx', sheet = 'Metabolites')[,-(1:5)]
-Data <- cbind(cytokines, Proteins, Metabolites)
-	desc_cols =1:4; n_first_mol=5; Data <- cbind(Data[,desc_cols], as.data.frame(sapply(Data[,n_first_mol:length(Data)], function (x) as.numeric(as.character(x)))))
-	Data <- replace(Data, Data == 0, NA)
-	Transposed_Data <- as.data.frame(t(Data))
-	p <-c(); for (i in 1:nrow(Transposed_Data)) { p[i] <- sum(is.na(Transposed_Data[i,]))/ncol(Transposed_Data)}
-	Transposed_Data <- Transposed_Data %>% mutate(percent_of_missing_Values= p) %>% select(percent_of_missing_Values, everything())
-	missing_value_cut_off = 0.5
-	filtered_Transposed_Data <- Transposed_Data %>% filter(percent_of_missing_Values < missing_value_cut_off)
-	cleaned_data <- as.data.frame(t(filtered_Transposed_Data))
-	cleaned_data <- cleaned_data[-1,]
-	row.names(cleaned_data) <- row.names(data)
-	eliminated_data <- Transposed_Data %>% filter(percent_of_missing_Values > missing_value_cut_off)
-	for (i in n_first_mol:ncol(cleaned_data)){
-		for(j in 1:nrow(cleaned_data)){if (is.na(cleaned_data[j,i])=="TRUE"){cleaned_data[j,i] = min(cleaned_data[,i], na.rm = TRUE)}}
-	}
-	write.table(cleaned_data, "cleaned_data.txt", sep="\t", quote=FALSE, append=FALSE, row.names=FALSE, col.names=TRUE)
-mSet <- InitDataObjects(data.type="conc", anal.type="stat", paired=FALSE)
-	mSet <- Read.TextData(mSet, filePath="cleaned_data.txt", format="rowu", lbl.type="disc") # 🏮
-	mSet <- SanityCheckData(mSet)
-	mSet <- PreparePrenormData(mSet)
-	mSet <- Normalization(mSet, "NULL", "LogNorm", "MeanCenter", "NULL", ratio=FALSE, ratioNum=20)
-mSet <- PCA.Anal(mSet) #Perform PCA
-	mSet <- PlotPCAPairSummary(mSet, "pca_pair_0_", format = "png", dpi = 72, width=NA, 5) # Create PCA overview
-	mSet <- PlotPCAScree(mSet, "pca_scree_0_", "png", dpi = 72, width=NA, 5) # Create PCA scree plot
-	mSet <- PlotPCA2DScore(mSet, "pca_score2d_0_", format = "png", dpi=300, width=NA, 1, 2, 0.95, 0, 0) # Create a 2D PCA score plot
-	Fold_change_cut_off= 1.5; P_Value_cut_off = 0.05 
-	mSet <- Volcano.Anal(mSet, FALSE, Fold_change_cut_off, 0, F, P_Value_cut_off, TRUE, "fdr")
-	mSet <- PlotVolcano(mSet, "volcano_0_", 1, 0, format ="png", dpi=300, width=NA)
-	top_mol = 100; mSet <- PlotSubHeatMap(mSet, "heatmap_1_", "png", 300, width=NA,"norm", "row", "euclidean", "ward.D","bwm", 8, "tanova", top_mol, "overview", F, T, T, F, T, T, T)
+# 参考 https://cran.r-project.org/web/packages/csmpv/vignettes/csmpv_vignette.html
+# remotes::install_github("ajiangsfu/csmpv",force=TRUE)
+library(csmpv)
+setwd("D:/analysis/ai"); set.seed(12345)# temp_dir=tempdir(); knitr::opts_knit$set(root.dir=temp_dir)
+data("datlist", package="csmpv")
+	dat.t <- datlist$training
+	dat.v<-datlist$validation
+	Xs<-c("B.Symptoms","MYC.IHC","BCL2.IHC", "CD10.IHC","BCL6.IHC", "MUM1.IHC","Male","AgeOver60", "stage3_4","PS1","LDH.Ratio1", "Extranodal1","Bulk10cm","HANS_GCB", "DTI")
+	AgeXvars <- setdiff(Xs, "AgeOver60")
+	bconfirm confirmVars(data=dat.t, biomks=Xs, Y="DZsig", outfile="confirmBinary"); bconfirm$fit; bconfirm$allplot[[2]]
 
-clinical_variables <- read.csv("Data.csv")
+modelout <- csmpvModelling(tdat=dat.t, vdat=dat.v, Ybinary="DZsig", varsBinary=Xs, Ycont="Age", varsCont=AgeXvars, time="FFP..Years.", event="Code.FFP", varsSurvival=Xs, outfileName= "All")
+
+# 拟合 ☯
+fit1 <- LASSO2(data=dat.t, biomks=Xs, Y="DZsig", outfile="out1"); fit$coef #LASSO2plus(), LASSO_plus() # topN=5
+fit2 <- LASSO2_reg(data=dat.t, biomks=Xs, Y="DZsig", outfile="out2")
+fit3 <- XGBtraining(data=dat.t, biomks=Xs, Y="DZsig", outfile="out3"); head(fit3$XGBoost_score) # LASSO2_XGBtraining(), LASSO_plus_XGBtraining(), LASSO2plus_XGBtraining()
+
+# ⛅预测	
+pred1 <- LASSO2_predict(fit1, newdata=dat.v, outfile="pred1"); head(pred1)
+pred2 <- rms_model(fit2$fit, newdata=dat.v, outfile="pred2"); head(pred2)
+pred3 <- XGBtraining_predict(fit3, newdata=dat.v, outfile="pred3"); head(pred3)
+
+# 外部验证 ✔
+vali1 <- LASSO2_predict(fit1, newdata=dat.v, newY=TRUE, outfile="vali1")
+vali2 <- rms_model(fit2$fi, newdata=dat.v, newY=TRUE, outfile="vali2")
+vali3 <- XGBtraining_predict(fit3, newdata=dat.v, newY=TRUE, outfile="vali3") 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 机器🤖学习📚
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 参考 https://cran.r-project.org/web/packages/csmpv/vignettes/csmpv_vignette.html
-# remotes::install_github("ajiangsfu/csmpv",force = TRUE)
-library(csmpv)
-set.seed(12345); temp_dir = tempdir(); knitr::opts_knit$set(root.dir = temp_dir)
-data("datlist", package = "csmpv")
-	tdat = datlist$training
-	vdat = datlist$validation
-	Xvars = c("B.Symptoms","MYC.IHC","BCL2.IHC", "CD10.IHC","BCL6.IHC", "MUM1.IHC","Male","AgeOver60", "stage3_4","PS1","LDH.Ratio1", "Extranodal1","Bulk10cm","HANS_GCB", "DTI")
-bconfirm = confirmVars(data = tdat, biomks = Xvars, Y = "DZsig", outfile = "confirmBinary")
-	bconfirm$fit; bconfirm$allplot[[2]]
-bl = LASSO2(data = tdat, biomks = Xvars, Y = "DZsig", outfile = "binaryLASSO2"); bl$coefs
-	b2fit = LASSO2plus(data = tdat, biomks = Xvars, Y = "DZsig", outfile = "binaryLASSO2plus"); b2fit$fit$coefficients
-	bfit = LASSO_plus(data = tdat, biomks = Xvars, Y = "DZsig", outfile = "binaryLASSO_plus", topN = 5); bfit$fit$coefficients
-	blr = LASSO2_reg(data = tdat, biomks = Xvars, Y = "DZsig", outfile = "binaryLASSO2_reg"); blr$fit$coefficients
-bxfit = XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig", outfile = "binary_XGBoost"); head(bxfit$XGBoost_score)
-	blxfit = LASSO2_XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig", outfile = "binary_LASSO2_XGBoost"); head(blxfit$XGBoost_score)
-	blpxfit = LASSO_plus_XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig", topN = 5,outfile = "binary_LASSO_plus_XGBoost"); head(blpxfit$XGBoost_score)
-	bl2xfit = LASSO2plus_XGBtraining(data = tdat, biomks = Xvars, Y = "DZsig", outfile = "binary_LASSO2plus_XGBoost"); head(bl2xfit$XGBoost_score)
-
-# ⛅预测	
-pbl = LASSO2_predict(bl, newdata = vdat, outfile = "pred_LASSO2_binary"); head(pbl)
-pblr = rms_model(blr$fit, newdata = vdat, outfile = "pred_LASSO2reg_binary"); head(pblr) # fit$fit b2fit$fit
-pbxfit = XGBtraining_predict(bxfit, newdata = vdat, outfile = "pred_XGBoost_binary") blxfit blpxfit bl2xfit
-
-# ✔ (External) Model Validation
-vbl = LASSO2_predict(bl, newdata = vdat, newY = TRUE, outfile = "valid_LASSO2_binary")
-	vblr = rms_model(blr$fit, newdata = vdat, newY = TRUE, outfile = "valid_LASSO2reg_binary") # bfit$fit 或 b2fit$fit
-	vbxfit = XGBtraining_predict(bxfit, newdata = vdat, newY = TRUE, outfile = "valid_XGBoost_binary") # blxfit 或 blpxfit 或 bl2xfit
-
-# 👨‍👩‍👧‍👦📚
-modelout = csmpvModelling(tdat = tdat, vdat = vdat, Ybinary = "DZsig", varsBinary = Xvars, Ycont = "Age", varsCont = AgeXvars, time = "FFP..Years.", event = "Code.FFP", varsSurvival = Xvars, outfileName= "all_in_one")
-xgobj = XGpred(data = tdat, varsIn = Xvars, nclass=3, vsMethod = "LASSO_plus", topN = 5, time = "FFP..Years.", event = "Code.FFP", outfile = "XGpred", selection = TRUE)
-	tdat$XGpred_class2 = xgobj$XGpred_prob_class
-	training_risk_confirm2 = confirmVars(data = tdat, biomks = "XGpred_class2", time = "FFP..Years.", event = "Code.FFP", outfile = "training2grps_riskSurvival", outcomeType = "time-to-event")
-	training_risk_confirm2[[3]]
-	xgNew = XGpred_predict(newdat = vdat, XGpredObj = xgobj)
-	vdat$XGpred_class2 = xgNew$XGpred_prob_class
-	risk_confirm2 = confirmVars(data = vdat, biomks = "XGpred_class2", time = "FFP..Years.", event = "Code.FFP", outfile = "riskSurvival2grps", outcomeType = "time-to-event")
-	risk_confirm2[[3]]
+# 参考 https://star-protocols.cell.com/protocols/3440#bib1, https://github.com/MobinKhoramjoo/Biomarker-identification-by-multi-omics-analysis
+# pacman::p_load(impute, pcaMethods, globaltest, GlobalAncova, Rgraphviz, preprocessCore, genefilter, sva, limma, KEGGgraph, siggenes,BiocParallel, MSnbase, multtest, edgeR, fgsea, httr, RBGL, qs) 
+# devtools::install_github("xia-lab/MetaboAnalystR", build=TRUE, build_vignettes=TRUE, build_manual=TRUE, force=TRUE)
