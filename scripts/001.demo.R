@@ -114,15 +114,18 @@ dat <- rbind(dat.mr, dat.cis) %>% mutate(X=paste0("prot_", X), Y=gsub("pancre", 
 	mutate(Analysis=paste(Analysis, sprintf("%02d", p_t), sep='.')) %>% dplyr::select(-p_t) %>% 
 	mutate(Analysis=recode(Analysis, "gwIV.way1.08"="g1", "gwIV.way2.08"="g2", "cis.clump.06"="clp06", "cis.clump.08"="clp08", "Mr.08"="cml08", "Mr.06"="cml06"))
 dat <- dat[, colnames(dat.phe)] # 🏮
-dat <- rbind(dat, dat.phe); table(dat$Analysis)
-	Y="pancre_cancer"; valcano(Y, dat[dat$Y==Y & dat$X %like% "prot_" & dat$Analysis=="cml08", ], "X", "BETA", "P", 0.05) # 👀
-dat1 <- dat %>% filter(Y %like% "pancre") %>% 
-	pivot_wider(names_from=c(Y, Analysis), values_from=c(BETA, SE, P), names_glue="{Y}.{.value}.{Analysis}"); names(dat1)
-	valcano("pancre_cancer", dat1, "X", "pancre_cancer.BETA.g1", "pancre_cancer.P.g1", 0.05) # 👀
-	bbplot("pancre_cancer Clump^cML BETA", dat1, "X", "pancre_cancer.BETA.clp08", "pancre_cancer.BETA.cml08", "yes", "pancre_cancer.P.clp08", "pancre_cancer.P.cml08", "no", 0.05)	
-	bbplot("pancre_cancer Clump^cML P", dat1, "X", "pancre_cancer.BETA.clp08", "pancre_cancer.BETA.cml08", "no", "pancre_cancer.P.clp08", "pancre_cancer.P.cml08", "yes", 0.05)	
-	bbplot("pancre_cancer Phe^Mr BETA", dat1, "X", "pancre_cancer.BETA.phe", "pancre_cancer.BETA.cml08", "yes", "pancre_cancer.P.phe", "pancre_cancer.P.cml08", "no", 0.05)	
-	bbplot("pancre_cancer Phe^Mr BETA", dat1, "X", "pancre_cancer.BETA.phe", "pancre_cancer.BETA.cml08", "no", "pancre_cancer.P.phe", "pancre_cancer.P.cml08", "yes", 0.05)	
+dat <- rbind(dat, dat.phe) 
+dat <- dat %>% 
+	pivot_wider(names_from=c(Y, Analysis), values_from=c(BETA, SE, P), names_glue="{Y}.{.value}.{Analysis}"); names(dat)
+dat.coloc <- read.table(paste0(dir0, '/analysis/assoc.sum/all.coloc.log'), header=TRUE)[,c(1,2,8)] %>%
+	mutate(X=paste0("prot_",X)) %>% 
+	pivot_wider(names_from=Y, values_from=H4, names_glue="{Y}.{.value}"); names(dat.coloc)
+dat <- merge(dat, dat.coloc, by="X", all=TRUE)
+	valcano("pancre_cancer", dat, "X", "pancre_cancer.BETA.g1", "pancre_cancer.P.g1", 0.05) # 👀
+	bbplot("pancre_cancer Clump^cML BETA", dat, "X", "pancre_cancer.BETA.clp08", "pancre_cancer.BETA.cml08", "yes", "pancre_cancer.P.clp08", "pancre_cancer.P.cml08", "no", 0.05)	
+	bbplot("pancre_cancer Clump^cML P", dat, "X", "pancre_cancer.BETA.clp08", "pancre_cancer.BETA.cml08", "no", "pancre_cancer.P.clp08", "pancre_cancer.P.cml08", "yes", 0.05)	
+	bbplot("pancre_cancer Phe^Mr BETA", dat, "X", "pancre_cancer.BETA.phe", "pancre_cancer.BETA.cml08", "yes", "pancre_cancer.P.phe", "pancre_cancer.P.cml08", "no", 0.05)	
+	bbplot("pancre_cancer Phe^Mr BETA", dat, "X", "pancre_cancer.BETA.phe", "pancre_cancer.BETA.cml08", "no", "pancre_cancer.P.phe", "pancre_cancer.P.cml08", "yes", 0.05)	
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -206,13 +209,13 @@ library(vivid)
 # 参考 https://cran.r-project.org/web/packages/csmpv/vignettes/csmpv_vignette.html
 # remotes::install_github("ajiangsfu/csmpv",force=TRUE)
 library(csmpv)
-setwd("D:/analysis/ai"); set.seed(12345)# temp_dir=tempdir(); knitr::opts_knit$set(root.dir=temp_dir)
+setwd("D:/analysis/ai"); set.seed(12345) # temp_dir=tempdir(); knitr::opts_knit$set(root.dir=temp_dir)
 data("datlist", package="csmpv")
 	dat.t <- datlist$training
-	dat.v<-datlist$validation
-	Xs<-c("B.Symptoms","MYC.IHC","BCL2.IHC", "CD10.IHC","BCL6.IHC", "MUM1.IHC","Male","AgeOver60", "stage3_4","PS1","LDH.Ratio1", "Extranodal1","Bulk10cm","HANS_GCB", "DTI")
+	dat.v <-datlist$validation
+	Xs <- c("B.Symptoms","MYC.IHC","BCL2.IHC", "CD10.IHC","BCL6.IHC", "MUM1.IHC","Male","AgeOver60", "stage3_4","PS1","LDH.Ratio1", "Extranodal1","Bulk10cm","HANS_GCB", "DTI")
 	AgeXvars <- setdiff(Xs, "AgeOver60")
-	bconfirm confirmVars(data=dat.t, biomks=Xs, Y="DZsig", outfile="confirmBinary"); bconfirm$fit; bconfirm$allplot[[2]]
+	confirmVars(data=dat.t, biomks=Xs, Y="DZsig", outfile="confirmBinary"); bconfirm$fit; bconfirm$allplot[[2]]
 
 modelout <- csmpvModelling(tdat=dat.t, vdat=dat.v, Ybinary="DZsig", varsBinary=Xs, Ycont="Age", varsCont=AgeXvars, time="FFP..Years.", event="Code.FFP", varsSurvival=Xs, outfileName= "All")
 
@@ -235,6 +238,7 @@ vali3 <- XGBtraining_predict(fit3, newdata=dat.v, newY=TRUE, outfile="vali3")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 机器🤖学习📚
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 参考 https://star-protocols.cell.com/protocols/3440#bib1, https://github.com/MobinKhoramjoo/Biomarker-identification-by-multi-omics-analysis
+# 参考 https://star-protocols.cell.com/protocols/3440#bib1, 
+https://github.com/MobinKhoramjoo/Biomarker-identification-by-multi-omics-analysis
 # pacman::p_load(impute, pcaMethods, globaltest, GlobalAncova, Rgraphviz, preprocessCore, genefilter, sva, limma, KEGGgraph, siggenes,BiocParallel, MSnbase, multtest, edgeR, fgsea, httr, RBGL, qs) 
 # devtools::install_github("xia-lab/MetaboAnalystR", build=TRUE, build_vignettes=TRUE, build_manual=TRUE, force=TRUE)
