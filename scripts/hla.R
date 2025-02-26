@@ -1,11 +1,11 @@
 # 来源 https://github.com/Ben-JWL/DISH/tree/master/DISH
 library(tidyverse)
-dir1="D:/scripts/main"
+dir1="D:/data/ldref"
 output ="hla.imputed.txt"
 lambda = 0.15
 
-gwas <- read.table(paste0(dir1,"/W.EUR_sample.txt"), header=T) # 需要有Z值 🏮
-ref <- readRDS(paste0(dir1,"/W.European_hg19.Rds"))
+gwas <- read.table(paste0(dir1, "/EUR_sample.txt"), header=T) # 需要有Z值 🏮
+ref <- readRDS(paste0(dir1, "/European_hg19.Rds"))
 	sigma = as.matrix(ref[[1]]) # 一个 N*N 的 matrix
 	ref_map = ref[[2]] # matrix里面SNP的基本信息
 	merged <- merge(x=ref_map, y=gwas, by='SNP') 
