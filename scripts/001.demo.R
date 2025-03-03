@@ -14,16 +14,19 @@ dat0 <- readRDS(file=paste0(dir0, "/data/ukb/phe/Rdata/all.plus.rds")); dat0$bb_
 # Table 1: 基本信息
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% filter(ethnic_cat=="White") %>% mutate(
-	bald12=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==2,1,NA))),
-	bald13=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==3,1,NA))),
-	bald14=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==4,1,NA))),
+	bald12=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==2, 1, NA))),
+	bald13=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==3, 1, NA))),
+	bald14=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==4, 1, NA))),
+	bald134=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald %in% 3:4, 1, NA))),
+	bald1234=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald %in% 2:4, 1, NA))),
 	sexf_cat=factor(ifelse(age_fsex <16, "early", ifelse(age_fsex<22, "average", "late")),levels=c("early", "average", "late")),
 	sexp_cat=factor(ifelse(sex_partner <=1, "low", ifelse(sex_partner<=10, "average", "high")),levels=c("low", "average", "high"))
 )
 table(dat$sex, dat$bald12); table(dat$sexp_cat)
+
 dat1 <- dat %>% filter(sex==1) %>% drop_na(bald, prot_eda2r) 
 	dat1 %>% group_by(bald) %>% summarise(count=n(), mean=mean(prot_eda2r, na.rm=TRUE))
-	library(ggpubr); ggboxplot(dat1, x="bald", y="prot_eda2r", add="mean_se", color="bald") +
+	library(ggpubr); ggboxplot(dat1, x="bald", y="prot_eda2r", add="mean_se", color="bald") + # 🏮🥚
 		stat_compare_means(method="anova", label="p.format", label.x=1.5, label.y=min(dat1$prot_eda2r) - (max(dat1$prot_eda2r) * 0.1)) + 
 		stat_compare_means(aes(label=paste0("p=", round(after_stat(p), 3))), method="t.test", ref.group="1", comparisons=list(c("1", "2"), c("1", "3"), c("1", "4"))) +
 		stat_summary(fun="mean", geom="text", aes(label=round(after_stat(y), 2)), vjust=-1.5, color="black") +theme_minimal()
@@ -40,7 +43,7 @@ dat1 <- subset(dat, sex==1)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 批量运行🏃‍Proteome🥚的表型关联
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Ys <- c("sle", "pancre_cancer", "bald12", "bald13", "bald14") #  
+Ys <- c("bald12", "bald13", "bald14", "bald134", "bald1234") #  
 for (Y in Ys) {
 	res <- data.frame(Y=character(), X=character(), BETA=numeric(), SE=numeric(), P=numeric(), stringsAsFactors=FALSE)
 	print(Y); if (grepl("bald", Y)) covs=covs_bald else covs=covs_else
@@ -104,7 +107,7 @@ exdf <- data.frame(cbind(OR=c(1.21,0.90,1.02, 1.54,1.32,0.79,1.38,0.85,1.11, 1.5
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 表型关联和cisMr结果比较
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-phes <- c("bald12", "bald13", "bald14")
+phes <- c("bald12", "bald13", "bald14", "bald134", "bald1234")
 anas <- c("phe", "clp08", "cml08", "g1", "g2")
 dat.phe <- read.table(paste0(dir0, '/analysis/assoc.sum/xian/all.assoc.txt'), header=TRUE) %>%
 	mutate(X=ifelse(X %like% "prot_", gsub("PROT_", "prot_", toupper(X)), X), Analysis="phe") 
