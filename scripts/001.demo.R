@@ -104,12 +104,14 @@ exdf <- data.frame(cbind(OR=c(1.21,0.90,1.02, 1.54,1.32,0.79,1.38,0.85,1.11, 1.5
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 表型关联和cisMr结果比较
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat.phe <- read.table(paste0(dir0, '/analysis/assoc.sum/all.assoc.txt'), header=TRUE) %>%
+phes <- c("bald12", "bald13", "bald14")
+anas <- c("phe", "clp08", "cml08", "g1", "g2")
+dat.phe <- read.table(paste0(dir0, '/analysis/assoc.sum/xian/all.assoc.txt'), header=TRUE) %>%
 	mutate(X=ifelse(X %like% "prot_", gsub("PROT_", "prot_", toupper(X)), X), Analysis="phe") 
-	Y="pancre_cancer"; valcano(Y, dat.phe[dat.phe$Y==Y & dat.phe$X %like% "prot_", ], "X", "BETA", "P", 0.05) # 👀
-dat.mr <- read.table(paste0(dir0, '/analysis/assoc.sum/all.mr.log'), header=TRUE)[,c(1:4,6:8)] %>% rename(P=P.ivw) %>% 
+	Y="bald12"; valcano(Y, dat.phe[dat.phe$Y==Y & dat.phe$X %like% "prot_", ], "X", "BETA", "P", 0.05, "", "") # 👀
+dat.mr <- read.table(paste0(dir0, '/analysis/assoc.sum/xian/all.mr.log'), header=TRUE)[,c(1:4,6:8)] %>% rename(P=P.ivw) %>% 
 	mutate(X_new=ifelse(Analysis %like% "way2", Y, X), Y_new=ifelse(Analysis %like% "way2", X, Y), X=X_new, Y=Y_new) %>% dplyr::select(-X_new, -Y_new)
-dat.cis <- read.table(paste0(dir0, '/analysis/assoc.sum/all.cisMr.log'), header=TRUE)[,-5] 
+dat.cis <- read.table(paste0(dir0, '/analysis/assoc.sum/xian/all.cisMr.log'), header=TRUE)[,-5] 
 dat <- rbind(dat.mr, dat.cis) %>% mutate(X=paste0("prot_", X), Y=gsub("pancre", "pancre_cancer", Y)) %>%
 	mutate(Analysis=paste(Analysis, sprintf("%02d", p_t), sep='.')) %>% dplyr::select(-p_t) %>% 
 	mutate(Analysis=recode(Analysis, "gwIV.way1.08"="g1", "gwIV.way2.08"="g2", "cis.clump.06"="clp06", "cis.clump.08"="clp08", "Mr.08"="cml08", "Mr.06"="cml06"))
@@ -117,15 +119,23 @@ dat <- dat[, colnames(dat.phe)] # 🏮
 dat <- rbind(dat, dat.phe) 
 dat <- dat %>% 
 	pivot_wider(names_from=c(Y, Analysis), values_from=c(BETA, SE, P), names_glue="{Y}.{.value}.{Analysis}"); names(dat)
-dat.coloc <- read.table(paste0(dir0, '/analysis/assoc.sum/all.coloc.log'), header=TRUE)[,c(1,2,8)] %>%
+	dat <- dat %>% select(-matches("06$|SE")) 
+	cols <- apply(expand.grid(c("BETA","P"), anas, phes)[,c(3,1,2)], 1, function(x) paste(x, collapse = "."))
+	cols <- c("X", cols); dat <- dat[, cols] # 🏮
+dat.coloc <- read.table(paste0(dir0, '/analysis/assoc.sum/xian/all.coloc.log'), header=TRUE)[,c(1,2,8)] %>%
 	mutate(X=paste0("prot_",X)) %>% 
 	pivot_wider(names_from=Y, values_from=H4, names_glue="{Y}.{.value}"); names(dat.coloc)
-dat <- merge(dat, dat.coloc, by="X", all=TRUE)
-	valcano("pancre_cancer", dat, "X", "pancre_cancer.BETA.g1", "pancre_cancer.P.g1", 0.05) # 👀
-	bbplot("pancre_cancer Clump^cML BETA", dat, "X", "pancre_cancer.BETA.clp08", "pancre_cancer.BETA.cml08", "yes", "pancre_cancer.P.clp08", "pancre_cancer.P.cml08", "no", 0.05)	
-	bbplot("pancre_cancer Clump^cML P", dat, "X", "pancre_cancer.BETA.clp08", "pancre_cancer.BETA.cml08", "no", "pancre_cancer.P.clp08", "pancre_cancer.P.cml08", "yes", 0.05)	
-	bbplot("pancre_cancer Phe^Mr BETA", dat, "X", "pancre_cancer.BETA.phe", "pancre_cancer.BETA.cml08", "yes", "pancre_cancer.P.phe", "pancre_cancer.P.cml08", "no", 0.05)	
-	bbplot("pancre_cancer Phe^Mr BETA", dat, "X", "pancre_cancer.BETA.phe", "pancre_cancer.BETA.cml08", "no", "pancre_cancer.P.phe", "pancre_cancer.P.cml08", "yes", 0.05)	
+dat <- merge(dat, dat.coloc, by="X", all=TRUE) 
+	valcano("bald12", dat, "X", "bald12.BETA.g1", "bald12.P.g1", 0.05, "", "") # 👀
+	for (i in phes) { for (j in anas) {
+		assign(paste0("plot.", i,".",j), valcano(i, dat, "X", paste0(i,".BETA.",j), paste0(i,".P.",j), 0.05, '', '')) # 最后两个空白表示 label_x, label_y
+	}}
+	plots <- mget( outer(phes, anas, function(i, j) paste0("plot.", i, ".", j)) |> as.vector() )
+	gridExtra::grid.arrange(grobs=plots, ncol=length(phes), nrow=length(anas))
+	bbplot("bald12 Clump^cML BETA", dat, "X", "bald12.BETA.clp08", "bald12.BETA.cml08", "yes", "bald12.P.clp08", "bald12.P.cml08", "no", 0.05)	
+	bbplot("bald12 Clump^cML P", dat, "X", "bald12.BETA.clp08", "bald12.BETA.cml08", "no", "bald12.P.clp08", "bald12.P.cml08", "yes", 0.05)	
+	bbplot("bald12 Phe^Mr BETA", dat, "X", "bald12.BETA.phe", "bald12.BETA.cml08", "yes", "bald12.P.phe", "bald12.P.cml08", "no", 0.05)	
+	bbplot("bald12 Phe^Mr BETA", dat, "X", "bald12.BETA.phe", "bald12.BETA.cml08", "no", "bald12.P.phe", "bald12.P.cml08", "yes", 0.05)	
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -140,7 +150,7 @@ drug <- merge(ppp, drug, by.x="UniProt", by.y="UNIPROT_ACCESSION") %>%
 	drug[duplicated(drug$X) | duplicated(drug$X, fromLast=TRUE), ]
 	drug <- drug[!duplicated(drug$X), ]
 dat <- merge(dat, drug, by="X", all.x=TRUE)
-write.table(dat, "X.merged.txt", sep="\t", append=FALSE, quote=FALSE, row.names=FALSE)
+write.table(dat, "analysis.txt", sep="\t", append=FALSE, quote=FALSE, row.names=FALSE)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
