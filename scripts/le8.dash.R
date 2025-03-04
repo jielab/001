@@ -117,17 +117,18 @@ saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.semi.rds"))
 write.table(dash, "ukb.le8.dash.R.tsv", append=FALSE, quote=FALSE, row.names=FALSE, col.names=TRUE)
 
 QUIN <- c("vegetablenew", "fruitnew", "nutnew", "grainnew", "lowfatdairy", "sugarnew", "meatnew", "sodium")
+adjust_breaks <- function(breaks) { # Ensure unique breaks by slightly nudging duplicates
+  for (j in 2:length(breaks)) {if (breaks[j] <= breaks[j - 1]) {breaks[j] <- breaks[j - 1] + .Machine$double.eps}}
+  return(breaks)
+}
 for (i in QUIN) {
-  quin_boundaries <- quantile(dash[[i]], probs = c(0, 0.2, 0.4, 0.6, 0.8, 1), na.rm = TRUE)
-  quin_boundaries[2] <- ifelse(quin_boundaries[2] == 0, quin_boundaries[2] + 0.000001, quin_boundaries[2])
-  quin_boundaries[3] <- ifelse(quin_boundaries[3] == 0, quin_boundaries[3] + 0.000002, quin_boundaries[3])
-  quin_boundaries[4] <- ifelse(quin_boundaries[4] == 0, quin_boundaries[4] + 0.000003, quin_boundaries[4])
-  quin_boundaries[5] <- ifelse(quin_boundaries[5] == 0, quin_boundaries[5] + 0.000004, quin_boundaries[5])
-  new_col_name <- paste0("quin", gsub("new", "", i)) 
-  dash <- dash %>% mutate(!!sym(new_col_name) := as.numeric(cut(dash[[i]],breaks=quin_boundaries, include.lowest=TRUE,labels=c(1, 2, 3, 4, 5),right=TRUE)))
+	quin_boundaries <- quantile(dash[[i]], probs = seq(0, 1, 0.2), na.rm = TRUE)
+	quin_boundaries <- adjust_breaks(quin_boundaries)
+	new_col_name <- paste0("quin", sub("new", "", i))
+	dash <- dash %>% mutate(!!sym(new_col_name) := as.numeric(cut(dash[[i]], breaks=quin_boundaries, include.lowest = TRUE, labels = 1:5, right = TRUE)))
 }
 # 🏮 上面的代码，最好改成下面这样
-#for (item in QUIN) { dash <- dash %>% mutate(!!paste0("quin", item) := ntile(.data[[item]], 5)) }
+#for (item in QUIN) {  dash <- dash %>% mutate(!!paste0("quin", i) := ntile(.data[[i]], 5))  }
 
 dash <- dash %>% mutate(
     quinsugar = ifelse(!is.na(quinsugar), 6 - quinsugar, NA),
