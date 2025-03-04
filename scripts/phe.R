@@ -72,10 +72,6 @@ saveRDS(dat, paste0(indir,"/Rdata/ukb.icd.rds"))
 # SRD (self-report disease) (20002 和 87) 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 srd <- read.table(paste0(indir,"/rap/srd.tab"), header=T)
-srd.drug <- srd %>% mutate( # 💊
-	drug.dm=as.integer(rowSums(across(starts_with("p20002_i0_"),  ~ . %in% c("1220", "1221", "1222", "1223")), na.rm = TRUE) > 0),
-	drug.hpt=as.integer(rowSums(across(starts_with("p20002_i0_"),  ~ . %in% c("1065","1072")), na.rm = TRUE) > 0)
-	) %>% select(eid, drug.dm, drug.hpt)
 srdTime <- read.table(paste0(indir,"/rap/srdTime.tab"), header=T)
 vip.srd <- read.table(paste0(indir,"/common/ukb.vip.srd"), header=F, flush=T) %>% rename(trait=V1, code=V2)
 dat=subset(srd, select="eid")
@@ -93,58 +89,6 @@ for (i in 1:nrow(vip.srd)) {
 }
 dat[sapply(dat, is.infinite)] <- NA
 saveRDS(dat, paste0(indir,"/Rdata/ukb.srd.rds"))
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# LE8
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-le8 <- merge(phe, srd.drug, by="eid") %>% mutate( 
-	drug.lipid = ifelse(rowSums(across(starts_with("drug.cmd"), ~ . %like% "1")) > 0, 1, 0)
-) # 上面两行都是为了提取 💊 的信息
-le8 <- le8 %>% mutate(
-	# 运动 🏃‍ MET minutes per week for moderate [22038] or vigorous [22039] activity
-	pa_mins = pa_mod + pa_vig * 2, 
-	pa_pts = case_when(pa_mins >=150 ~ 100, (pa_mins>=120 & pa_mins<150) ~ 90, (pa_mins>=90 & pa_mins<120) ~ 80, (pa_mins >=60 & pa_mins<90) ~ 60, (pa_mins>=30 & pa_mins<60) ~ 40, (pa_mins>= 1 & pa_mins< 30) ~ 20, pa_mins==0 ~ 0),
-	# 吸烟 🚬 smoke_quit_age [p2897], smoke_history [p1249], smoke_in_house [p1259]
-	smoke_quit_age = ifelse(smoke_quit_age %in% c(-3, -1), NA, smoke_quit_age), 
-	smoke_history = ifelse(smoke_history==-3, NA, smoke_history), 
-	smoke_in_house = ifelse(smoke_in_house==-3, NA, smoke_in_house),
-	smoke_quit_year = ifelse(smoke_quit_age > 0 & age>=smoke_quit_age, age-smoke_quit_age, NA), 
-	smoke_cat = case_when(smoke_status==0 ~ 100, smoke_status==1 & smoke_quit_year>=5 ~ 75, smoke_history==3 ~ 75, smoke_status==1 & smoke_quit_year>=1 & smoke_quit_year<5 ~ 50, smoke_history==2 ~ 50, smoke_status==1 & smoke_quit_year<1 ~ 25, smoke_status==2 ~ 0),
-	smoke_pts = ifelse((smoke_in_house==1 | smoke_in_house==2) & smoke_cat>0, smoke_cat-20, smoke_cat),
-	# 睡眠🛏 sleep_duration [p1160]
-	sleep_duration = ifelse(sleep_duration %in% c(-1, -3), NA, sleep_duration),
-	sleep_pts = case_when(sleep_duration >= 7 & sleep_duration < 9 ~ 100, sleep_duration >= 9 & sleep_duration < 10 ~ 90, sleep_duration >= 6 & sleep_duration < 7 ~ 70, (sleep_duration >= 5 & sleep_duration < 6) | sleep_duration >= 10 ~ 40, sleep_duration >= 4 & sleep_duration < 5 ~ 20, sleep_duration >= 0 & sleep_duration < 4 ~ 0),
-	# BMI 🎈
-	bmi_pts = case_when(bmi>0 & bmi<25 ~ 100, bmi>=25 & bmi<30 ~ 70, bmi>=30 & bmi<35 ~ 30, bmi>= 35 & bmi<40 ~ 15, bmi>=40 ~ 0),
-	# 血脂 🍟  drug.cmd[6177] drug.cmd2[6153]
-	nonhdl = pmax((bb_TC-bb_HDL)*38.67, 0),
-	nonhdl_cat = case_when(nonhdl>= 0 & nonhdl<130 ~ 100, nonhdl>=130 & nonhdl<160 ~ 60, nonhdl>=160 & nonhdl<190 ~ 40, nonhdl>=190 & nonhdl<220 ~ 20, nonhdl>=220 ~ 0),
-	nonhdl_pts = ifelse(drug.lipid==1 & nonhdl_cat>0, nonhdl_cat-20, nonhdl_cat),
-	# 血糖 🍬 dm_dr[2443], dm_gestational[4041]
-	hba1c_n = bb_HBA1C*0.0915 + 2.15,
-	his.dm = ifelse(drug.dm==1, 1, 0),
-	hba1c_pts = case_when(his.dm==0 & hba1c_n>0 & hba1c_n<5.7 ~ 100, his.dm==0 & hba1c_n>=5.7 & hba1c_n<6.5 ~ 60, hba1c_n>0 & hba1c_n<7 ~ 40, hba1c_n>=7 & hba1c_n<8 ~ 30, hba1c_n>=8 & hba1c_n<9 ~ 20, hba1c_n>=9 & hba1c_n<10 ~ 10, hba1c_n>=10 ~ 0),
-	# 血压 🦆 sbp_man[93], dbp_man[94], dbp_auto[4079], sbp_auto[4080]
-	sbp_auto = rowMeans2(select(., c("sbp_auto.i0.a0", "sbp_auto.i0.a1"))),
-	sbp_manual = rowMeans2(select(., c("sbp_man.i0.a0", "sbp_man.i0.a1"))),
-	dbp_auto = rowMeans2(select(., c("dbp_auto.i0.a0", "dbp_auto.i0.a1"))),
-	dbp_manual = rowMeans2(select(., c("dbp_man.i0.a0", "dbp_man.i0.a1")))
-)
-le8 <- le8 %>% mutate(
-	sbp = rowMeans2(select(., c("sbp_auto", "sbp_manual"))),
-	dbp = rowMeans2(select(., c("dbp_auto", "dbp_manual"))),
-	bp_cat = case_when(sbp>=160 | dbp>=100 ~ 0, (sbp>=140 & sbp<160) | (dbp>=90 & dbp<100) ~ 25, (sbp>= 130 & sbp< 140) | (dbp>= 80 & dbp< 90) ~ 50, (sbp>=120 & sbp<130) & (dbp>=0 & dbp<80) ~ 75, sbp>0 & sbp<120 & dbp>0 & dbp<80 ~ 100),
-	bp_pts=ifelse(drug.hpt==1 & bp_cat>0, bp_cat-20, bp_cat)
-)
-
-dash <- readRDS(paste0(indir,"/Rdata/ukb.dash.rds"))[,c("eid", "dash_pts")] # 🍚
-le8 <- merge(le8, dash, by="eid")
-le8 <- le8 %>% rowwise() %>% # 🎇 汇总
-	mutate( LE8score = mean(c(dash_pts, pa_pts, smoke_pts, sleep_pts, bmi_pts, nonhdl_pts, hba1c_pts, bp_pts), na.rm = FALSE)) %>% 
-	ungroup() %>% mutate(CVH_cat = case_when(LE8score < 50 & LE8score >= 0 ~ 0, LE8score < 80 & LE8score >= 50 ~ 1, LE8score >= 80 ~ 2 )) %>%
-	select(eid, LE8score, CVH_cat, dash_pts, pa_pts, smoke_pts, sleep_pts, bmi_pts, nonhdl_pts, hba1c_pts, bp_pts)
-saveRDS(le8, paste0(indir,"/Rdata/ukb.le8.rds"))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
