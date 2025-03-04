@@ -123,7 +123,7 @@ le8 <- le8 %>% mutate(
 	nonhdl_pts = ifelse(drug.lipid==1 & nonhdl_cat>0, nonhdl_cat-20, nonhdl_cat),
 	# 血糖 🍬 dm_dr[2443], dm_gestational[4041]
 	hba1c_n = bb_HBA1C*0.0915 + 2.15,
-	his.dm = ifelse(dm_dr==1, 1, ifelse(dm_gestational==1, 1, ifelse(drug.dm==1, 1, 0))),
+	his.dm = ifelse(drug.dm==1, 1, 0),
 	hba1c_pts = case_when(his.dm==0 & hba1c_n>0 & hba1c_n<5.7 ~ 100, his.dm==0 & hba1c_n>=5.7 & hba1c_n<6.5 ~ 60, hba1c_n>0 & hba1c_n<7 ~ 40, hba1c_n>=7 & hba1c_n<8 ~ 30, hba1c_n>=8 & hba1c_n<9 ~ 20, hba1c_n>=9 & hba1c_n<10 ~ 10, hba1c_n>=10 ~ 0),
 	# 血压 🦆 sbp_man[93], dbp_man[94], dbp_auto[4079], sbp_auto[4080]
 	sbp_auto = rowMeans2(select(., c("sbp_auto.i0.a0", "sbp_auto.i0.a1"))),
@@ -134,7 +134,7 @@ le8 <- le8 %>% mutate(
 le8 <- le8 %>% mutate(
 	sbp = rowMeans2(select(., c("sbp_auto", "sbp_manual"))),
 	dbp = rowMeans2(select(., c("dbp_auto", "dbp_manual"))),
-	bp_cat = case_when(sbp>=160 | dbp>=100 ~ 0, (sbp=140 & sbp<160) | (dbp>=90 & dbp<100) ~ 25, (sbp>= 130 & sbp< 140) | (dbp>= 80 & dbp< 90) ~ 50, (sbp>=120 & sbp<130) & (dbp>=0 & dbp<80) ~ 75, sbp>0 & sbp<120 & dbp>0 & dbp<80 ~ 100),
+	bp_cat = case_when(sbp>=160 | dbp>=100 ~ 0, (sbp>=140 & sbp<160) | (dbp>=90 & dbp<100) ~ 25, (sbp>= 130 & sbp< 140) | (dbp>= 80 & dbp< 90) ~ 50, (sbp>=120 & sbp<130) & (dbp>=0 & dbp<80) ~ 75, sbp>0 & sbp<120 & dbp>0 & dbp<80 ~ 100),
 	bp_pts=ifelse(drug.hpt==1 & bp_cat>0, bp_cat-20, bp_cat)
 )
 
@@ -152,6 +152,7 @@ saveRDS(le8, paste0(indir,"/Rdata/ukb.le8.rds"))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 prot <- read.table(paste0(indir,"/rap/raw/prot.tab"), sep="\t", header=T)
 	names(prot)[-1] <- gsub("^", "prot_", names(prot)[-1])
+	prot$prot.yes <- 1
 	saveRDS(prot, paste0(indir,"/Rdata/ukb.prot.rds"))
 vip.met <- read.table(paste0(indir,"/common/ukb.vip.met"), header=FALSE, flush=TRUE)
 	vip.met$V1[duplicated(vip.met$V1)]; vip.met$V2[duplicated(vip.met$V2)]
