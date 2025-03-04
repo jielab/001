@@ -28,6 +28,7 @@ phe <- phe %>% mutate(
 	ethnic_cat = ifelse(ethnicity==2002,12, ifelse(ethnicity==2003,13, ifelse(ethnicity %in% c(2004,3004),6,  ifelse(grepl("^1",ethnicity),1, ifelse(grepl("^2",ethnicity),2, ifelse(grepl("^3",ethnicity),3, ifelse(grepl("^4",ethnicity),4, ethnicity))))))),
 	ethnic_cat = factor(ethnic_cat, levels=c(1,2,3,4,5,6,12,13), labels=c("White", "Mixed", "Asian", "Black","Chinese","Other","White-Black", "White-Asian")),	
 	age_cat = cut(age, breaks=seq(35,75,5)),
+	birth_date = as.Date(paste0(birth_year,"-",birth_month,"-15")),
 	sex_cat = ifelse(sex==0, "female", "male"),
 	bmi_cat = cut(bmi, breaks=c(10,18.5,25,30,100), labels=c("lean", "healthy", "overweight", "obese")),
 	bmi_cat = factor(bmi_cat, levels=c("healthy", "lean", "overweight", "obese")),

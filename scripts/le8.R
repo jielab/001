@@ -5,7 +5,7 @@ indir=paste0(dir0, "/data/ukb/phe")
 source(paste0(dir0, "/scripts/ukb/le8.dash.fields"))
 source(paste0(dir0, '/scripts/f/phe.f.R'))
 
-dat0 <- read.table("D:/github/001/scripts/le8/le8.pku.raw.gz", sep="\t", fill=TRUE, header=TRUE) 
+dat0 <- read.table(paste0(dir0, '/data/ukb/phe/rap/raw/le8.pku.raw.gz'), sep="\t", fill=TRUE, header=TRUE) 
 dat0 <- dat0 %>% mutate(
 	across(where(is.numeric), ~ case_when(. == 555 ~ 0.5, . == 444 ~ 0.25, . == 200 ~ 2, . == 300 ~ 3, . == 400 ~ 4, . == 500 ~ 5, . == 600 ~ 6, TRUE ~ .))
 )

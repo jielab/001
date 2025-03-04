@@ -46,30 +46,45 @@ dat1 <- subset(dat, sex==1)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Ys <- c("bald12", "bald13", "bald14", "bald134", "bald1234") #  
 for (Y in Ys) {
-	res <- data.frame(Y=character(), X=character(), BETA=numeric(), SE=numeric(), P=numeric(), stringsAsFactors=FALSE)
-	print(Y); if (grepl("bald", Y)) covs=covs_bald else covs=covs_else
-	for (X in grep("bb_|bc_|hla_|prot_|met_", names(dat), value=T)) {
-	
-	print(X)
-	if (sum(!is.na(dat[[X]])) < 10000) next
+	print(Y)
+	res <- data.frame(Analysis=character(), Y=character(), X=character(), BETA=numeric(), SE=numeric(), P=numeric())
+	if (grepl("bald", Y)) covs=covs_bald else covs=covs_else
 	if (paste0("icdCt_", Y) %in% names(dat)) { # 存在发病日期，cox分析 🔫
+		ana <- "cox"
 		dat1 <- dat %>% mutate(
-			Y_date=dat[[paste0('icdDate_',Y)]], Y_yes=ifelse(is.na(Y_date), 0,1),
-			X=dat[[X]],
-			#X_qt=cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
-			#X_qt=ifelse(X_qt=="q1", "low", ifelse(X_qt=="q5", "high", "middle")),
-			follow_end_day=fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
-			follow_years=(as.numeric(follow_end_day) - as.numeric(date_attend)) / 365.25
-		) %>% filter(follow_years>0)
-		print(sum(dat1$follow_years)) # person-years
-		surv.obj <- Surv(time=dat1$follow_years, event=dat1$Y_yes)
-		fit <- coxph(as.formula(paste("surv.obj ~ ", X, "+", paste(covs, collapse="+"))), data=dat1)
-		if (!is.na(fit$coef[[X]])) {res <- rbind(res, data.frame(Y=Y, X=X, BETA=rb(summary(fit)$coef[1,1]), SE=rb(summary(fit)$coef[1,3]), P=rp(summary(fit)$coef[1,5])))}	
-	} else if (na.omit(all(dat[[Y]]) %in% c(0, 1)))  { # 0/1变量，logistic分析 🔫
-		fit <- glm(as.formula(paste(Y, "~", X, "+", paste(covs, collapse="+"))), data=dat, family="binomial")
-		if (!is.na(fit$coef[[X]])) {res <- rbind(res, data.frame(Y=Y, X=X, BETA=rb(summary(fit)$coef[2,1]), SE=rb(summary(fit)$coef[2,2]), P=rp(summary(fit)$coef[2,4])))}	
+			Y_date = dat[[paste0('icdDate_',Y)]], 
+			Y_yes = ifelse(is.na(Y_date), 0,1),
+			# X_qt=cut(X, breaks=quantile(X, probs=seq(0,1,0.2), na.rm=T), include.lowest=T, labels=paste0("q",1:5)),
+			# X_qt=ifelse(X_qt=="q1", "low", ifelse(X_qt=="q5", "high", "middle")),
+			follow_date = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(date_lost), date_lost, fifelse(!is.na(date_death), date_death, as.Date("2021-12-31")))),
+			follow_years = (as.numeric(follow_date) - as.numeric(date_attend)) / 365.25,
+			before_date = fifelse(!is.na(Y_date), Y_date, fifelse(!is.na(birth_date), birth_date, NA)),
+			before_years = (as.numeric(date_attend) - as.numeric(before_date)) / 365.25
+		) 
+		dat1.a <- dat1 %>% filter(follow_years>0)
+		dat1.b <- dat1 %>% filter(before_years>=0)
+		surv.obj.a <- Surv(time=dat1.a$follow_years, event=dat1.a$Y_yes)
+		surv.obj.b <- Surv(time=dat1.b$before_years, event=dat1.b$Y_yes)	
+	} else if all((unique(dat[[Y]]) %in% c(0, 1, NA)))  {
+		dat1 <- dat
+		ana <- "logit" # 0/1变量，logistic分析 🔫
 	}
-	
+
+	for (X in grep("bb_|bc_|hla_|prot_|met_", names(dat), value=T)) {
+		print(X)
+		if (sum(!is.na(dat[[X]])) < 10000) next
+		if (ana=="logit") {
+			dat1$X = dat1[[X]]
+			fit <- glm(as.formula(paste(Y, "~", X, "+", paste(covs, collapse="+"))), data=dat, family="binomial")
+			if (!is.na(fit$coef[[X]])) {res <- rbind(res, data.frame(Analysis="logit", Y=Y, X=X, BETA=rb(summary(fit)$coef[2,1]), SE=rb(summary(fit)$coef[2,2]), P=rp(summary(fit)$coef[2,4])))}	
+		} else if (ana=="cox") {
+			dat1.a$X = dat1.a[[X]]
+			dat1.b$X = dat1.b[[X]]
+			fit.a <- coxph(as.formula(paste("surv.obj.a ~ ", X, "+", paste(covs, collapse="+"))), data=dat1.a)
+			fit.b <- coxph(as.formula(paste("surv.obj.b ~ ", X, "+", paste(covs, collapse="+"))), data=dat1.b)
+			if (!is.na(fit.a$coef[[X]])) {res <- rbind(res, data.frame(Analysis="cox.a", Y=Y, X=X, BETA=rb(summary(fit.a)$coef[1,1]), SE=rb(summary(fit.a)$coef[1,3]), P=rp(summary(fit.a)$coef[1,5])))}	
+			if (!is.na(fit.b$coef[[X]])) {res <- rbind(res, data.frame(Analysis="cox.b", Y=Y, X=X, BETA=rb(summary(fit.b)$coef[1,1]), SE=rb(summary(fit.b)$coef[1,3]), P=rp(summary(fit.b)$coef[1,5])))}	
+		}
 	}
 	write.table(res, paste0(Y,".assoc.txt"), append=FALSE, quote=FALSE, row.names=FALSE)
 	gc()
