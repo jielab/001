@@ -7,12 +7,59 @@ dat0 <- readRDS(file=paste0(dir0, '/data/ukb/phe/Rdata/all.plus.rds')); dat0$bb_
 	covs_else <- 'age sex bmi smoke_status alcohol_status PC1 PC2 PC3 PC4' %>% strsplit(' ') %>% unlist()
 	covs_bald <- 'age bmi smoke_status alcohol_status bb_TES bb_SHBG bb_VITD bb_IGF1 PC1 PC2 PC3 PC4' %>% strsplit(' ') %>% unlist()
 	hist(dat0$date_attend, breaks='months', freq=TRUE); hist(dat0$icdDate_sle, breaks='months', freq=TRUE)
-	dat0 %>% drop_na(date_attend, icdDate_sle) %>% nrow()
-	subset(dat0, prot.yes==1 & icdDate_sle.2 < date_attend) %>% nrow() # 🏮
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Table 1: 基本信息
+# sle 基本信息
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+date_adj <- function(date.in, date.attend.real, date.attend.fake) {
+	return(date.in - (date.attend.real - date.attend.fake))
+}
+range2 <- function(dat.in) {
+	X_mean <- mean(dat.in, na.rm=TRUE)
+	X_sd <- sd(dat.in, na.rm=TRUE)
+	return(c(X_mean-3*X_sd, X_mean+3*X_sd))
+}
+dat <- dat0 %>% filter(ethnic_cat=='White', prot.yes==1)
+	summary(dat$date_attend); print(date_attend.med <- median(dat$date_attend, na.rm=TRUE)) # 2009-01-09
+	hist(dat$icdDate_sle, breaks="year")
+	dat %>% drop_na(date_attend, icdDate_sle) %>% nrow()
+	subset(dat, prot.yes==1 & icdDate_sle.2 < date_attend) %>% nrow() # 🏮	
+dat <- dat %>% mutate(icdDate_sle = date_adj(icdDate_sle, date_attend, date_attend.med))
+	hist(dat$icdDate_sle, breaks="years", freq=TRUE)
+dat$X <- dat$bmi.EUR2446.score_sum; dat$Y <- dat$bmi # 画图举例🌰
+	par(mar = c(5, 4, 4, 5) + 0.1) 
+	myhist <- hist(dat$Y, breaks=10)
+	X.avgs <- by(dat$X, cut(dat$Y, breaks = myhist$breaks), function(x) mean(x, na.rm = TRUE))
+	X.sds <- by(dat$X, cut(dat$Y, breaks=as.Date(myhist$breaks)), function(x) sd(x, na.rm=TRUE))
+	par(new=T) # 🏮
+	plot(myhist$mids, X.avgs, ylim=range2(dat$X), pch=16, axes=F, xlab=NA, ylab=NA, cex=1.2)
+	arrows(myhist$mids, X.avgs-X.sds, as.Date(myhist$mids), X.avgs+X.sds, angle=90, code=3, length=0.05, col="red")
+	axis(side=4); mtext(side=4, line=3, 'measured', col="blue")
+prot <- "prot_abo"; dat$X <- dat[[prot]]; dat$Y=dat$icdDate_sle
+	par(mar = c(5, 4, 4, 5) + 0.1) 
+	#min_year <- as.numeric(format(min(dat$Y, na.rm=TRUE), "%Y"))
+	#max_year <- as.numeric(format(max(dat$Y, na.rm=TRUE), "%Y"))
+	#breaks_seq <- seq(from=min_year - min_year %% 5, to=max_year + 5, by=5)
+	#breaks_date <- as.Date(paste0(breaks_seq, "-01-01"))
+	myhist <- hist(dat$Y, breaks="years", freq=TRUE, col="lightgray")
+	X.avgs <- by(dat$X, cut(dat$Y, breaks=as.Date(myhist$breaks)), function(x) mean(x, na.rm = TRUE))
+	X.sds <- by(dat$X, cut(dat$Y, breaks=as.Date(myhist$breaks)), function(x) sd(x, na.rm=TRUE))
+	par(new=T) # 🏮	
+	plot(as.Date(myhist$mids), X.avgs, ylim=range2(dat$X), pch=16, axes=FALSE, xlab=NA, ylab=NA, cex=1.2, col="red")
+	arrows(as.Date(myhist$mids), X.avgs-X.sds, as.Date(myhist$mids), X.avgs+X.sds, angle=90, code=3, length=0.05, col="red")
+	axis(side=4); mtext(side=4, line=3, "Mean protein (± SD)")
+	abline(v =date_attend.med, col="blue", lwd=3, lty=2)
+	abline(h =mean(dat$X, na.rm=TRUE), col="green", lwd=3, lty=2)
+dat.phe <- read.table('sle.assoc.txt', header=TRUE) %>% filter(X %like% 'prot_') %>%
+	pivot_wider(names_from=Analysis, values_from=c(BETA, SE, P), names_glue='{.value}.{Analysis}'); names(dat)
+	Y='sle'; valcano(Y, dat.phe[dat.phe$X %like% 'prot_', ], 'X', 'BETA.cox.a', 'P.cox.a', 0.05, '', '') # 👀
+	Y='sle'; valcano(Y, dat.phe[dat.phe$X %like% 'prot_', ], 'X', 'BETA.cox.b', 'P.cox.b', 0.05, '', '') # 👀
+	bbplot('Cox.a vs. Cox.b', dat.phe, 'X', 'BETA.cox.a', 'BETA.cox.b', 'yes', 'P.cox.a', 'P.cox.b', 'no', 0.05)	
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# bald 基本信息
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% filter(ethnic_cat=='White') %>% mutate(
 	bald12=ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==2, 1, NA))),
@@ -139,7 +186,7 @@ dat <- rbind(dat, dat.phe)
 dat <- dat %>% 
 	pivot_wider(names_from=c(Y, Analysis), values_from=c(BETA, SE, P), names_glue='{Y}.{.value}.{Analysis}'); names(dat)
 	dat <- dat %>% select(-matches('06$|SE')) 
-	cols <- apply(expand.grid(c('BETA','P'), anas, phes)[,c(3,1,2)], 1, function(x) paste(x, collapse = '.'))
+	cols <- apply(expand.grid(c('BETA','P'), anas, phes)[,c(3,1,2)], 1, function(x) paste(x, collapse='.'))
 	cols <- c('X', cols); dat <- dat[, cols] # 🏮
 dat.coloc <- read.table(paste0(dir0, '/analysis/assoc.sum/xian/all.coloc.log'), header=TRUE)[,c(1,2,8)] %>%
 	mutate(X=paste0('prot_',X)) %>% 
