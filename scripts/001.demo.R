@@ -37,9 +37,9 @@ dat$X <- dat$prot_pdcd1; dat$Y=dat$icdDate_sle # 画图举例🌰
 	X.avgs <- by(dat$X, cut(dat$Y, breaks=as.Date(myhist$breaks)), function(x) mean(x, na.rm = TRUE))
 	X.sds <- by(dat$X, cut(dat$Y, breaks=as.Date(myhist$breaks)), function(x) sd(x, na.rm=TRUE))
 	par(new=T) # 🏮	
-	plot(as.Date(myhist$mids), X.avgs, ylim=range2(dat$X), pch=16, axes=FALSE, xlab=NA, ylab=NA, cex=1.2, col="red")
+	plot(as.Date(myhist$mids), X.avgs, xlim=range(as.Date(myhist$breaks)), ylim=range2(dat$X), pch=16, axes=FALSE, xlab=NA, ylab=NA, cex=1.2, col="red")
 	arrows(as.Date(myhist$mids), X.avgs-X.sds, as.Date(myhist$mids), X.avgs+X.sds, angle=90, code=3, length=0.05, col="red")
-	axis(side=4); mtext(side=4, line=3, "X", col="blue")
+	axis(side=4); mtext(side=4, line=3, "X", col="red")
 	abline(v =date_attend.med, col="blue", lwd=3, lty=2)
 	abline(h =mean(dat$X, na.rm=TRUE), col="green", lwd=3, lty=2)
 dat.phe <- read.table('sle.assoc.txt', header=TRUE) %>% filter(X %like% 'prot_') %>%
