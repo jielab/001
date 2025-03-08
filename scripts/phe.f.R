@@ -28,7 +28,7 @@ bbplot <- function( # 🏄‍
 }
 
 valcano <- function( # 🌋
-  label, dat, X_col, BETA_col, P_col, sig.level) {
+  label, dat, X_col, BETA_col, P_col, sig.level, label_x, label_y) {
 	dat$X <- dat[[X_col]]
 	dat$BETA <- scale(dat[[BETA_col]])
 	dat$P <- dat[[P_col]]
@@ -40,12 +40,17 @@ valcano <- function( # 🌋
 	#	geom_segment(data=top5, aes(x=BETA + 0.05, y=-log10(P) + 1, xend=BETA, yend=-log10(P)), color='black') +
 		geom_hline(yintercept=-log10(sig.level), linetype='dashed', color='red', linewidth=1.2) +
 		geom_vline(xintercept=0, linetype='dotted', linewidth=1.2) + 
-		labs(x='Standardized beta', y='-log10(P)', title=label) +
+		labs(x=label_x, y=label_y, title=label) +
 		theme_minimal() + theme(axis.text=element_text(size=12, face='bold'), axis.title=element_text(size=14, face='bold'), axis.line=element_line(linewidth=1.2), legend.position='none', plot.title=element_text(size=16, face='bold', hjust=0.5))
 }
 
-pick_first_number <- function(x) {
-	as.numeric(strsplit(x, "\\|")[[1]][1]) # for strings such as "1|2|3"
+splitMatch <- function(x, arr, sep="|") {
+  any(as.numeric(strsplit(x, split=sep, fixed=TRUE)[[1]]) %in% arr)
+}
+
+splitMean <- function(x, sep = "|") {
+  vals <- as.numeric(strsplit(x, split = sep, fixed=TRUE)[[1]])
+  return(mean(vals, na.rm=TRUE))
 }
 
 rowMeans2 <- function(x) {
