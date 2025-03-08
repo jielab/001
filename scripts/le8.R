@@ -14,16 +14,13 @@ dat0 <- read.table(paste0(dir0, '/data/ukb/phe/rap/le8.tab.gz'), sep="\t", fill=
 dat0 <- dat0 %>% mutate(
 	across(where(is.numeric), ~ case_when(.==555 ~0.5, .==444 ~0.25, .==200 ~2, .==300 ~3, .==400 ~4, .==500 ~5, .==600 ~6, TRUE ~ .))
 ) 
-
-dat0 <- dat0 %>% mutate(
-  across(.cols = matches("i0$") & !matches("p20085_i0") & !matches("p100020_i0"), .fns = ~ ifelse(p20085_i0 %in% c(3, 4, 6), NA, .)),
-  across(.cols = matches("i1$") & !matches("p20085_i1") & !matches("p100020_i1"), .fns = ~ ifelse(p20085_i1 %in% c(3, 4, 6), NA, .)),
-  across(.cols = matches("i2$") & !matches("p20085_i2") & !matches("p100020_i2"), .fns = ~ ifelse(p20085_i2 %in% c(3, 4, 6), NA, .)),
-  across(.cols = matches("i3$") & !matches("p20085_i3") & !matches("p100020_i3"), .fns = ~ ifelse(p20085_i3 %in% c(3, 4, 6), NA, .)),
-  across(.cols = matches("i4$") & !matches("p20085_i4") & !matches("p100020_i4"), .fns = ~ ifelse(p20085_i4 %in% c(3, 4, 6), NA, .))
-)
+dat0 <- dat0 %>% mutate(reduce(0:4, ~ .x %>% across(.cols = matches(paste0("i", .y, "$")) & !matches(paste0("p20085_i", .y)) & !matches(paste0("p100020_i", .y)), .fns = ~ ifelse(splitMatch(get(paste0("p20085_i", .y)), c(3,4,5)), NA, .)), .init=.))
 # lapply(dat0, function(x) any(is.nan(x))) # 🏮看是否有NaN 
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# DASH🥢
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat <- dat0 %>% mutate( # 热量 🌋
 	energy_total = rowMeans2(select(., starts_with("p100002_")))
 )
