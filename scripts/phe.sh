@@ -11,8 +11,8 @@ zcat raw/pheno.tab.gz | head -1 | tr '\t' '\n' > pheno.id
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 提取主要表型pheno和PCA数据
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-grep -ho 'p[0-9]\+_[0-9a-zA-Z]*' $dir0/scripts/ukb/le8.R le8.dash.fields | sed -E '1s/^/eid\n/; s/_.*//' | sort | uniq > ukb.le8.ids # 🏮
-	fgrep -nwf $dat.id pheno.id.2col | sort | uniq | awk -F ":" '{print $1}'  ....
+grep -ho 'p[0-9]\+_[0-9a-zA-Z]*' $dir0/scripts/ukb/le8.R le8.dash.fields | sed -E '1s/^/eid\n/; s/_.*//' | sort | uniq > le8.id # 🏮
+	dat=le8; fgrep -nwf $dat.id pheno.id.2col | sort | uniq | awk -F ":" '{print $1}' | tr '\n' ',' | sed 's/,$//' | xargs -n1 -I % cut -f % raw/pheno.tab | gzip -f > $dat.tab.gz
 dat=vip # dat met le8 等
 	awk 'BEGIN{print "eid"}{print $1}' $phedir/common/ukb.$dat.dat > $dat.id
 	dos2unix $dat.id; sort $dat.id | uniq -d
