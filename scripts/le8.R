@@ -2,10 +2,16 @@ pacman::p_load(tidyverse, lubridate, purrr)
 
 dir0="D:"
 indir=paste0(dir0, "/data/ukb/phe")
-source(paste0(dir0, "/scripts/ukb/le8.dash.fields"))
+source(paste0(dir0, "/data/ukb/phe/common/le8.dash.fields"))
 source(paste0(dir0, '/scripts/f/phe.f.R'))
 
-dat0 <- read.table(paste0(dir0, '/data/ukb/phe/rap/raw/le8.pku.raw.gz'), sep="\t", fill=TRUE, header=TRUE) 
+dat0 <- read.table(paste0(dir0, '/data/ukb/phe/rap/le8.tab.gz'), sep="\t", fill=TRUE, header=TRUE) 
+	separators = c(",", "|")
+	non_numeric_cols <- dat0[, !sapply(dat0, is.numeric), drop = FALSE]
+	cols_with_sep <- sapply(non_numeric_cols, function(x) {any(grepl(paste(separators, collapse = "|"), as.character(x), perl = TRUE), na.rm = TRUE)})
+	cols_with_sep <- names(cols_with_sep)[cols_with_sep]
+	dat0[cols_with_sep] <- lapply(dat0[cols_with_sep], function(x) {as.numeric(sapply(as.character(x), splitMean))})
+
 dat0 <- dat0 %>% mutate(
 	across(where(is.numeric), ~ case_when(. == 555 ~ 0.5, . == 444 ~ 0.25, . == 200 ~ 2, . == 300 ~ 3, . == 400 ~ 4, . == 500 ~ 5, . == 600 ~ 6, TRUE ~ .))
 )
@@ -152,7 +158,7 @@ srd.drug <- srd %>% mutate( # 💊
 	drug.dm=as.integer(rowSums(across(starts_with("p20002_i0_"),  ~ . %in% c("1220", "1221", "1222", "1223")), na.rm = TRUE) > 0),
 	drug.hpt=as.integer(rowSums(across(starts_with("p20002_i0_"),  ~ . %in% c("1065","1072")), na.rm = TRUE) > 0)
 	) %>% select(eid, drug.dm, drug.hpt)
-le8 <- merge(phe, srd.drug, by="eid") %>% mutate( 
+le8 <- merge(phe, srd.drug, by="eid") %>% mutate( # drug.cmd[6177] drug.cmd2[6153]
 	drug.lipid = ifelse(rowSums(across(starts_with("drug.cmd"), ~ . %like% "1")) > 0, 1, 0)
 )
 le8 <- le8 %>% mutate(
@@ -166,12 +172,13 @@ le8 <- le8 %>% mutate(
 	smoke_quit_year = ifelse(smoke_quit_age > 0 & age>=smoke_quit_age, age-smoke_quit_age, NA), 
 	smoke_cat = case_when(smoke_status==0 ~ 100, smoke_status==1 & smoke_quit_year>=5 ~ 75, smoke_history==3 ~ 75, smoke_status==1 & smoke_quit_year>=1 & smoke_quit_year<5 ~ 50, smoke_history==2 ~ 50, smoke_status==1 & smoke_quit_year<1 ~ 25, smoke_status==2 ~ 0),
 	smoke_pts = ifelse((smoke_in_house==1 | smoke_in_house==2) & smoke_cat>0, smoke_cat-20, smoke_cat),
+	smoke_pts = ifelse(!is.na(smoke_in_house) & (smoke_in_house==1 | smoke_in_house==2) & smoke_cat>0, smoke_cat-20, smoke_cat)
 	# 睡眠🛏 sleep_duration [p1160]
 	sleep_duration = ifelse(sleep_duration %in% c(-1, -3), NA, sleep_duration),
 	sleep_pts = case_when(sleep_duration >= 7 & sleep_duration < 9 ~ 100, sleep_duration >= 9 & sleep_duration < 10 ~ 90, sleep_duration >= 6 & sleep_duration < 7 ~ 70, (sleep_duration >= 5 & sleep_duration < 6) | sleep_duration >= 10 ~ 40, sleep_duration >= 4 & sleep_duration < 5 ~ 20, sleep_duration >= 0 & sleep_duration < 4 ~ 0),
 	# BMI 🎈
 	bmi_pts = case_when(bmi>0 & bmi<25 ~ 100, bmi>=25 & bmi<30 ~ 70, bmi>=30 & bmi<35 ~ 30, bmi>= 35 & bmi<40 ~ 15, bmi>=40 ~ 0),
-	# 血脂 🍟  drug.cmd[6177] drug.cmd2[6153]
+	# 血脂 🍟
 	nonhdl = pmax((bb_TC-bb_HDL)*38.67, 0),
 	nonhdl_cat = case_when(nonhdl>= 0 & nonhdl<130 ~ 100, nonhdl>=130 & nonhdl<160 ~ 60, nonhdl>=160 & nonhdl<190 ~ 40, nonhdl>=190 & nonhdl<220 ~ 20, nonhdl>=220 ~ 0),
 	nonhdl_pts = ifelse(drug.lipid==1 & nonhdl_cat>0, nonhdl_cat-20, nonhdl_cat),
