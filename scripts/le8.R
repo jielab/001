@@ -8,9 +8,9 @@ source(paste0(dir0, '/scripts/f/phe.f.R'))
 dat0 <- read.table(paste0(dir0, '/data/ukb/phe/rap/le8.tab.gz'), sep="\t", fill=TRUE, header=TRUE)
 	str(dat0, list.len=800); sapply(dat0, class) 
 	dat.nN <- dat0[, !sapply(dat0, is.numeric), drop = FALSE]
-	cols_with_sep <- sapply(dat.nN, function(x) {any(grepl("\\|", as.character(x)), na.rm = TRUE)})
-	print(cols_with_sep <- names(cols_with_sep)[cols_with_sep])
-	# dat0[cols_with_sep] <- lapply(dat0[cols_with_sep], function(x) {as.numeric(sapply(as.character(x), splitMean))})
+	cols.combo <- sapply(dat.nN, function(x) {any(grepl("\\|", as.character(x)), na.rm = TRUE)})
+	print(names.combo <- names(cols.combo)[cols.combo])
+	# dat0[names.combo] <- lapply(dat0[cols_with_sep], function(x) {as.numeric(sapply(as.character(x), splitMean))})
 dat0 <- dat0 %>% mutate(
 	across(where(is.numeric), ~ case_when(.==555 ~0.5, .==444 ~0.25, .==200 ~2, .==300 ~3, .==400 ~4, .==500 ~5, .==600 ~6, TRUE ~ .))
 ) 
