@@ -1,4 +1,6 @@
-dir=/mnt/d/data/ukb/phe
+
+dir0=/mnt/d
+phedir=$dir0/data/ukb/phe
 
 # cat $dir/rap/raw/pheno.tsv | sed -e 's/^\t/NA\t/; s/\t\t/\tNA\t/g; s/\t\t/\tNA\t/g; s/\t$/\tNA/' > pheno.tab
 zcat raw/pheno.tab.gz | head -1 | tr '\t' '\n' > pheno.id
@@ -9,12 +11,14 @@ zcat raw/pheno.tab.gz | head -1 | tr '\t' '\n' > pheno.id
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 提取主要表型pheno和PCA数据
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+grep -ho 'p[0-9]\+_[0-9a-zA-Z]*' $dir0/scripts/ukb/le8.R le8.dash.fields | sed -E '1s/^/eid\n/; s/_.*//' | sort | uniq > ukb.le8.ids # 🏮
+	fgrep -nwf $dat.id pheno.id.2col | sort | uniq | awk -F ":" '{print $1}'  ....
 dat=vip # dat met le8 等
-	awk 'BEGIN{print "eid"}{print $1}' $dir/common/ukb.$dat.dat > $dat.id
+	awk 'BEGIN{print "eid"}{print $1}' $phedir/common/ukb.$dat.dat > $dat.id
 	dos2unix $dat.id; sort $dat.id | uniq -d
 	fgrep -wf $dat.id pheno.id.uniq | wc -l
 	fgrep -vwf pheno.id.uniq $dat.id | head # 显示UKB里面没有的
-	fgrep -nwf $dat.id pheno.id.2col | awk '$2 !~/_/ || $2 ~/_i0/' > $dat.id.tmp # 如果完全match，不考虑_i⭐，那就 fgrep -nwf $dat.id pheno.id
+	fgrep -nwf $dat.id pheno.id.2col | awk '$2 !~/_/ || $2 ~/_i0/' > $dat.id.tmp 
 	grep -nwE "p93|p94|p4079|p4080|p6177|p6153" pheno.id.2col >> $dat.id.tmp # 这些变量不仅仅需要baseline的数据 
 	sort $dat.id.tmp | uniq | awk -F ":" '{print $1}' | tr '\n' ',' | sed 's/,$//' | xargs -n1 -I % cut -f % raw/pheno.tab | gzip -f > $dat.tab.gz
 
