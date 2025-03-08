@@ -5,17 +5,15 @@ indir=paste0(dir0, "/data/ukb/phe")
 source(paste0(dir0, "/data/ukb/phe/common/le8.dash.fields"))
 source(paste0(dir0, '/scripts/f/phe.f.R'))
 
-dat0 <- read.table(paste0(dir0, '/data/ukb/phe/rap/le8.tab.gz'), sep="\t", fill=TRUE, header=TRUE) 
-	separators = c(",", "|")
-	non_numeric_cols <- dat0[, !sapply(dat0, is.numeric), drop = FALSE]
-	cols_with_sep <- sapply(non_numeric_cols, function(x) {any(grepl(paste(separators, collapse = "|"), as.character(x), perl = TRUE), na.rm = TRUE)})
+dat0 <- read.table(paste0(dir0, '/data/ukb/phe/rap/le8.tab.gz'), sep="\t", fill=TRUE, header=TRUE)
+	str(dat0, list.len=800); sapply(dat0, class) 
+	dat.nN <- dat0[, !sapply(dat0, is.numeric), drop = FALSE]
+	cols_with_sep <- sapply(dat.nN, function(x) {any(grepl("\\|", as.character(x)), na.rm = TRUE)})
 	cols_with_sep <- names(cols_with_sep)[cols_with_sep]
-	dat0[cols_with_sep] <- lapply(dat0[cols_with_sep], function(x) {as.numeric(sapply(as.character(x), splitMean))})
-
+	# dat0[cols_with_sep] <- lapply(dat0[cols_with_sep], function(x) {as.numeric(sapply(as.character(x), splitMean))})
 dat0 <- dat0 %>% mutate(
 	across(where(is.numeric), ~ case_when(. == 555 ~ 0.5, . == 444 ~ 0.25, . == 200 ~ 2, . == 300 ~ 3, . == 400 ~ 4, . == 500 ~ 5, . == 600 ~ 6, TRUE ~ .))
-)
-# str(dat0, list.len=800); sapply(dat0, class);  
+) 
 
 dat0 <- dat0 %>% mutate(
   across(.cols = matches("i0$") & !matches("p20085_i0") & !matches("p100020_i0"), .fns = ~ ifelse(p20085_i0 %in% c(3, 4, 6), NA, .)),
@@ -25,7 +23,6 @@ dat0 <- dat0 %>% mutate(
   across(.cols = matches("i4$") & !matches("p20085_i4") & !matches("p100020_i4"), .fns = ~ ifelse(p20085_i4 %in% c(3, 4, 6), NA, .))
 )
 # lapply(dat0, function(x) any(is.nan(x))) # 🏮看是否有NaN 
-
 
 dat <- dat0 %>% mutate( # 热量 🌋
 	energy_total = rowMeans2(select(., starts_with("p100002_")))
