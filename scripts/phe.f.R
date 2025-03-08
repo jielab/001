@@ -74,6 +74,8 @@ bulk_rowMeans <- function(dat, fields_names) {
 	setNames(as.data.frame(new_col), strsplit(x, "\\|")[[1]][2]) }))
 }
 
-replace_if_equal <- function(dat, var_list, num) {
-  sapply(var_list, function(pair) { fields <- strsplit(pair, "\\|")[[1]]; ifelse(dat[[fields[1]]]==num, dat[[fields[2]]], 0) })
+replace_if_match <- function(dat, var_list, num) {
+  sapply(var_list, function(x) { fields <- strsplit(x, "\\|")[[1]]; ifelse(any(as.numeric(strsplit(x, split=sep, fixed=TRUE)[[1]]) %in% num), dat[[fields[2]]], 0) })
 }
+
+
