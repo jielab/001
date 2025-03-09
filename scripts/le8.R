@@ -31,20 +31,20 @@ dat <- dat0 %>% mutate( # 热量 🌋
 
 dat <- bulk_rowMeans(dat, veg_fields) # 蔬菜 🥦 
 dat <- dat %>% mutate( 
-	vegetable = rowSums2(select(., sub(".*\\|", "", veg_fields))),
-	vegetablenew= ifelse((rowSums2(across(starts_with("p103990_i"), ~ !is.na(.))) > 0 & is.na(vegetable)), 0, vegetable)
+	veg = rowSums2(select(., sub(".*\\|", "", veg_fields))),
+	veg.new= ifelse((rowSums2(across(starts_with("p103990_i"), ~ !is.na(.))) > 0 & is.na(veg)), 0, veg)
 )
 
 dat <- bulk_rowMeans(dat, fruit_fields) # 水果🍓
 dat <- dat %>% mutate( 
 	fruit = rowSums2(select(., sub(".*\\|", "", fruit_fields))),
-	fruitnew= ifelse((rowSums2(across(starts_with("p104400_i"), ~ !is.na(.))) > 0 & is.na(fruit)), 0, fruit)
+	fruit.new= ifelse((rowSums2(across(starts_with("p104400_i"), ~ !is.na(.))) > 0 & is.na(fruit)), 0, fruit)
 ) 
 
 dat <- bulk_rowMeans(dat, nut_fields) # 坚果🌲
 dat <- dat %>% mutate( 
 	nut = rowSums2(select(., sub(".*\\|", "", nut_fields))),
-	nutnew= ifelse((rowSums2(across(starts_with("p102400_i"), ~ !is.na(.))) > 0 & is.na(nut)), 0, nut)
+	nut.new= ifelse((rowSums2(across(starts_with("p102400_i"), ~ !is.na(.))) > 0 & is.na(nut)), 0, nut)
 )
 
 # 主食🍚🍞: 面包类型[20091]; 面包摄入量[100950]; 1:white; 2:mixed; 3:wholemeal; 4:seeded
@@ -58,7 +58,7 @@ for (i in 5:8) { dat <- dat %>% mutate(!!staples[i] := rowMeans2(select(., start
 dat <- bulk_rowMeans(dat, porriage_fields)
 dat <- dat %>% mutate(
 	grain = rowSums2(select(., c(sub(".*\\|", "", porriage_fields), all_of(staples)))),
-	grainnew= ifelse((rowSums2(across(starts_with("p100760_i"), ~ !is.na(.))) > 0 & is.na(grain)), 0, grain)
+	grain.new= ifelse((rowSums2(across(starts_with("p100760_i"), ~ !is.na(.))) > 0 & is.na(grain)), 0, grain)
 )
 
 dat <- dat %>% mutate( # 🐄🥛 酸奶类型[20106]; 酸奶摄入量[102090]
@@ -73,51 +73,48 @@ for (var in vars) {
 }
 dat <- dat %>% mutate( 
     cheese = rowSums2(select(., hardcheese, cheesespread, cottagecheese)),
-	cheesenew= ifelse((rowSums2(across(starts_with("p102800_i"), ~ !is.na(.))) > 0 & is.na(cheese)), 0, cheese)
+	cheese = ifelse((rowSums2(across(starts_with("p102800_i"), ~ !is.na(.))) > 0 & is.na(cheese)), 0, cheese)
 ) 
 dat <- dat %>% mutate(
-    lowfatdairy = rowSums2(select(., milk, yogurt, cheesenew))
+    dairy.new = rowSums2(select(., milk, yogurt, cheese))
 )
 
 dat <- bulk_rowMeans(dat, sugar_fields) # 🍬🥤
 dat <- dat %>% mutate( 
-	sugar = rowSums2(select(., sub(".*\\|", "", sugar_fields)))
-) 
-dat <- dat %>% mutate(
-	sugarnew= ifelse((rowSums2(across(starts_with("p100020_i"), ~ !is.na(.))) > 0 & is.na(sugar)), 0, sugar)
+	sugar = rowSums2(select(., sub(".*\\|", "", sugar_fields))),
+	sugar.new= ifelse((rowSums2(across(starts_with("p100020_i"), ~ !is.na(.))) > 0 & is.na(sugar)), 0, sugar)
 ) 
 
 dat <- bulk_rowMeans(dat, meat_fields) # 红肉🥩
 dat <- dat %>% mutate(
 	meat = rowSums2(select(., sub(".*\\|", "", meat_fields))),
-	meatnew= ifelse((rowSums2(across(starts_with("p103000_i"), ~ !is.na(.))) > 0 & is.na(meat)), 0, meat)
+	meat.new= ifelse((rowSums2(across(starts_with("p103000_i"), ~ !is.na(.))) > 0 & is.na(meat)), 0, meat)
 )
  
 dat <- dat %>% mutate( # 盐 ⛵
-	sodium = p30530_i0
+	sodium.new = p30530_i0
 )
 
 # 👨‍👩‍👧‍👦 🎇
-dash <- dat %>% select(eid, vegetablenew, fruitnew, nutnew, grainnew, lowfatdairy, sugarnew, meatnew, sodium)
-	saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.0.rds"))
-QUIN <- c("vegetablenew", "fruitnew", "nutnew", "grainnew", "lowfatdairy", "sugarnew", "meatnew", "sodium")
+vars <- paste0(c("veg", "fruit", "nut", "grain", "dairy", "sugar", "meat", "sodium"), ".new")
+dash <- dat %>% select(eid, all_of(vars))
+saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.0.rds"))
 adjust_breaks <- function(breaks) { # Ensure unique breaks by slightly nudging duplicates
-	for (j in 2:length(breaks)) {if (breaks[j] <= breaks[j - 1]) {breaks[j] <- breaks[j - 1] + .Machine$double.eps}}
+	for (j in 2:length(breaks)) {if (breaks[j] <= breaks[j - 1]) {breaks[j] <- breaks[j-1] + .Machine$double.eps}}
 	return(breaks)
 }
-for (i in QUIN) {
-	quin_breaks <- quantile(dash[[i]], probs = seq(0, 1, 0.2), na.rm = TRUE)
-	quin_breaks <- adjust_breaks(quin_breaks)
-	new_col_name <- paste0("quin", sub("new", "", i))
-	dash <- dash %>% mutate(!!sym(new_col_name) := as.numeric(cut(dash[[i]], breaks=quin_breaks, include.lowest = TRUE, labels = 1:5, right = TRUE)))
+for (i in vars) {
+	print(i)
+	print(quin_breaks <- quantile(dash[[i]], probs = seq(0, 1, 0.2), na.rm = TRUE))
+	print(quin_breaks <- adjust_breaks(quin_breaks))
+	dash[[sub(".new", ".quin", i)]] <- cut(dash[[i]], breaks=quin_breaks, include.lowest=TRUE, labels=1:5, right=TRUE) %>% as.numeric()
 }
-#for (item in QUIN) { dash <- dash %>% mutate(!!paste0("quin", i) := ntile(.data[[i]], 5))  }
-dash <- dash %>% mutate(across(c(quinsugar, quinmeat, quinsodium), ~ ifelse(!is.na(.), 6 - ., NA)))
-	dash <- dash %>% mutate(dashscore = rowSums2(select(., quinvegetable, quinfruit, quinnut, quingrain, quinlowfatdairy, quinsugar, quinmeat, quinsodium)))
-	dash$dashscore[apply(is.na(select(dash, vegetablenew, fruitnew, nutnew, grainnew, lowfatdairy, sugarnew, meatnew, sodium)), 1, any)] <- NA
-	# dash <- dash %>% arrange(dashscore)
-	dash <- dash %>% mutate( dash_pts = case_when((dashscore >= 0 & dashscore < 17) ~ 0, (dashscore >= 17 & dashscore < 21) ~ 25, (dashscore >= 21 & dashscore < 26) ~ 50, (dashscore >= 26 & dashscore < 31) ~ 80, (dashscore >= 31) ~ 100, TRUE ~ NA_real_ ))
-	saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.rds"))
+dash <- dash %>% mutate(across(c(sugar.quin, meat.quin, sodium.quin), ~ ifelse(!is.na(.), 6 - ., NA)))
+dash <- dash %>% mutate(dashscore = rowSums2(select(., sub(".new", ".quin", vars))))
+dash$dashscore[rowSums(is.na(dash[vars])) > 0] <- NA # ⚡一下让30万人变成NA 🍉
+dash <- dash %>% mutate(dash_pts = cut(dashscore, breaks=c(-Inf, 17, 21, 26, 31, Inf), labels=c(0, 25, 50, 80, 100), right=FALSE) %>% as.numeric())
+saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.rds"))
+lapply(le8[-1], function(x) table(x, useNA = "always"))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,26 +129,27 @@ srd.drug <- srd %>% mutate( # 💊
 le8 <- merge(phe, srd.drug, by="eid") %>% mutate( # drug.cmd[6177] drug.cmd2[6153]
 	drug.lipid = ifelse(rowSums2(across(starts_with("drug.cmd"), ~ . %like% "1")) > 0, 1, 0)
 )
+
 le8 <- le8 %>% mutate(
 	# 运动 🏃‍ MET minutes per week for moderate [22038] or vigorous [22039] activity
-	pa_mins = pa_mod + pa_vig * 2, 
-	pa_pts = case_when(pa_mins >=150 ~ 100, (pa_mins>=120 & pa_mins<150) ~ 90, (pa_mins>=90 & pa_mins<120) ~ 80, (pa_mins >=60 & pa_mins<90) ~ 60, (pa_mins>=30 & pa_mins<60) ~ 40, (pa_mins>= 1 & pa_mins< 30) ~ 20, pa_mins==0 ~ 0),
+	pa_mins = pa_mod + pa_vig * 2,
+	pa_pts = cut(pa_mins, breaks = c(0, 1, 30, 60, 90, 120, 150, Inf), labels=c(0, 20, 40, 60, 80, 90, 100), right=FALSE) %>% as.numeric(),
 	# 吸烟 🚬 smoke_quit_age [p2897], smoke_history [p1249], smoke_in_house [p1259]
 	smoke_quit_age = ifelse(smoke_quit_age %in% c(-3, -1), NA, smoke_quit_age), 
 	smoke_history = ifelse(smoke_history==-3, NA, smoke_history), 
 	smoke_in_house = ifelse(smoke_in_house==-3, NA, smoke_in_house),
 	smoke_quit_year = ifelse(smoke_quit_age > 0 & age>=smoke_quit_age, age-smoke_quit_age, NA), 
-	smoke_cat = case_when(smoke_status==0 ~ 100, smoke_status==1 & smoke_quit_year>=5 ~ 75, smoke_history==3 ~ 75, smoke_status==1 & smoke_quit_year>=1 & smoke_quit_year<5 ~ 50, smoke_history==2 ~ 50, smoke_status==1 & smoke_quit_year<1 ~ 25, smoke_status==2 ~ 0),
+	smoke_cat = case_when(smoke_status==0 ~100, smoke_status==1 & smoke_quit_year>=5 ~75, smoke_history==3 ~75, smoke_status==1 & smoke_quit_year>=1 & smoke_quit_year<5 ~50, smoke_history==2 ~50, smoke_status==1 & smoke_quit_year<1 ~25, smoke_status==2 ~0),
 	smoke_pts = ifelse((smoke_in_house==1 | smoke_in_house==2) & smoke_cat>0, smoke_cat-20, smoke_cat),
 	smoke_pts = ifelse(!is.na(smoke_in_house) & (smoke_in_house==1 | smoke_in_house==2) & smoke_cat>0, smoke_cat-20, smoke_cat),
 	# 睡眠🛏 sleep_duration [p1160]
 	sleep_duration = ifelse(sleep_duration %in% c(-1, -3), NA, sleep_duration),
-	sleep_pts = case_when(sleep_duration >= 7 & sleep_duration < 9 ~ 100, sleep_duration >= 9 & sleep_duration < 10 ~ 90, sleep_duration >= 6 & sleep_duration < 7 ~ 70, (sleep_duration >= 5 & sleep_duration < 6) | sleep_duration >= 10 ~ 40, sleep_duration >= 4 & sleep_duration < 5 ~ 20, sleep_duration >= 0 & sleep_duration < 4 ~ 0),
+	sleep_pts = cut(sleep_duration, breaks = c(0, 4, 5, 6, 7, 9, 10, 24), labels=c(0, 20, 40, 70, 100, 90, 40), right=FALSE) %>% as.character() %>% as.numeric() # 🏮
 	# BMI 🎈
-	bmi_pts = case_when(bmi>0 & bmi<25 ~ 100, bmi>=25 & bmi<30 ~ 70, bmi>=30 & bmi<35 ~ 30, bmi>= 35 & bmi<40 ~ 15, bmi>=40 ~ 0),
+	bmi_pts = cut(bmi, breaks=c(0, 25, 30, 35, 40, Inf), labels=c(100, 70, 30, 15, 0), right=FALSE) %>% as.numeric()
 	# 血脂 🍟
 	nonhdl = pmax((bb_TC-bb_HDL)*38.67, 0),
-	nonhdl_cat = case_when(nonhdl>= 0 & nonhdl<130 ~ 100, nonhdl>=130 & nonhdl<160 ~ 60, nonhdl>=160 & nonhdl<190 ~ 40, nonhdl>=190 & nonhdl<220 ~ 20, nonhdl>=220 ~ 0),
+	nonhdl_cat = cut(nonhdl, breaks = c(0, 130, 160, 190, 220, Inf), labels = c(100, 60, 40, 20, 0), right=FALSE) %>% as.numeric()
 	nonhdl_pts = ifelse(drug.lipid==1 & nonhdl_cat>0, nonhdl_cat-20, nonhdl_cat),
 	# 血糖 🍬 dm_dr[2443], dm_gestational[4041]
 	hba1c_n = bb_HBA1C*0.0915 + 2.15,
@@ -174,6 +172,7 @@ dash <- readRDS(paste0(indir,"/Rdata/ukb.dash.rds"))[,c("eid", "dash_pts")] # �
 le8 <- merge(le8, dash, by="eid")
 le8 <- le8 %>% rowwise() %>% # 🎇 汇总
 	mutate( LE8score = mean(c(dash_pts, pa_pts, smoke_pts, sleep_pts, bmi_pts, nonhdl_pts, hba1c_pts, bp_pts), na.rm = FALSE)) %>% 
-	ungroup() %>% mutate(CVH_cat = case_when(LE8score < 50 & LE8score >= 0 ~ 0, LE8score < 80 & LE8score >= 50 ~ 1, LE8score >= 80 ~ 2 )) %>%
+	ungroup() %>% mutate(CVH_cat <- cut(LE8score, breaks=c(0, 50, 80, Inf), labels=c(0, 1, 2), right=FALSE) %>% as.numeric()) %>%
 	dplyr::select(eid, LE8score, CVH_cat, dash_pts, pa_pts, smoke_pts, sleep_pts, bmi_pts, nonhdl_pts, hba1c_pts, bp_pts)
 saveRDS(le8, paste0(indir,"/Rdata/ukb.le8.rds"))
+lapply(le8[-1], function(x) table(x, useNA="always"))
