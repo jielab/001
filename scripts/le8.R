@@ -2,7 +2,6 @@ pacman::p_load(data.table, tidyverse, lubridate, purrr)
 
 dir0="D:"
 indir=paste0(dir0, "/data/ukb/phe")
-source(paste0(dir0, "/data/ukb/phe/common/le8.dash.fields"))
 source(paste0(dir0, '/scripts/f/phe.f.R'))
 
 dat0 <- read.table(paste0(dir0, '/data/ukb/phe/rap/le8.tab.gz'), sep="\t", fill=TRUE, header=TRUE)
@@ -29,24 +28,28 @@ dat <- dat0 %>% mutate( # 热量 🌋
 	energy_total = rowMeans2(select(., starts_with("p100002_")))
 )
 
+veg_fields <- c("p104060_|mixveg", "p104070_|vegpiece", "p104080_|Coleslaw", "p104090_|Side", "p104100_|Avocado", "p104130_|Beetroot", "p104140_|Broccoli", "p104150_|Butternut", "p104160_|Cabbage", "p104170_|Carrot", "p104180_|Cauliflower", "p104190_|Celery", "p104200_|Courgette", "p104210_|Cucumber", "p104220_|Garlic", "p104230_|Leek", "p104240_|Lettuce", "p104250_|Mushroom", "p104260_|Onion", "p104270_|Parsnip", "p104290_|pepper", "p104300_|Spinach", "p104310_|Sprouts", "p104320_|Sweetcorn", "p104340_|Freshtomato", "p104350_|Tinnedtomato", "p104360_|Turnip", "p104370_|Watercress", "p104380_|Otherveg")
 dat <- bulk_rowMeans(dat, veg_fields) # 蔬菜 🥦 
 dat <- dat %>% mutate( 
 	veg = rowSums2(select(., sub(".*\\|", "", veg_fields))),
 	veg.new= ifelse((rowSums2(across(starts_with("p103990_i"), ~ !is.na(.))) > 0 & is.na(veg)), 0, veg)
 )
 
+fruit_fields <- c("p104410_|Stewedfruit", "p104420_|Prune", "p104430_|Dried", "p104440_|Mixedfruit", "p104450_|Apple", "p104460_|Banana", "p104470_|Berry", "p104480_|Cherry", "p104490_|Grapefruit", "p104500_|Grape", "p104510_|Mango", "p104520_|Melon", "p104530_|Orange", "p104540_|Satsuma", "p104550_|Peach", "p104560_|Pear", "p104570_|Pineapple", "p104580_|Plum", "p104590_|Otherfruit", "p100190_|Orangejuice", "p100200_|Grapefruitjuice", "p100210_|Purefruitjuice")
 dat <- bulk_rowMeans(dat, fruit_fields) # 水果🍓
 dat <- dat %>% mutate( 
 	fruit = rowSums2(select(., sub(".*\\|", "", fruit_fields))),
 	fruit.new= ifelse((rowSums2(across(starts_with("p104400_i"), ~ !is.na(.))) > 0 & is.na(fruit)), 0, fruit)
 ) 
 
+nut_fields <- c("p102410_|Saltpeanut", "p102420_|Unsaltpeanut", "p102430_|Saltnut", "p102440_|Unsaltnut", "p102450_|Seeds", "p103270_|Tofu", "p104000_|Bakedbean", "p104010_|Pulses", "p104110_|Broadbean", "p104120_|Greenbean", "p104280_|Pea")
 dat <- bulk_rowMeans(dat, nut_fields) # 坚果🌲
 dat <- dat %>% mutate( 
 	nut = rowSums2(select(., sub(".*\\|", "", nut_fields))),
 	nut.new= ifelse((rowSums2(across(starts_with("p102400_i"), ~ !is.na(.))) > 0 & is.na(nut)), 0, nut)
 )
 
+porriage_fields <- c("p100770_|Porridge", "p100800_|Muesli", "p100810_|Oat", "p100820_|Sweetcereal", "p100830_|Plaincereal", "p100840_|Brancereal", "p100850_|Wholewheat", "p100860_|Othercereal", "p102740_|Brownrice", "p102780_|Othergrain", "p102770_|Couscous")
 # 主食🍚🍞: 面包类型[20091]; 面包摄入量[100950]; 1:white; 2:mixed; 3:wholemeal; 4:seeded
 staples <- c("slicedbread", "baguette", "bap", "breadroll", "wholemealpasta", "crispbread", "oatcakes", "otherbread")
 fields <- c("p20091|p100950", "p20092|p101020", "p20093|p101090", "p20094|p101160", "p102720", "p101250", "p101260", "p101270")
@@ -79,12 +82,14 @@ dat <- dat %>% mutate(
     dairy.new = rowSums2(select(., milk, yogurt, cheese))
 )
 
+sugar_fields <- c("p100170_|Fizzydrink", "p100180_|Squash", "p100220_|Fruitsmootie") # "p100370_|sugarcoffee", "p100380_|artisugarcoffee", "p100490_|sugartea", "p100500_|artisugartea", "p100540_|Lowhotchocolate", "p100550_|Hotchocolate")
 dat <- bulk_rowMeans(dat, sugar_fields) # 🍬🥤
 dat <- dat %>% mutate( 
 	sugar = rowSums2(select(., sub(".*\\|", "", sugar_fields))),
 	sugar.new= ifelse((rowSums2(across(starts_with("p100020_i"), ~ !is.na(.))) > 0 & is.na(sugar)), 0, sugar)
 ) 
 
+meat_fields <- c("p103010_|Sausage", "p103020_|Beef", "p103030_|Pork", "p103040_|Lamb", "p103070_|Bacon", "p103080_|Ham", "p103090_|Liver", "p102970_|Scotchegg")
 dat <- bulk_rowMeans(dat, meat_fields) # 红肉🥩
 dat <- dat %>% mutate(
 	meat = rowSums2(select(., sub(".*\\|", "", meat_fields))),
@@ -179,9 +184,8 @@ saveRDS(le8, paste0(indir,"/Rdata/ukb.le8.rds"))
 lapply(le8[-1], function(x) table(x, useNA="always"))
 
 
-# 🛑
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 社会经济地位（SES）
+# 社会经济地位（SES）# 💁
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #edu_cat = factor(ifelse(edu %in% 1:2,3, ifelse(edu %in% 3:6,2, 1))),  # 1-2: College or above; 3-6: High school or equivalent; -7: Less than high school
 #emp_cat = factor(ifelse(emp %in% c(1,2,6,7), 2, 1)), # 1 paid employment or self-employed; 2 retired; 6 doing unpaid or voluntary work; 7 full or part time students; 3 Looking after home and/or family; 4 Unable to work because of sickness or disability; 5 Unemployed 
@@ -201,7 +205,7 @@ saveRDS(subset(dat, select=c(eid, ses)), file="D:/data/ukb/Rdata/ukb.ses.rds")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# lifestyle 之 “管住嘴、 迈开腿、 躺下睡”
+# lifestyle 之 “管住嘴、 迈开腿、 躺下睡” 💁
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 健康植物性饮食指数（PMID: 36976560）
 # 南京医科大学版本（https://github.com/XiangyuYe/Infection_SES）
