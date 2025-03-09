@@ -44,13 +44,8 @@ valcano <- function( # 🌋
 		theme_minimal() + theme(axis.text=element_text(size=12, face='bold'), axis.title=element_text(size=14, face='bold'), axis.line=element_line(linewidth=1.2), legend.position='none', plot.title=element_text(size=16, face='bold', hjust=0.5))
 }
 
-splitMatch <- function(x, arr, sep="|") {
-  any(as.numeric(strsplit(x, split=sep, fixed=TRUE)[[1]]) %in% arr)
-}
-
-splitMean <- function(x, sep = "|") {
-  vals <- as.numeric(strsplit(x, split = sep, fixed=TRUE)[[1]])
-  return(mean(vals, na.rm=TRUE))
+splitMatch <- function(x, arr, sep = "|") {
+  sapply(x, function(val) any(as.numeric(strsplit(as.character(val), split = sep, fixed = TRUE)[[1]]) %in% arr))
 }
 
 rowMeans2 <- function(x) {
@@ -72,10 +67,6 @@ bulk_rowMeans <- function(dat, fields_names) {
 	prefix <- strsplit(x, "\\|")[[1]][1]
 	new_col <- rowMeans2(select(dat, starts_with(prefix)))
 	setNames(as.data.frame(new_col), strsplit(x, "\\|")[[1]][2]) }))
-}
-
-replace_if_match <- function(dat, var_list, num) {
-  sapply(var_list, function(x) { fields <- strsplit(x, "\\|")[[1]]; ifelse(any(as.numeric(strsplit(x, split=sep, fixed=TRUE)[[1]]) %in% num), dat[[fields[2]]], 0) })
 }
 
 
