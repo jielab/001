@@ -49,7 +49,7 @@ dat <- dat %>% mutate(
 
 # 主食🍚🍞: 面包类型[20091]; 面包摄入量[100950]; 1:white; 2:mixed; 3:wholemeal; 4:seeded
 staples <- c("slicedbread", "baguette", "bap", "breadroll", "wholemealpasta", "crispbread", "oatcakes", "otherbread")
-fields <- c("p20091|p100950", "p20091|p100950", "p20091|p100950", "p20091|p100950", "p102720", "p101250", "p101260", "p101270")
+fields <- c("p20091|p100950", "p20092|p101020", "p20093|p101090", "p20094|p101160", "p102720", "p101250", "p101260", "p101270")
 for (i in 1:4) {
   field <- strsplit(fields[i], "\\|")[[1]]; field.old <- field[1]; field.new <- field[2]
   dat <- dat %>% mutate(!!staples[i] := rowMeans(across(starts_with(paste0(field.old, "_i")),  ~ ifelse(.==3, get(sub(field.old, field.new, cur_column())), 0)), na.rm=TRUE))
@@ -93,6 +93,7 @@ dat <- dat %>% mutate(
  
 dat <- dat %>% mutate( # 盐 ⛵
 	sodium.new = p30530_i0
+	sodium.new2 = p26052_i0
 )
 
 # 👨‍👩‍👧‍👦 🎇
@@ -176,3 +177,97 @@ le8 <- le8 %>% rowwise() %>% # 🎇 汇总
 	dplyr::select(eid, LE8score, CVH_cat, dash_pts, pa_pts, smoke_pts, sleep_pts, bmi_pts, nonhdl_pts, hba1c_pts, bp_pts)
 saveRDS(le8, paste0(indir,"/Rdata/ukb.le8.rds"))
 lapply(le8[-1], function(x) table(x, useNA="always"))
+
+
+# 🛑
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 社会经济地位（SES）
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#edu_cat = factor(ifelse(edu %in% 1:2,3, ifelse(edu %in% 3:6,2, 1))),  # 1-2: College or above; 3-6: High school or equivalent; -7: Less than high school
+#emp_cat = factor(ifelse(emp %in% c(1,2,6,7), 2, 1)), # 1 paid employment or self-employed; 2 retired; 6 doing unpaid or voluntary work; 7 full or part time students; 3 Looking after home and/or family; 4 Unable to work because of sickness or disability; 5 Unemployed 
+#income_cat = ifelse(income==1,1, ifelse(income %in% 2:3,2, 3)),
+set.seed(12345)
+dat <- phe0 %>% dplyr::select(eid, age, sex, ethnic_cat, emp, income, edu) %>% filter(ethnic_cat=="White") %>% drop_na() #%>% dplyr::sample_n(10000) 
+sink("ses.log")
+SES_LCA_list <- list()
+for (n_class in 2:6) { 
+	SES_LCA_list[[n_class]] <- poLCA(cbind(edu_cat, emp_cat, income_cat) ~1, data=dat, nclass=n_class, maxiter=10000, tol=1e-6, nrep=2, graphs=TRUE, probs.start=NULL)
+}
+sink()
+source("D:/scripts/library/00_LCA_out.R")
+LCA_out(SES_LCA_list,3,3)
+dat$ses <- SES_LCA_list[[3]]$predclass
+saveRDS(subset(dat, select=c(eid, ses)), file="D:/data/ukb/Rdata/ukb.ses.rds")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# lifestyle 之 “管住嘴、 迈开腿、 躺下睡”
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 健康植物性饮食指数（PMID: 36976560）
+# 南京医科大学版本（https://github.com/XiangyuYe/Infection_SES）
+dat0 <- phe0 %>% 
+	mutate(
+		num_pa = (days_pa_mod > 5) & (days_pa_vig > 1),
+		yes_pa_mod = ifelse(dura_pa_mod > 150, T, F),
+		yes_pa_vig = ifelse(dura_pa_vig > 75, T, F),
+		mat_pa = cbind(num_pa, yes_pa_mod, yes_pa_vig),
+		pa_score = rep(0, nrow(mat_pa)),
+		pa_score = ifelse(rowSums(mat_pa, na.rm = TRUE) > 0, 1, pa_score),
+		pa_score = ifelse(rowSums(is.na(mat_pa)) == 3, NA, pa_score)
+	) %>% mutate(
+		cannabis_score = ifelse(cannabis == 0, 1, ifelse(cannabis >0, 0, NA)),
+		noalcohol_stat = recode(alcohol_status, "never" = 0, "previous" = 1, "current" = 2),
+		noalcohol_score = ifelse(noalcohol_stat == 0, 1, ifelse(noalcohol_stat > 0, 0, NA)),
+		smoke_stat = recode(smoke_status, "never" = 0, "previous" = 1, "current" = 2),
+		nosmoke_score = ifelse(smoke_stat == 0, 1, ifelse(smoke_stat >0 , 0, NA)),
+		nosmoke_year = age_visit - age_smoke_quit,
+		nosmoke_score = ifelse(nosmoke_year > 30, 1, nosmoke_score)
+	) %>% mutate(
+		fruit_score = rowSums(cbind(fruit_fresh, fruit_dried/5), na.rm = TRUE) >= 4,
+		fruit_score = ifelse(is.na(fruit_fresh) & is.na(fruit_dried), NA, fruit_score),
+		veg_score = rowSums(cbind(veg_cooked/3, veg_salad/3), na.rm = TRUE) >= 4,
+		veg_score = ifelse(is.na(veg_cooked) & is.na(veg_salad) , NA, veg_score),
+		fish_score = (fish_oily >= 3 | fish >= 3) | (fish_oily == 2 & fish == 2),
+		pmeat_score = meat_processed <= 2,
+		npmeat_score = rowSums(cbind(beef, lamb, pork)) <= 3 & !(beef >= 3 | lamb >= 3 | pork >= 3),  # label1 =0.5, then 1 + 2 OR 1 * 3
+		npmeat_score = ifelse(is.na(beef) & is.na(lamb) & is.na(pork), NA, npmeat_score),
+		bread_grain = ifelse(bread_type==3, bread, 0),
+		cereal_grain = ifelse(cereal_type %in% c(1, 2, 3), cereal, 0),
+		grains_score = rowSums(cbind(bread_grain, cereal_grain), na.rm = T) >= 3,
+		grains_score = ifelse(is.na(bread_grain) & is.na(cereal_grain) , NA, grains_score),
+		diet_mat = data.frame(fruit_score, veg_score, fish_score, pmeat_score, npmeat_score, grains_score),
+		diet_score = rowSums(diet_mat) >= 4,
+		diet_score = ifelse(rowSums(diet_mat, na.rm = TRUE) >= 4, TRUE, ifelse(rowSums(is.na(diet_mat)) + rowSums(diet_mat, na.rm = TRUE) < 4, FALSE, NA))
+	) %>% mutate(
+		chrono_score = ifelse(sleep_chronotype < 3, 1, 0), # Ref PMID:31848595
+		duration_score = ifelse(sleep_duration <= 8 & sleep_duration >= 7, 1, 0), # Sleep duration 7-8h
+		insomnia_score = ifelse(sleep_insomnia == 1, 1, 0), # 1: never or rarely insomnia
+		snoring_score = ifelse(sleep_snoring == 2, 1, 0), # 2: No complaints of snoring
+		narcolepsy_score = ifelse(sleep_narcolepsy < 2, 1, 0), # no frequently narcolepsy 0	Never/rarely 1	Sometimes
+		sleep_mat = data.frame(chrono_score, duration_score, insomnia_score, snoring_score, narcolepsy_score),
+		sleep_score = rowSums(sleep_mat) >= 4,
+		sleep_score = ifelse(rowSums(sleep_mat, na.rm = TRUE) >= 4, TRUE, sleep_score),
+		sleep_score = ifelse(rowSums(is.na(sleep_mat)) + rowSums(sleep_mat, na.rm = TRUE) < 4, FALSE, sleep_score)
+	)
+dat <- dat0 %>% dplyr::select(eid, smoke_score, pa_score, diet_score, alcohol_score, sleep_score, cannabis_score) *1
+dat <- dat  %>% 
+	mutate(
+		tt4_score = rowSums(dat[,2:5], na.rm=T),
+		lf4_score =ifelse(tt4_score >=3, "3-4", 
+			ifelse(tt4_score ==2, "2", 
+			ifelse(tt4_score <2, "0-1", NA))),
+		tt6_score = rowSums(dat[,2:7], na.rm=T),
+		tt6_score =ifelse(tt6_score >=4 | rowSums(dat[,2:6], na.rm=T)==3, "3", 
+			ifelse(tt6_score >=2 & (tt6_score + rowSums(is.na(dat))) < 4, "2", 
+			ifelse(tt6_score ==0, "1", "??")))
+	)
+saveRDS(life_factor_df, file = "D:/data/ukb/Rdata/ukb.le8.rds")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 空气和噪音污染，待完成
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 复旦公卫 Predicting particulate matter, nitrogen dioxide, and ozone across Great Britain with high spatiotemporal resolution based on random forest models
+air_no2, air_nox, 
+noise = rowMeans(cbind(noise_day, noise_evening+5, noise_night+10), na.rm = T),
+traffic, dist2road = 1/dist2road, log_traffic = log(traffic), logi_dist2road = -log(dist2road)
