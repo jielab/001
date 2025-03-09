@@ -97,14 +97,14 @@ dat <- dat %>% mutate(
 )
  
 dat <- dat %>% mutate( # 盐 ⛵
-	sodium.new = p30530_i0
+	sodium.new = p30530_i0,
 	sodium.new2 = p26052_i0
 )
 
-# 👨‍👩‍👧‍👦 🎇
+# 👨‍👩‍👧‍👦
 vars <- paste0(c("veg", "fruit", "nut", "grain", "dairy", "sugar", "meat", "sodium"), ".new")
 dash <- dat %>% select(eid, all_of(vars))
-saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.0.rds"))
+saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.0.rds")) # 🙋‍
 adjust_breaks <- function(breaks) { # Ensure unique breaks by slightly nudging duplicates
 	for (j in 2:length(breaks)) {if (breaks[j] <= breaks[j - 1]) {breaks[j] <- breaks[j-1] + .Machine$double.eps}}
 	return(breaks)
@@ -118,9 +118,9 @@ for (i in vars) {
 dash <- dash %>% mutate(across(c(sugar.quin, meat.quin, sodium.quin), ~ ifelse(!is.na(.), 6 - ., NA)))
 dash <- dash %>% mutate(dashscore = rowSums2(select(., sub(".new", ".quin", vars))))
 dash$dashscore[rowSums(is.na(dash[vars])) > 0] <- NA # ⚡一下让30万人变成NA 🍉
-dash <- dash %>% mutate(dash_pts = cut(dashscore, breaks=c(-Inf, 17, 21, 26, 31, Inf), labels=c(0, 25, 50, 80, 100), right=FALSE) %>% as.numeric())
+dash <- dash %>% mutate(dash_pts = cut(dashscore, breaks=c(-Inf, 17, 21, 26, 31, Inf), labels=c(0, 25, 50, 80, 100), right=FALSE) %>% as.character() %>% as.numeric())
 saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.rds"))
-lapply(le8[-1], function(x) table(x, useNA = "always"))
+lapply(dash[-1], function(x) table(x, useNA = "always"))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -139,7 +139,7 @@ le8 <- merge(phe, srd.drug, by="eid") %>% mutate( # drug.cmd[6177] drug.cmd2[615
 le8 <- le8 %>% mutate(
 	# 运动 🏃‍ MET minutes per week for moderate [22038] or vigorous [22039] activity
 	pa_mins = pa_mod + pa_vig * 2,
-	pa_pts = cut(pa_mins, breaks = c(0, 1, 30, 60, 90, 120, 150, Inf), labels=c(0, 20, 40, 60, 80, 90, 100), right=FALSE) %>% as.numeric(),
+	pa_pts = cut(pa_mins, breaks = c(0, 1, 30, 60, 90, 120, 150, Inf), labels=c(0, 20, 40, 60, 80, 90, 100), right=FALSE) %>% as.character() %>% as.numeric(),
 	# 吸烟 🚬 smoke_quit_age [p2897], smoke_history [p1249], smoke_in_house [p1259]
 	smoke_quit_age = ifelse(smoke_quit_age %in% c(-3, -1), NA, smoke_quit_age), 
 	smoke_history = ifelse(smoke_history==-3, NA, smoke_history), 
@@ -150,12 +150,12 @@ le8 <- le8 %>% mutate(
 	smoke_pts = ifelse(!is.na(smoke_in_house) & (smoke_in_house==1 | smoke_in_house==2) & smoke_cat>0, smoke_cat-20, smoke_cat),
 	# 睡眠🛏 sleep_duration [p1160]
 	sleep_duration = ifelse(sleep_duration %in% c(-1, -3), NA, sleep_duration),
-	sleep_pts = cut(sleep_duration, breaks = c(0, 4, 5, 6, 7, 9, 10, 24), labels=c(0, 20, 40, 70, 100, 90, 40), right=FALSE) %>% as.character() %>% as.numeric() # 🏮
+	sleep_pts = cut(sleep_duration, breaks = c(0, 4, 5, 6, 7, 9, 10, 24), labels=c(0, 20, 40, 70, 100, 90, 40), right=FALSE) %>% as.character() %>% as.numeric(),
 	# BMI 🎈
-	bmi_pts = cut(bmi, breaks=c(0, 25, 30, 35, 40, Inf), labels=c(100, 70, 30, 15, 0), right=FALSE) %>% as.numeric()
+	bmi_pts = cut(bmi, breaks=c(0, 25, 30, 35, 40, Inf), labels=c(100, 70, 30, 15, 0), right=FALSE) %>% as.character() %>% as.numeric(),
 	# 血脂 🍟
 	nonhdl = pmax((bb_TC-bb_HDL)*38.67, 0),
-	nonhdl_cat = cut(nonhdl, breaks = c(0, 130, 160, 190, 220, Inf), labels = c(100, 60, 40, 20, 0), right=FALSE) %>% as.numeric()
+	nonhdl_cat = cut(nonhdl, breaks = c(0, 130, 160, 190, 220, Inf), labels = c(100, 60, 40, 20, 0), right=FALSE) %>% as.character() %>% as.numeric(),
 	nonhdl_pts = ifelse(drug.lipid==1 & nonhdl_cat>0, nonhdl_cat-20, nonhdl_cat),
 	# 血糖 🍬 dm_dr[2443], dm_gestational[4041]
 	hba1c_n = bb_HBA1C*0.0915 + 2.15,
@@ -178,7 +178,7 @@ dash <- readRDS(paste0(indir,"/Rdata/ukb.dash.rds"))[,c("eid", "dash_pts")] # �
 le8 <- merge(le8, dash, by="eid")
 le8 <- le8 %>% rowwise() %>% # 🎇 汇总
 	mutate( LE8score = mean(c(dash_pts, pa_pts, smoke_pts, sleep_pts, bmi_pts, nonhdl_pts, hba1c_pts, bp_pts), na.rm = FALSE)) %>% 
-	ungroup() %>% mutate(CVH_cat <- cut(LE8score, breaks=c(0, 50, 80, Inf), labels=c(0, 1, 2), right=FALSE) %>% as.numeric()) %>%
+	ungroup() %>% mutate(CVH_cat = cut(LE8score, breaks=c(0, 50, 80, Inf), labels=c(0, 1, 2), right=FALSE) %>% as.character() %>% as.numeric()) %>% 
 	dplyr::select(eid, LE8score, CVH_cat, dash_pts, pa_pts, smoke_pts, sleep_pts, bmi_pts, nonhdl_pts, hba1c_pts, bp_pts)
 saveRDS(le8, paste0(indir,"/Rdata/ukb.le8.rds"))
 lapply(le8[-1], function(x) table(x, useNA="always"))
