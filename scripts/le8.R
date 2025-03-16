@@ -199,9 +199,22 @@ sink()
 source("D:/scripts/library/00_LCA_out.R")
 LCA_out(SES_LCA_list,3,3)
 dat$ses <- SES_LCA_list[[3]]$predclass
-life_factor_dff$SES <- ifelse(SES_LCA_list[[3]]$predclass == 2, 1, ifelse(SES_LCA_list[[3]]$predclass == 1, 2, 3))
+life_factor_dff$SES <- SES_LCA_list[[3]]$predclass #
 life_factor_dff <- life_factor_dff[,c(1:8,25,9,11,13:22,23,24,10,12)]
 saveRDS(subset(dat, select=c(eid, ses)), file="D:/data/ukb/Rdata/ukb.ses.rds")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 生物年龄 (PMID: 37080981) 🈲
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#train=kdm_calc(biomarkers=var_kdm); kdm=kdm_calc(NHANES4, biomarkers=var_kdm, fit=train$fit, s_ba2=train$fit$s_ba2); data=kdm$data
+var_kdm = c("fev1","sbp","bb_TC","bb_HBA1C","bb_ALB","bb_CRE","bb_CRP","bb_ALP","bb_BUN") # "fev","sbp","totchol","hba1c","albumin", "creat","lncrp","alp","bun
+	kdm_male   = phe0 %>% filter (sex ==1) %>% kdm_calc(biomarkers=var_kdm, fit=kdm$fit$male,   s_ba2 = kdm$fit$male$s_b2)
+	kdm_female = phe0 %>% filter (sex ==0) %>% kdm_calc(biomarkers=var_kdm, fit=kdm$fit$female, s_ba2 = kdm$fit$female$s_b2)
+	kdm = rbind(kdm_female$data, kdm_male$data)
+var_phenoage = c("bb_ALB","bc_LYMPH_pt","bc_MSCV","bb_GLU","bc_RDW","bb_CRE","bb_CRP","bb_ALP","bc_WBC") # "albumin_gL","lymph","mcv","glucose_mmol","rdw","creat_umol","lncrp","alp","wbc"
+	phenoage_ukb = phe0 %>% phenoage_calc(biomarkers=var_phenoage, orig=TRUE) 
+	phenoage_ukb = phenoage_ukb$data
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
