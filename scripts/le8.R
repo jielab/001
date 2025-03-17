@@ -20,11 +20,11 @@ dat0 <- read.table(paste0(dir0, '/data/ukb/phe/rap/le8.tab.gz'), sep="\t", fill=
 dat0 <- dat0 %>% mutate( # 不正常饮食原因 [20085]; Typical diet yesterday [100020]
 	across(matches("i[0-4]$") & !matches("p20085_i|p100020_i"),  ~ ifelse(splitMatch(get(paste0("p20085_", sub(".*_(i[0-4])$", "\\1", cur_column()))), c(3,4,6)), NA, .))
 )
-table(dat0$p20106_i1, useNA="always") # 🚩
-
-names(dat0 %>% select_if(~ any(. %in% c(555, 200, 300, 400, 500, 600)))) # 🚩
+	table(dat0$p20106_i1, useNA="always") # 🚩
+	names(dat0 %>% select_if(~ any(. %in% c(555, 200, 300, 400, 500, 600)))) # 🚩
 	dat0 <- dat0 %>% mutate(across(where(is.numeric), ~ case_when(.==555 ~0.5, .==444 ~0.25, .==200 ~2, .==300 ~3, .==400 ~4, .==500 ~5, .==600 ~6, TRUE ~ .)))
 	check <- sapply(dat0, function(x) any(is.nan(x))); names(dat0)[check] # 🚩看是否有NaN 
+	saveRDS(dat0, paste0(indir,"/Rdata/ukb.dash0.rds")) # ⚪
 
 dat <- dat0 %>% mutate( # 热量 🌋
 	energy_total = rowMeans2(select(., starts_with("p100002_")))
@@ -32,7 +32,7 @@ dat <- dat0 %>% mutate( # 热量 🌋
 
 veg_fields <- c("p104060_|mixveg", "p104070_|vegpiece", "p104080_|Coleslaw", "p104090_|Side", "p104100_|Avocado", "p104130_|Beetroot", "p104140_|Broccoli", "p104150_|Butternut", "p104160_|Cabbage", "p104170_|Carrot", "p104180_|Cauliflower", "p104190_|Celery", "p104200_|Courgette", "p104210_|Cucumber", "p104220_|Garlic", "p104230_|Leek", "p104240_|Lettuce", "p104250_|Mushroom", "p104260_|Onion", "p104270_|Parsnip", "p104290_|pepper", "p104300_|Spinach", "p104310_|Sprouts", "p104320_|Sweetcorn", "p104340_|Freshtomato", "p104350_|Tinnedtomato", "p104360_|Turnip", "p104370_|Watercress", "p104380_|Otherveg")
 dat <- bulk_rowMeans(dat, veg_fields) # 蔬菜 🥦 
-dat <- dat %>% mutate( 
+dat <- dat %>% mutate( # 103990: eat any vegetables yesterday?
 	veg = rowSums2(select(., sub(".*\\|", "", veg_fields))),
 	veg.new= ifelse((rowSums2(across(starts_with("p103990_i"), ~ !is.na(.))) > 0 & is.na(veg)), 0, veg)
 )
@@ -106,6 +106,7 @@ dat <- dat %>% mutate( # 盐 ⛵
 # 👨‍👩‍👧‍👦
 vars.dash <- paste0(c("veg", "fruit", "nut", "grain", "dairy", "sugar", "meat", "sodium"), ".new")
 dash <- dat %>% select(eid, all_of(vars.dash))
+lapply(dash[-1], function(x) summary(x)) # 🙋‍
 adjust_breaks <- function(breaks) { # Ensure unique breaks by slightly nudging duplicates
 	for (j in 2:length(breaks)) {if (breaks[j] <= breaks[j - 1]) {breaks[j] <- breaks[j-1] + .Machine$double.eps}}
 	return(breaks)
@@ -121,7 +122,6 @@ dash <- dash %>% mutate(dashscore = rowSums2(select(., sub(".new", ".quin", vars
 dash$dashscore[rowSums(is.na(dash[vars.dash])) > 0] <- NA # ⚡一下让30万人变成NA 🍉
 dash <- dash %>% mutate(dash_pts = cut(dashscore, breaks=c(-Inf, 17, 21, 26, 31, Inf), labels=c(0, 25, 50, 80, 100), right=FALSE) %>% as.character() %>% as.numeric())
 saveRDS(dash, paste0(indir,"/Rdata/ukb.dash.rds"))
-lapply(dash[-1], function(x) table(x, useNA = "always")) # 🙋‍
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -186,7 +186,154 @@ lapply(le8[-(1:9)], function(x) table(x, useNA="always"))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 社会经济地位（SES）# 💁
+# lifestyle 南京医科大学版本 💁
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 健康植物性饮食指数（PMID: 36976560）
+# 南京医科大学版本（https://github.com/XiangyuYe/Infection_SES）
+fields.habit <- c("p189_i0", "p738_i0", "p6138_i0", "p6138-0.1", "p6138-0.2", "p6138-0.3", "p6138-0.4", "p6138-0.5", "p6142_i0", "p6142-0.1", "p6142-0.2", "p6142-0.3", "p6142-0.4", "p6142-0.5", "p6142-0.6", "p20116_i0", "p2897_i0", "p884_i0", "p894_i0", "p904_i0", "p914_i0", "p1309_i0", "p1319_i0", "p1289_i0", "p1299_i0", "p1329_i0", "p1339_i0", "p1349_i0", "p1369_i0", "p1379_i0", "p1389_i0", "p1438_i0", "p1448_i0", "p1458_i0", "p1468_i0", "p20117_i0", "p1180_i0", "p1160_i0", "p1200_i0", "p1210_i0", "p1220_i0", "p20453_i0") 
+fields.base <- c("21001_i0", "p22001_i0", "p21003_i0", "p31_i0", "p53_i0", "p53-i1", "p53_i2", "p53_i3", "p21000_i0", "p54_i0") 
+fields.all <- c("eid", fields.habit, fields.base)
+dat <- read.table(paste0(dir0, '/data/ukb/phe/rap/njmu.tab.gz'), sep="\t", fill=TRUE, header=TRUE)
+
+BMI_grp <- cut(dat$p21001_i0, breaks = c(-Inf, 18.5, 30, Inf),  labels = c(0, 1, 2), right = FALSE)
+
+nosmoke_cnd <- ifelse(is.na(dat$p20116_i0), NA, ifelse(dat$p20116_i0 == 0, 1, ifelse(dat$p20116_i0 > 0, 0, NA)))
+	nosmoke_year <- dat$p21003_i0 - dat$p2897_i0
+	nosmoke_cnd[which(nosmoke_year > 30)] <- 1
+
+cannabis_cnd <- ifelse(is.na(dat$p20453_i0), NA, ifelse(dat$p20453_i0 == 0, 1, ifelse(dat$p20453_i0 > 0, 0, NA)))
+
+noalcohol_cnd <- ifelse(is.na(dat$p20117_i0), NA,  ifelse(dat$p20117_i0 == 0, 1, ifelse(dat$p20117_i0 > 0, 0, NA)))
+
+num_moderate <- ifelse(dat$p884_i0 < 0, NA, dat$p884_i0)
+	num_vigorous <- ifelse(dat$p904_i0 < 0, NA, dat$p904_i0)
+	num_activity <- num_moderate > 5 & num_vigorous > 1
+	time_moderate <- ifelse(dat$p894_i0 > 150, T, F)
+	time_vigorous <- ifelse(dat$p914_i0 > 75, T, F)
+	act_mat <- cbind(num_activity, time_moderate, time_vigorous)
+	activity_cnd <- rep(0, nrow(act_mat))
+	activity_cnd[rowSums(act_mat, na.rm = T) > 0] <- 1
+	activity_cnd[rowSums(is.na(act_mat)) == 3] <- NA
+
+diet_numcol <- c(23:36)
+	diet_df <- apply(dat[, diet_numcol], 2, function(a) {a[a == -10] <- 0; a[a<0] <- NA; return(a)}) %>% as.data.frame()
+	fruit_mat <- cbind(diet_df$p1309_i0, diet_df$p1319_i0/5) 
+	fruit_cnd <- rowSums(fruit_mat) >= 4
+	fruit_cnd[rowSums(fruit_mat,na.rm = T) >= 4] <- T
+	veg_mat <- cbind(diet_df$p1289_i0/3, diet_df$p1299_i0/3)
+	veg_cnd <- rowSums(veg_mat) >= 4
+	veg_cnd[rowSums(veg_mat,na.rm = T) >= 4] <- T
+	fish_mat <- cbind(diet_df$p1329_i0, diet_df$p1339_i0) 
+	fish_cnd <- fish_mat[,1] >= 3 | fish_mat[,2] >= 3
+	fish_cnd[fish_mat[,1] ==2 & fish_mat[,2] == 2] <- T
+	pmeat_cnd <- diet_df$p1349_i0 <= 2
+	npmeat_mat <- cbind(diet_df$p1369_i0, diet_df$p1379_i0, diet_df$p1389_i0)
+	npmeat_cnd <- rowSums(npmeat_mat, na.rm = T) <= 3
+	npmeat_cnd[npmeat_mat[,1] >=3 | npmeat_mat[,2] >=3 | npmeat_mat[,3] >=3] <- F
+	grains_mat <- matrix(0, nrow(dat), 2)
+	bread_idx <- which(dat$p1448_i0 == 3)
+	grains_mat[bread_idx, 1] <- dat$p1438_i0[bread_idx]
+	cereal_idx <- which(dat$p1468_i0 %in% c(1, 2, 3))
+	grains_mat[cereal_idx, 2] <- dat$p1458_i0[cereal_idx]
+	grains_cnd <- rowSums(grains_mat, na.rm = T) >= 3
+
+diet_mat <- data.frame(fruit_cnd, veg_cnd, fish_cnd, pmeat_cnd, npmeat_cnd, grains_cnd)
+	diet_cnd <- rowSums(diet_mat) >= 4
+	diet_cnd[rowSums(diet_mat,na.rm = T) >= 4] <- T
+diet_cnd[rowSums(is.na(diet_mat)) + rowSums(diet_mat,na.rm = T) < 4] <- F
+
+sleep_df <- apply(dat[, c(38:42)], 2, function(a) {a[a<0] <- NA; return(a)}) %>% as.data.frame()
+	chrono_cnd <- ifelse(is.na(sleep_df$p1180_i0), NA, ifelse(sleep_df$p1180_i0 < 3, 1, 0) )
+	duration_cnd <- ifelse(is.na(sleep_df$p1160_i0), NA, ifelse(sleep_df$p1160_i0 <= 8 & sleep_df$p1160_i0 >= 7, 1, 0) )
+	insomnia_cnd <- ifelse(is.na(sleep_df$p1200_i0),NA, ifelse(sleep_df$p1200_i0 == 1, 1, 0))
+	snoring_cnd <- ifelse(is.na(sleep_df$p1210_i0),NA, ifelse(sleep_df$p1210_i0 == 2, 1, 0))
+	narcolepsy_cnd <- ifelse(is.na(sleep_df$p1220_i0),NA, ifelse(sleep_df$p1220_i0 < 2, 1, 0))
+	sleep_mat <- data.frame(chrono_cnd, duration_cnd, insomnia_cnd, snoring_cnd, narcolepsy_cnd)
+	sleep_cnd <- rowSums(sleep_mat) >= 4
+	sleep_cnd[rowSums(sleep_mat,na.rm = T) >= 4] <- T
+	sleep_cnd[rowSums(is.na(sleep_mat)) + rowSums(sleep_mat,na.rm = T) < 4] <- F
+
+lf_df <- data.frame(Nosmoke = nosmoke_cnd, Activity = activity_cnd, Diet = diet_cnd, Noalcohol = noalcohol_cnd, Sleep = sleep_cnd, Nocannabis = cannabis_cnd)
+lifescore1 <- rep(NA, nrow(lf_df))
+	lifescore1[rowSums(lf_df, na.rm = T) >= 4] <- 3 
+	lifescore1[rowSums(lf_df[,c(1:5)], na.rm = T) == 3] <- 3
+	lifescore1[rowSums(lf_df, na.rm = T) >= 2 & (rowSums(lf_df, na.rm = T) + rowSums(is.na(lf_df))) < 4 ] <- 2 
+	lifescore1[(rowSums(lf_df, na.rm = T) + rowSums(is.na(lf_df))) < 2 | rowSums(lf_df, na.rm = T) == 0] <- 1 
+	lifescore2 <- rep(2, nrow(lf_df))
+	lifescore2[rowSums(lf_df, na.rm = T) >= 4] <- 3 
+	lifescore2[rowSums(lf_df[,c(1:5)], na.rm = T) >= 3] <- 3 
+	lifescore2[rowSums(lf_df == 0, na.rm = T) >= 4] <- 1
+	lifescore3 <- rep(2, nrow(lf_df))
+	lifescore3[rowSums(lf_df, na.rm = T) >= 4] <- 3 
+	lifescore3[rowSums(lf_df[,c(1:5)], na.rm = T) >= 3] <- 3 
+	lifescore3[rowSums(lf_df == 0, na.rm = T) >= 5] <- 1
+	str_split(dat$p53_i0, "-",simplify = T)[,1] ???
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# lifestyle 南京医科大学版本 【修改中】 💁
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+dat <- nku %>% 
+	mutate(
+		num_pa = (days_pa_mod > 5) & (days_pa_vig > 1),
+		yes_pa_mod = ifelse(dura_pa_mod > 150, T, F),
+		yes_pa_vig = ifelse(dura_pa_vig > 75, T, F),
+		mat_pa = cbind(num_pa, yes_pa_mod, yes_pa_vig),
+		pa_score = rep(0, nrow(mat_pa)),
+		pa_score = ifelse(rowSums(mat_pa, na.rm = TRUE) > 0, 1, pa_score),
+		pa_score = ifelse(rowSums(is.na(mat_pa)) == 3, NA, pa_score)
+	) %>% mutate(
+		cannabis_score = ifelse(cannabis == 0, 1, ifelse(cannabis >0, 0, NA)),
+		noalcohol_stat = recode(alcohol_status, "never" = 0, "previous" = 1, "current" = 2),
+		noalcohol_score = ifelse(noalcohol_stat == 0, 1, ifelse(noalcohol_stat > 0, 0, NA)),
+		smoke_stat = recode(smoke_status, "never" = 0, "previous" = 1, "current" = 2),
+		nosmoke_score = ifelse(smoke_stat == 0, 1, ifelse(smoke_stat >0 , 0, NA)),
+		nosmoke_year = age_visit - age_smoke_quit,
+		nosmoke_score = ifelse(nosmoke_year > 30, 1, nosmoke_score)
+	) %>% mutate(
+		fruit_score = rowSums(cbind(fruit_fresh, fruit_dried/5), na.rm = TRUE) >= 4,
+		fruit_score = ifelse(is.na(fruit_fresh) & is.na(fruit_dried), NA, fruit_score),
+		veg_score = rowSums(cbind(veg_cooked/3, veg_salad/3), na.rm = TRUE) >= 4,
+		veg_score = ifelse(is.na(veg_cooked) & is.na(veg_salad) , NA, veg_score),
+		fish_score = (fish_oily >= 3 | fish >= 3) | (fish_oily == 2 & fish == 2),
+		pmeat_score = meat_processed <= 2,
+		npmeat_score = rowSums(cbind(beef, lamb, pork)) <= 3 & !(beef >= 3 | lamb >= 3 | pork >= 3),  # label1 =0.5, then 1 + 2 OR 1 * 3
+		npmeat_score = ifelse(is.na(beef) & is.na(lamb) & is.na(pork), NA, npmeat_score),
+		bread_grain = ifelse(bread_type==3, bread, 0),
+		cereal_grain = ifelse(cereal_type %in% c(1, 2, 3), cereal, 0),
+		grains_score = rowSums(cbind(bread_grain, cereal_grain), na.rm = T) >= 3,
+		grains_score = ifelse(is.na(bread_grain) & is.na(cereal_grain) , NA, grains_score),
+		diet_mat = data.frame(fruit_score, veg_score, fish_score, pmeat_score, npmeat_score, grains_score),
+		diet_score = rowSums(diet_mat) >= 4,
+		diet_score = ifelse(rowSums(diet_mat, na.rm = TRUE) >= 4, TRUE, ifelse(rowSums(is.na(diet_mat)) + rowSums(diet_mat, na.rm = TRUE) < 4, FALSE, NA))
+	) %>% mutate(
+		chrono_score = ifelse(sleep_chronotype < 3, 1, 0), # Ref PMID:31848595
+		duration_score = ifelse(sleep_duration <= 8 & sleep_duration >= 7, 1, 0), # Sleep duration 7-8h
+		insomnia_score = ifelse(sleep_insomnia == 1, 1, 0), # 1: never or rarely insomnia
+		snoring_score = ifelse(sleep_snoring == 2, 1, 0), # 2: No complaints of snoring
+		narcolepsy_score = ifelse(sleep_narcolepsy < 2, 1, 0), # no frequently narcolepsy 0	Never/rarely 1	Sometimes
+		sleep_mat = data.frame(chrono_score, duration_score, insomnia_score, snoring_score, narcolepsy_score),
+		sleep_score = rowSums(sleep_mat) >= 4,
+		sleep_score = ifelse(rowSums(sleep_mat, na.rm = TRUE) >= 4, TRUE, sleep_score),
+		sleep_score = ifelse(rowSums(is.na(sleep_mat)) + rowSums(sleep_mat, na.rm = TRUE) < 4, FALSE, sleep_score)
+	)
+dat <- dat %>% dplyr::select(eid, smoke_score, pa_score, diet_score, alcohol_score, sleep_score, cannabis_score) *1
+dat <- dat %>% 
+	mutate(
+		tt4_score = rowSums(dat[,2:5], na.rm=T),
+		lf4_score =ifelse(tt4_score >=3, "3-4", 
+			ifelse(tt4_score ==2, "2", 
+			ifelse(tt4_score <2, "0-1", NA))),
+		tt6_score = rowSums(dat[,2:7], na.rm=T),
+		tt6_score =ifelse(tt6_score >=4 | rowSums(dat[,2:6], na.rm=T)==3, "3", 
+			ifelse(tt6_score >=2 & (tt6_score + rowSums(is.na(dat))) < 4, "2", 
+			ifelse(tt6_score ==0, "1", "??")))
+	)
+saveRDS(life_factor_df, file = "D:/data/ukb/Rdata/ukb.xian.rds")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 社会经济地位（SES）# 💁华中科大
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 phe <- readRDS(paste0(indir,"/Rdata/ukb.phe.rds"))
 dat <- phe %>% filter(ethnic_cat=="White") %>% dplyr::select(eid, age, sex, emp_cat, income_cat, edu_cat) %>% drop_na()

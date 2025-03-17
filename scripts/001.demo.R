@@ -13,7 +13,7 @@ dat0 <- readRDS(file=paste0(dir0, '/data/ukb/phe/Rdata/all.plus.rds'))
 library(naniar); gg_miss_var(subset(dat0, select=grep("sex|bb_", names(dat0), value=TRUE)), facet=sex)
 dat <- dat0 %>% select(grep("bb_ALB|bb_APOB|bb_ALP|bb_CYS|bb_HDL|bb_LDL", names(dat0), value=TRUE)) %>% na.omit() %>% dplyr::sample_n(10000)
 	car::scatterplotMatrix(dat, spread=FALSE, smoother.args=list(lty=0.1))
-	psych::pairs.panels(dat)
+	psych::pairs.panels(dat) # 🏮
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -163,7 +163,7 @@ for (Y in Ys) {
 		}
 	}
 	write.table(res, paste0(Y,'.assoc.txt'), append=FALSE, quote=FALSE, row.names=FALSE)
-	res1 <- res %>% filter(X %like% 'prot_') %>%
+	res1 <- read.table(paste0(Y,'.assoc.txt'), header=TRUE) %>% filter(X %like% 'prot_') %>%
 		pivot_wider(names_from=Analysis, values_from=c(BETA, SE, P), names_glue='{.value}.{Analysis}'); names(res1)
 		pdf(paste0(Y,'.pdf'))
 		valcano(Y, res1[res1$X %like% 'prot_', ], 'X', 'BETA.cox.a', 'P.cox.a', 0.05, '', '') # 👀
