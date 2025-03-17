@@ -81,45 +81,6 @@ dat1 <- dat %>% mutate(X=X_qt, M=age_cat) %>% drop_na(X, M) # ✝ 10年风险计
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 💇‍ binary 变量 Y 基本信息
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dat <- dat0 %>% filter(ethnic_cat=='White') %>% mutate(
-	bald12 = ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==2, 1, NA))),
-	bald13 = ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==3, 1, NA))),
-	bald14 = ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald==4, 1, NA))),
-	bald134 = ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald %in% 3:4, 1, NA))),
-	bald1234 = ifelse(sex==0, NA, ifelse(bald==1,0, ifelse(bald %in% 2:4, 1, NA))),
-	stiff = inormal(stiffness),
-	smoke_status = factor(smoke_status, levels=0:2, labels=c("never", "previous", "current")), 
-	alcohol_status = factor(alcohol_status, levels=0:2, labels=c("never", "previous", "current")), 
-	income = factor(ifelse(income==1 | income==2, "<30,999", ifelse(income==5, ">100,000", "31,000-100,000")), levels=c("<30,999", "31,000-100,000", ">100,000")),
-	age_fsex = ifelse(age_fsex <12, NA, age_fsex),
-	sexf_cat=factor(ifelse(age_fsex <16, 'early', ifelse(age_fsex <22, 'average', 'late')), levels=c('early', 'average', 'late')),
-	sexp_cat=factor(ifelse(sex_partner <=1, 'low', ifelse(sex_partner <=10, 'average', 'high')), levels=c('low', 'average', 'high'))
-)
-
-dat1 <- subset(dat, sex==1) %>% rename(Y=bald, X=stiff, C=se) %>% drop_na(Y, X, C) 
-	group_by(dat1, Y, C) %>% summarise(count=n(), mean=mean(X, na.rm=TRUE))
-	aggregate(X ~ Y*C, dat1, FUN=function(x) {round(c(length(x), mean(x), sd(x), quantile(x,probs=c(0,0.5,1))), 2)} )
-	bp <- boxplot(X ~ Y*C, dat1, las=2, col=rainbow(6), font=2); bp$stats
-
-dat1 <- subset(dat, sex==1)
-	library(compareGroups); descrTable(formula=as.formula(paste(c("bald ~ ", paste(covs_bald, collapse="+")), collapse="")), data=dat1, digits=1)
-	library(gtsummary); dat1 %>% select(all_of(c('bald', covs_bald))) %>% tbl_summary(by=bald, missing='no') %>% add_p()
-	Y='bald12'; fit <- glm(formula=as.formula(paste(c(Y, ' ~ ', paste(covs_bald, collapse='+')), collapse='')), data=dat1, family='binomial'); summary(fit)
-	forestmodel::forest_model(fit)	
-	fit <- lm(age_fsex ~ factor(bald) +age+, data=dat1)
-	fit <- nnet::multinom(bald ~ covs_bald, data=dat1)
-
-dat1 <- dat %>% filter(sex==1) %>% drop_na(bald, prot_eda2r) 
-	dat1 %>% group_by(bald) %>% summarise(count=n(), mean=mean(prot_eda2r, na.rm=TRUE))
-	library(ggpubr); ggboxplot(dat1, x='bald', y='prot_eda2r', add='mean_se', color='bald') + # 🏮🥚
-		stat_compare_means(method='anova', label='p.format', label.x=1.5, label.y=min(dat1$prot_eda2r) - (max(dat1$prot_eda2r) * 0.1)) + 
-		stat_compare_means(aes(label=paste0('p=', round(after_stat(p), 3))), method='t.test', ref.group='1', comparisons=list(c('1', '2'), c('1', '3'), c('1', '4'))) +
-		stat_summary(fun='mean', geom='text', aes(label=round(after_stat(y), 2)), vjust=-1.5, color='black') +theme_minimal()
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 批量运行🏃‍Proteome🥚的表型关联
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Ys <- c('depress', 'bald12', 'bald13', 'bald14', 'bald134', 'bald1234') #  
