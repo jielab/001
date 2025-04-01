@@ -249,7 +249,7 @@ Linux🏂
   在 ~/.bashrc:  export PATH="XYZ:$PATH"; export R_LIBS="/mnt/d/software_lin/R_lib" 
   apt install bcftools samtools tabix; pip install XXX; conda install
 > 批量删除文件: ls | grep -vE "\.log$|\.dat$" | xargs rm -f
-> 后台执行命令: 2>&1； 在HPC上后台提交： nohup sh assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
+> 在HPC上后台提交： nohup ./assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
 > 后台多线程下载: apt-get install aria2;  sudo screen -S jack -d -m aria2c -x 4 -i files.txt; 然后查看 sudo screen -r jack
 > 基于某一列生成多个文件: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
 > 将duplicate改名唯一: awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr20.bim.COPY 
