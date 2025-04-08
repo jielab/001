@@ -241,6 +241,7 @@ R 🛵
        export R_LIBS=/work/sph-huangj/.conda/envs/R4.4.2/lib/R/library:/work/sph-huangj/.conda/envs/R/lib/R/library:$R_LIBS
 > 画图集锦: https://r-graph-gallery.com/index.html
 > R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/
+> 供复现代码： https://globalenvhealth.org/code-data-download/
 ```
 
 Linux🏂
