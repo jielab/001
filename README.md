@@ -244,7 +244,7 @@ R 🛵
 > 供复现代码： https://globalenvhealth.org/code-data-download/
 ```
 
-Linux🏂
+Linux🤖
 ```
 > 安装Linux: 用管理员权限打开cmd, 运行 wsl --install，或者 wsl --import。 遇到 press any key to continue，运行 netsh winsock reset
   在 ~/.bashrc:  export PATH="XYZ:$PATH"; export R_LIBS="/mnt/d/software_lin/R_lib" 
@@ -257,6 +257,14 @@ Linux🏂
   或者: plink2 --set-all-var-ids to generate new IDs based on position and alleles, to avoid duplicate IDs
 > 将文件每列读入变量中: cut -f 1,4 $file | while IFS=$'\t' read -r pheno_code file_url; do file_name=$(basename $file_url); file_ext=${file_name##*.}
 > 给bed文件加索引: tabix -pbed; tabix -s1 -b2 -e2; bedtools intersect -a -b -wa
+```
+
+Interactive Python 🏂 
+```
+安装 pip install keplergl pandas jupyter
+运行 jupyter notebook 
+可视 http://localhost:8889/tree
+民航地图示例：https://github.com/wybert/minhang
 ```
 <br/>
 <br/>
