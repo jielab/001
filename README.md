@@ -57,6 +57,7 @@ sudo shown -R administrator /home/administrator/quickstart-output
 # #2. UKB 基因型和表型数据
 ![UKB](./images/ukb.png)
 基因型数据已下载到南科大的HPC上。
+表型数据[更新信息] (https://community.ukbiobank.ac.uk/hc/en-gb/articles/26088595922333-New-and-Updated-Data)<br>
 点击[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)左边的 <b>accessing phenotype data</b>，下载TSV格式的表型数据。下载后，用下面代码将缺失数据替换为NA。
 <br/>
 <br/>
