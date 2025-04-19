@@ -32,7 +32,7 @@ for (k in 5:12) {
   dat[[paste0("cluster_", k)]] <- km$cluster
 }
 
-plot_clusters(dat, clusters = "cluster_10")
+plot_clusters(dat, var_plot, var_label, var_reverse, clusters = "cluster_10")
 dat$cluster_10 <- factor(dat$cluster_10, levels = var_level, labels =var_label)
 dat <- dat[, c("eid", paste0("cluster_", 5:10))]
 saveRDS(sankey, file = "cmd.ukb.rds")
