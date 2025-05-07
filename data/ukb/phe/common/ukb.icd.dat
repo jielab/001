@@ -24,6 +24,7 @@ cancer	C
 colon_cancer	C18|C19|C20
 lung_cancer	C33|C34
 pancre_cancer	C25
+prostate_cancer	C61
 asthma	J45
 copd	J44
 ckd	N18
