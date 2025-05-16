@@ -8,10 +8,11 @@ p53	date_attend
 p54	center
 p93	sbp_man
 p94	dbp_man
-p129	birth_north
-p130	birth_east
+p129	birth_north	# Place of birth in UK - north co-ordinate
+p130	birth_east	# Place of birth in UK - east co-ordinate
 p191	date_lost
 p738	income
+p796	job_dist	# Distance between home and job workplace  
 p845	age_edu
 p884	days_pa_mod
 p894	dura_pa_mod
@@ -52,6 +53,7 @@ p6153	drug.cmd2
 p6177	drug.cmd
 p20015	chunk
 p20022	birth_weight
+p20115	birth_country	# Country of Birth (non-UK origin)
 p20116	smoke_status
 p20117	alcohol_status
 p20126	depress
@@ -86,24 +88,38 @@ p22027	gen_outliers
 p22032	IPAQ_activity
 p22038	pa_mod
 p22039	pa_vig
-p22189	deprivation
+p22189	deprive
 p22190	telomere
 p22191	telomere_adj
 p22192	telomere_adjZ
 p22194	telomere_reg
+p22688	home_east	# ? Home location at assessment - east co-ordinate (1km resolution)
+p22689	home_north	# ? Home location at assessment - north co-ordinate (1km resolution)
 p24003	air_no2       
 p24004	air_nox      
 p24005	pm10    
 p24006	pm25      
-p24008	pm2510	
-p24011	traffic
-p24012	dist2road			   
+p24008	pm2510
+p24010	dist_road	# Inverse distance to the nearest road
+p24011	traffic		# Traffic intensity on the nearest major road	Residential air pollution  
+p24012	dist_mroad	# Inverse distance to the nearest major road 			   
 p24020	noise_day      
 p24021	noise_evening    
 p24022	noise_night
+p24500	green_1km	# Greenspace percentage, buffer 1000m
+p24501	garden_1km	# Domestic garden percentage, buffer 1000m
+p24502	water_1000m	# Water percentage, buffer 1000m
+p24503	green_300m	# Greenspace percentage, buffer 300m
+p24504	garden_300m	# Domestic garden percentage, buffer 300m 
+p24505	water_300m	# Water percentage, buffer 300m
+p24506	nature_1km	# Natural environment percentage, buffer 1000m
+p24507	nature_300m	# Natural environment percentage, buffer 300m
+p24508	dist_coast	# Distance (Euclidean) to coast
 p26248	prs_istroke
 p26249	prs2_istroke
 p26414	edu_score
+p26415	house_score	# Housing score (England)
+p26427	deprive_sct	# Index of Multiple Deprivation (Scotland)
 p30000	bc_WBC
 p30010	bc_RBC
 p30020	bc_HGB
@@ -162,9 +178,16 @@ p30860	bb_TP
 p30870	bb_TG
 p30880	bb_UA
 p30890	bb_VITD
+p32220	home_date		# ? Home location history - date first recorded	Home locations  
+p32223	home_east_hist	# ? Home location history - east co-ordinate (1km resolution)
+p32224	home_north_hist	# ? Home location history - north co-ordinate (1km resolution)
 p40000	date_death
-p40001	death_icd1
+p40001	death_icd10		# Underlying (primary) cause of death: ICD10
 p40007	age_death
 p40010	death_cause
-p41272	opcs4
-p41273	opcs3
+p41200	opcs4_main		# Operative procedures - main OPCS4 
+p41210	opcs4_second	# Operative procedures - secondary OPCS4
+p41256	opcs3_main		# Operative procedures - main OPCS3 
+p41258	opcs3_second	# Operative procedures - secondary OPCS3 
+p41272	opcs4			# Operative procedures - OPCS4 
+p41273	opcs3			# Operative procedures - OPCS3
