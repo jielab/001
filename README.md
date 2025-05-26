@@ -217,11 +217,11 @@ names(dat) <- stringi::stri_replace_all_regex(toupper(names(dat)), pattern=toupp
 
 基因注释信息🔍
 ```
-> - 非常经典的 dbSNP: https://www.ncbi.nlm.nih.gov/snp/   
-> - 非常经典的 UCSC genome browser: https://www.genome.ucsc.edu/ 
+> - dbSNP: https://www.ncbi.nlm.nih.gov/snp/   
+> - UCSC genome browser: https://www.genome.ucsc.edu/ 
 > - 美国精准医学All of Us：https://www.researchallofus.org/ 和 https://databrowser.researchallofus.org/   
 > - 密西根大学公卫学院 TopMed browser: https://bravo.sph.umich.edu/ 
-> - 一天发了7篇 NATURE系列文章的Gnomad项目的 browser: https://gnomad.broadinstitute.org/ 
+> - 一天发了7篇 NATURE系列文章的Gnomad项目 browser: https://gnomad.broadinstitute.org/ 
 ```
 
 GWAS-PRS-MR ”三驾马车“ 入门指南🐎：
@@ -241,6 +241,7 @@ R 🛵
 > HPC: source /share/apps/anaconda3/2020.7/bin/activate /work/sph-huangj/.conda/envs/R4.4.2
        export R_LIBS=/work/sph-huangj/.conda/envs/R4.4.2/lib/R/library:/work/sph-huangj/.conda/envs/R/lib/R/library:$R_LIBS
 > 画图集锦: https://r-graph-gallery.com/index.html
+> 顾祖广炫酷生信图： https://jokergoo.github.io/software/
 > R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/
 > 供复现代码： https://globalenvhealth.org/code-data-download/
 ```
@@ -264,7 +265,6 @@ Interactive Python 🏂
 ```
 安装 pip install keplergl pandas jupyter
 运行 jupyter notebook 
-可视 http://localhost:8889/tree
 民航地图示例：https://github.com/wybert/minhang
 ```
 <br/>
