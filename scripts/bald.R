@@ -125,12 +125,13 @@ dat1 <- head(dat, 10000)
 	library(GGally); ggpairs(dat1, mapping = aes(color = as.factor(bald)), columns = c('age', 'bmi', 'stiffness'))
 	ggpairs(subset(dat1, select = c('age', 'bmi', 'stiffness', 'bald')), upper = list(continuous = 'density', combo = 'box_no_facet'), lower = list(continuous = 'points', combo = 'dot_no_facet'))
 
-library(ComplexHeatmap)
+library(ComplexHeatmap); library(circlize)
 	Ys <- c('asthma', 'breast_cancer', 'cad', 'cancer', 'circulatory', 'copd', 'covid', 'lung_cancer', 'mi', 'prostate_cancer', 'ra', 'stroke', 't1dm', 't2dm', 'varicose')
 	Xs <- grep('bb_', names(dat), value = TRUE)[1:10] 
 	icdDate_Ys <- paste0('icdDate_', Ys); setdiff(icdDate_Ys, names(dat)); t2_Ys <- paste0('t2_', Ys)
 	dat1 <- dat %>% mutate(across(.cols = all_of(icdDate_Ys), .fns = ~ as.numeric(. - date_attend), .names = 't2_{col}')) %>% 
-		rename_with(~ gsub('icdDate_', '', .), .cols = starts_with('t2_icdDate_')) %>% select(all_of(c(Xs, t2_Ys)))
+		rename_with(~ gsub('icdDate_', '', .), .cols = starts_with('t2_icdDate_')) %>% 
+		dplyr::select(all_of(c(Xs, t2_Ys)))
 	cor_matrix <- sapply(t2_Ys, function(y) { 
 		sapply(Xs, function(x) { 
 			cor(dat1[[x]], dat1[[y]], method = "spearman", use = "pairwise.complete.obs") 
