@@ -1,0 +1,25 @@
+PLINK v2.0.0-a.5.26LM AVX2 Intel (4 Jun 2025)
+Options in effect:
+  --chr 20
+  --clump /work/sph-huangj/data/gwas/main/clean/bald1234.gz,/work/sph-huangj/data/gwas/main/clean/bald12.gz,/work/sph-huangj/data/gwas/main/clean/bald134.gz,/work/sph-huangj/data/gwas/main/clean/bald13.gz,/work/sph-huangj/data/gwas/main/clean/bald14.gz,/work/sph-huangj/data/gwas/main/clean/bald.gz,/work/sph-huangj/data/gwas/main/clean/stroke.gz,/work/sph-huangj/data/gwas/main/clean/stroke_h.gz,/work/sph-huangj/data/gwas/main/clean/stroke_i.gz
+  --clump-bins 5e-08,5e-07
+  --clump-id-field SNP
+  --clump-index-first
+  --clump-kb 1000
+  --clump-p-field P
+  --clump-p1 5e-08
+  --clump-p2 5e-07
+  --clump-r2 0.1
+  --memory 12000
+  --out chr20
+  --pfile /work/sph-huangj/data/ukb/gen/imp/chr20
+  --threads 40
+
+Hostname: r01n35.hpc.sustc
+Working directory: /data/sph-huangj/analysis/clump.test
+Start time: Thu Jun  5 21:25:16 2025
+
+Error: Unrecognized flag ('--clump-index-first').
+For more info, try "plink2 --help <flag name>" or "plink2 --help | more".
+
+End time: Thu Jun  5 21:25:16 2025
