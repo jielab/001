@@ -1,7 +1,8 @@
-PLINK v2.0.0-a.5.26LM AVX2 Intel (4 Jun 2025)
+PLINK v2.0.0-a.6.15LM AVX2 Intel (4 Jun 2025)
 Options in effect:
   --chr 20
   --clump /work/sph-huangj/data/gwas/main/clean/bald1234.gz,/work/sph-huangj/data/gwas/main/clean/bald12.gz,/work/sph-huangj/data/gwas/main/clean/bald134.gz,/work/sph-huangj/data/gwas/main/clean/bald13.gz,/work/sph-huangj/data/gwas/main/clean/bald14.gz,/work/sph-huangj/data/gwas/main/clean/bald.gz,/work/sph-huangj/data/gwas/main/clean/stroke.gz,/work/sph-huangj/data/gwas/main/clean/stroke_h.gz,/work/sph-huangj/data/gwas/main/clean/stroke_i.gz
+  --clump-allow-overlap
   --clump-bins 5e-08,5e-07
   --clump-id-field SNP
   --clump-kb 1000
@@ -14,12 +15,12 @@ Options in effect:
   --pfile /work/sph-huangj/data/ukb/gen/imp/chr20
   --threads 40
 
-Hostname: r05n44.hpc.sustc
+Hostname: r07n29.hpc.sustc
 Working directory: /data/sph-huangj/analysis/clump
-Start time: Thu Jun  5 09:47:16 2025
+Start time: Fri Jun  6 12:29:08 2025
 
-Random number seed: 1749088036
-192905 MiB RAM detected, ~163747 available; reserving 12000 MiB for main
+Random number seed: 1749184148
+192905 MiB RAM detected, ~162486 available; reserving 12000 MiB for main
 workspace.
 Using up to 40 threads (change this with --threads).
 487162 samples (264224 females, 222938 males; 487162 founders) loaded from
@@ -28,8 +29,7 @@ Using up to 40 threads (change this with --threads).
 Note: No phenotype data present.
 Warning: 98658 top variant IDs in --clump files missing from main dataset.  IDs
 written to chr20.clumps.missing_id .
-Error: Alpha 5 --clump's handling of dosages when computing phased-r^2 is
-incorrect, and has been disabled.  Either use an alpha 6 or later build for
-that functionality, or use --clump-unphased to clump on unphased-r^2.
+--clump: 128 clumps formed from 4532 index candidates.
+Results written to chr20.clumps .
 
-End time: Thu Jun  5 09:51:33 2025
+End time: Fri Jun  6 12:41:08 2025
