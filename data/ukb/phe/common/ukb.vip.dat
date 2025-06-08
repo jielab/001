@@ -95,11 +95,6 @@ p22192	telomere_adjZ
 p22194	telomere_reg
 p22688	home_east	# Home location at assessment - east co-ordinate (1km resolution)
 p22689	home_north	# Home location at assessment - north co-ordinate (1km resolution)
-p22688	home_east
-p22689	home_north
-p32220	home_date 
-p32223	home_east_his
-p32224	home_north_his
 p24003	air_no2       
 p24004	air_nox      
 p24005	pm10    
