@@ -53,7 +53,7 @@ p6153	drug.cmd2
 p6177	drug.cmd
 p20015	chunk
 p20022	birth_weight
-p20115	birth_country	# Country of Birth (non-UK origin)
+p20115	birth_country_nonUK	# Country of Birth (non-UK origin)
 p20116	smoke_status
 p20117	alcohol_status
 p20126	depress
