@@ -19,7 +19,6 @@
 ## 🧬2. GWAS
 
 ![GWAS](./images/GWAS.jpg)
-<br/>https://community.ukbiobank.ac.uk/hc/en-gb/articles/26088595922333-New-and-Updated-Data
 
 * ### 📍2.1 GWAS数据获取，最经典的是起源于美国NIH 的 [GWAS Catalog](https://www.ebi.ac.uk/gwas)。
 
