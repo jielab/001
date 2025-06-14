@@ -9,7 +9,7 @@
 ### #1.2 [千人基因组项目数据](https://www.internationalgenome.org/data)， 将近1亿个SNP，一般作为 imputation 的 reference panel.
 
 ### #1.3 UKB 数据，现在推荐用[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)。
-<br/><br/>
+<br/>
 
 
 ## #2. GWAS
