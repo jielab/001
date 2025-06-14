@@ -1,4 +1,4 @@
-pacman::p_load(data.table, tidyverse, patchwork, geosphere, splines, sf, leaflet, vegan)  # , RColorBrewer
+pacman::p_load(data.table, tidyverse, broom, patchwork, geosphere, scales, splines, sf, leaflet, vegan, RColorBrewer)
 
 dir0 = "D:"
 source(paste0(dir0, '/scripts/f/phe.f.R'))
@@ -9,27 +9,27 @@ dat <- dat0 %>% filter(prot.yes == 1, !is.na(home_east), !is.na(PC1), !is.na(dep
 	mutate(lon = st_coordinates(geometry)[,1], lat = st_coordinates(geometry)[,2]) %>% st_drop_geometry(.)
 
 leaflet(data = dat) %>% addTiles() %>% addCircleMarkers( lng = ~lon, lat = ~lat,
-    color = ~colorNumeric(palette = c("green", "red"), domain  = dat$center)(center), radius = 3,
+    color = ~colorNumeric(palette = c("green", "red"), domain  = dat$deprive)(deprive), radius = 3,
 	popup = ~paste("ID:", eid, "<br>", "Center:", center)
 )
 
-dat1 <- dat %>% mutate(deprive_scaled = rescale(deprive, to = c(0.3, 1)))
+dat1 <- dat %>% mutate(deprive_scaled = scales::rescale(deprive, to = c(0.3, 1)))
 	centers <- sort(unique(dat1$center)); n_centers <- length(centers)
 	hues <- seq(15, 375, length.out = n_centers + 1)[1:n_centers]; names(hues) <- centers
-	dat1 <- dat1 %>% mutate(hue = hues[center], color = hcl(h = hue, c = 80, l = 100 - 60 * deprive_scaled))
+	dat1 <- dat1 %>% mutate(hue = hues[center], the_color = hcl(h = hue, c = 80, l = 100 - 60 * deprive_scaled))
 
-pal <- colorFactor(palette = "Set1", domain = dat1$center)
-leaflet(data = dat1) %>% addTiles() %>%
-	addCircleMarkers(lng = ~lon, lat = ~lat, color = ~color, radius = 3, popup = ~paste("ID:", eid, "<br>", "Center:", center)) %>%
-	addLegend("bottomright", pal = pal, values = ~center, title = "Center")
+pal <- colorFactor(palette = "Paired", domain = dat1$center)
+leaflet(data = dat1) %>% addTiles() %>% addCircleMarkers(lng = ~lon, lat = ~lat, 
+	color = ~the_color, radius = 3, 
+	popup = ~paste("ID:", eid, "<br>", "Center:", center)) # %>% addLegend("bottomright", pal = pal, values = ~center, title = "Center")
 
-analyze_center <- function(center_id, dat, outcome_var) {
+mirror <- function(center_id, dat, outcome_var) {
 	df <- dat %>% filter(center == center_id); if (nrow(df) < 100) return(NULL)
 	city_point <- c(mean(df$lon, na.rm = TRUE), mean(df$lat, na.rm = TRUE))
 	df <- df %>% mutate(dist2 = distHaversine(matrix(c(lon, lat), ncol = 2), city_point))
 	y <- df[[outcome_var]]; v <- var(y, na.rm = TRUE); if (is.na(v) || v == 0) return(NULL)
 	lm_model <- lm(as.formula(paste(outcome_var, "~ dist2")), data = df)
-	lm_summary <- tryCatch(tidy(lm_model, conf.int = TRUE) %>% filter(term == "dist2"), error = function(e) return(NULL))
+	lm_summary <- tryCatch(broom::tidy(lm_model, conf.int = TRUE) %>% filter(term == "dist2"), error = function(e) return(NULL))
 	if (is.null(lm_summary)) return(NULL)
 	spline_model <- lm(as.formula(paste(outcome_var, "~ ns(dist2, df = 3)")), data = df)
 	spline_rsq <- summary(spline_model)$r.squared
@@ -60,27 +60,46 @@ head(results[order(-results$r), ])
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Proteins 🪞 geography
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+set.seed(123)
 prots <- grep("^prot_", names(dat), value = TRUE)
-prots.good <- prots %>% purrr::keep(~ { x <- dat[[.x]]; sum(!is.na(x) & is.finite(x)) > 10000 && var(x, na.rm = TRUE) > 0 })
-dat1 <- dat %>% dplyr::select(all_of(prots.good)) %>%
-	mutate(across(all_of(prots.good), ~ ifelse(is.na(.) | !is.finite(.), mean(., na.rm = TRUE), .))) %>% 
-	scale()# 🏮
 
-library(irlba); svd_res <- irlba(dat1, nv = 40) # 需要 matrix
+dat1 <- dat %>% select(all_of(prots))
+	mis <- dat1 %>% summarise(across(everything(), ~ mean(is.na(.)))) %>% gather(variable, missing_rate) %>% arrange(desc(missing_rate)) %>% head(., 20); mis
+	to_exclude <- mis[mis$missing_rate>0.25, "variable"]
+	dat1 <- dat1 %>% select(-all_of(to_exclude))
+	names(dat1) <- gsub("prot_", "", names(dat1)); prots <- names(dat1)
+	dat1 <- as.data.frame(lapply(dat1, function(x) { x[is.na(x)] <- mean(x, na.rm = TRUE); return(x)})) # 填补protein缺失数据
+
+pca <- prcomp(dat1, scale. = TRUE) # 常规的PCA方法
+	pc40 <- as.data.frame(pca$x[, 1:min(40, ncol(pca$x))]) %>% rename_with(~ paste0("PC", seq_along(.))) %>% bind_cols(eid = dat$eid, .)
+	sdev <- pca$sdev; explained_var <- sdev^2 / sum(sdev^2); cumulative <- summary(pca)$importance[3, 1:40]
+	plot(explained_var[1:50], type = "b", xlab = "PC", ylab = "Variance Explained")
+	plot(cumulative, type = "b", ylab = "Cumulative variance explained", xlab = "Number of PCs")
+
+library(irlba); svd_res <- irlba(scale(dat1), nv = 40) # 换一个方法，计算蛋白组的PCA
 	pc40 <- as.data.frame(svd_res$u %*% diag(svd_res$d))
 	colnames(pc40) <- paste0("PC", 1:40); 
 	pc40 <- pc40 %>% bind_cols(eid = dat$eid, lon = dat$lon, lat = dat$lat, .)
 	loadings <- svd_res$v[, 1]; names(loadings) <- colnames(dat1)
 	sort(loadings, decreasing = TRUE)[1:20]; sort(loadings, decreasing = FALSE)[1:20]
 
-results <- list(); interim_file = "prot.geo.log"
-Ys <- grep("deprive|^prot_", names(dat), value = TRUE) # 🏮
+datt <- t(dat1); pca <- prcomp(datt, scale. = TRUE) # t()之后才能计算🥚PCA，否则计算的是🙍的PCA
+	screeplot(pca, main = "Scree Plot of PCA", col = "blue", type = "lines")
+	biplot(pca, main = "PCA Biplot")
+	res.kmeans <- kmeans(datt, centers = 3)
+	datt$cluster <- factor(res.kmeans$cluster)
+	datt.pca <- data.frame(pca$x)
+	datt.pca$cluster <- factor(res.kmeans$cluster)
+	ggplot(datt.pca, aes(x = PC1, y = PC2, color = cluster)) + geom_point(alpha = 0.6) +labs(title = "", x = "PC1", y = "PC2") + theme_minimal()
+
+Ys <- grep("deprive|^prot_", names(dat), value = TRUE) # 🏮 计算蛋白组与🗺的关联性，用dat而不是dat1
+	results <- list(); interim_file = "prot.geo.log"; if (file.exists(interim_file)) file.remove(interim_file)
 	centers <- dat %>% count(center) %>% filter(n >= 100) %>% pull(center)
 	pairs <- expand.grid(outcome = Ys, center = centers, stringsAsFactors = FALSE)
-	if (file.exists(interim_file)) file.remove(interim_file)
 	for (i in seq_len(nrow(pairs))) {
 		outcome <- pairs$outcome[i]; center <- pairs$center[i]
-		result <- tryCatch( analyze_center(center_id = center, dat = dat, outcome_var = outcome),
+		result <- tryCatch( 
+			mirror(center_id = center, dat = dat, outcome_var = outcome),
 			error = function(e) {message("Error in ", outcome, " @ ", center, ": ", e$message); NULL}
 		)
 		if (!is.null(result)) {results[[length(results) + 1]] <- result}
@@ -93,15 +112,7 @@ Ys <- grep("deprive|^prot_", names(dat), value = TRUE) # 🏮
 	}
 	fread(file=interim_file, header=TRUE) %>% arrange(lm_p) %>% head()
 
-
 # library(paran); paran(dat1, iterations = 100, graph = TRUE, centile = 95)
-
-pca <- prcomp(dat1, center = TRUE, scale. = TRUE); max_pc <- min(40, ncol(pca$x))
-	pc40 <- as.data.frame(pca$x[, 1:max_pc]) %>% rename_with(~ paste0("PPC", seq_along(.))) %>% bind_cols(eid = dat$eid, .)
-	sdev <- pca$sdev; explained_var <- sdev^2 / sum(sdev^2); cumulative <- summary(pca)$importance[3, 1:40]
-	plot(explained_var[1:50], type = "b", xlab = "PC", ylab = "Variance Explained")
-	plot(cumulative, type = "b", ylab = "Cumulative variance explained", xlab = "Number of PCs")
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

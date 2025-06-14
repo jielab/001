@@ -1,0 +1,251 @@
+p23474	3-Hydroxybutyrate
+p23475	Acetate
+p23476	Acetoacetate
+p23477	Acetone
+p23460	Alanine
+p23479	Albumin
+p23440	Apolipoprotein A1
+p23439	Apolipoprotein B
+p23441	Apolipoprotein B to Apolipoprotein A1 ratio
+p23433	Average Diameter for HDL Particles
+p23432	Average Diameter for LDL Particles
+p23431	Average Diameter for VLDL Particles
+p23484	Cholesterol in Chylomicrons and Extremely Large VLDL
+p23526	Cholesterol in IDL
+p23561	Cholesterol in Large HDL
+p23533	Cholesterol in Large LDL
+p23498	Cholesterol in Large VLDL
+p23568	Cholesterol in Medium HDL
+p23540	Cholesterol in Medium LDL
+p23505	Cholesterol in Medium VLDL
+p23575	Cholesterol in Small HDL
+p23547	Cholesterol in Small LDL
+p23512	Cholesterol in Small VLDL
+p23554	Cholesterol in Very Large HDL
+p23491	Cholesterol in Very Large VLDL
+p23519	Cholesterol in Very Small VLDL
+p23580	Cholesterol to Total Lipids in Chylomicrons and Extremely Large VLDL percentage
+p23610	Cholesterol to Total Lipids in IDL percentage
+p23635	Cholesterol to Total Lipids in Large HDL percentage
+p23615	Cholesterol to Total Lipids in Large LDL percentage
+p23590	Cholesterol to Total Lipids in Large VLDL percentage
+p23640	Cholesterol to Total Lipids in Medium HDL percentage
+p23620	Cholesterol to Total Lipids in Medium LDL percentage
+p23595	Cholesterol to Total Lipids in Medium VLDL percentage
+p23645	Cholesterol to Total Lipids in Small HDL percentage
+p23625	Cholesterol to Total Lipids in Small LDL percentage
+p23600	Cholesterol to Total Lipids in Small VLDL percentage
+p23630	Cholesterol to Total Lipids in Very Large HDL percentage
+p23585	Cholesterol to Total Lipids in Very Large VLDL percentage
+p23605	Cholesterol to Total Lipids in Very Small VLDL percentage
+p23485	Cholesteryl Esters in Chylomicrons and Extremely Large VLDL
+p23418	Cholesteryl Esters in HDL
+p23527	Cholesteryl Esters in IDL
+p23417	Cholesteryl Esters in LDL
+p23562	Cholesteryl Esters in Large HDL
+p23534	Cholesteryl Esters in Large LDL
+p23499	Cholesteryl Esters in Large VLDL
+p23569	Cholesteryl Esters in Medium HDL
+p23541	Cholesteryl Esters in Medium LDL
+p23506	Cholesteryl Esters in Medium VLDL
+p23576	Cholesteryl Esters in Small HDL
+p23548	Cholesteryl Esters in Small LDL
+p23513	Cholesteryl Esters in Small VLDL
+p23416	Cholesteryl Esters in VLDL
+p23555	Cholesteryl Esters in Very Large HDL
+p23492	Cholesteryl Esters in Very Large VLDL
+p23520	Cholesteryl Esters in Very Small VLDL
+p23581	Cholesteryl Esters to Total Lipids in Chylomicrons and Extremely Large VLDL percentage
+p23611	Cholesteryl Esters to Total Lipids in IDL percentage
+p23636	Cholesteryl Esters to Total Lipids in Large HDL percentage
+p23616	Cholesteryl Esters to Total Lipids in Large LDL percentage
+p23591	Cholesteryl Esters to Total Lipids in Large VLDL percentage
+p23641	Cholesteryl Esters to Total Lipids in Medium HDL percentage
+p23621	Cholesteryl Esters to Total Lipids in Medium LDL percentage
+p23596	Cholesteryl Esters to Total Lipids in Medium VLDL percentage
+p23646	Cholesteryl Esters to Total Lipids in Small HDL percentage
+p23626	Cholesteryl Esters to Total Lipids in Small LDL percentage
+p23601	Cholesteryl Esters to Total Lipids in Small VLDL percentage
+p23631	Cholesteryl Esters to Total Lipids in Very Large HDL percentage
+p23586	Cholesteryl Esters to Total Lipids in Very Large VLDL percentage
+p23606	Cholesteryl Esters to Total Lipids in Very Small VLDL percentage
+p23473	Citrate
+p23404	Clinical LDL Cholesterol
+p23481	Concentration of Chylomicrons and Extremely Large VLDL Particles
+p23430	Concentration of HDL Particles
+p23523	Concentration of IDL Particles
+p23429	Concentration of LDL Particles
+p23558	Concentration of Large HDL Particles
+p23530	Concentration of Large LDL Particles
+p23495	Concentration of Large VLDL Particles
+p23565	Concentration of Medium HDL Particles
+p23537	Concentration of Medium LDL Particles
+p23502	Concentration of Medium VLDL Particles
+p23572	Concentration of Small HDL Particles
+p23544	Concentration of Small LDL Particles
+p23509	Concentration of Small VLDL Particles
+p23428	Concentration of VLDL Particles
+p23551	Concentration of Very Large HDL Particles
+p23488	Concentration of Very Large VLDL Particles
+p23516	Concentration of Very Small VLDL Particles
+p23478	Creatinine
+p23443	Degree of Unsaturation
+p23450	Docosahexaenoic Acid
+p23457	Docosahexaenoic Acid to Total Fatty Acids percentage
+p23486	Free Cholesterol in Chylomicrons and Extremely Large VLDL
+p23422	Free Cholesterol in HDL
+p23528	Free Cholesterol in IDL
+p23421	Free Cholesterol in LDL
+p23563	Free Cholesterol in Large HDL
+p23535	Free Cholesterol in Large LDL
+p23500	Free Cholesterol in Large VLDL
+p23570	Free Cholesterol in Medium HDL
+p23542	Free Cholesterol in Medium LDL
+p23507	Free Cholesterol in Medium VLDL
+p23577	Free Cholesterol in Small HDL
+p23549	Free Cholesterol in Small LDL
+p23514	Free Cholesterol in Small VLDL
+p23420	Free Cholesterol in VLDL
+p23556	Free Cholesterol in Very Large HDL
+p23493	Free Cholesterol in Very Large VLDL
+p23521	Free Cholesterol in Very Small VLDL
+p23582	Free Cholesterol to Total Lipids in Chylomicrons and Extremely Large VLDL percentage
+p23612	Free Cholesterol to Total Lipids in IDL percentage
+p23637	Free Cholesterol to Total Lipids in Large HDL percentage
+p23617	Free Cholesterol to Total Lipids in Large LDL percentage
+p23592	Free Cholesterol to Total Lipids in Large VLDL percentage
+p23642	Free Cholesterol to Total Lipids in Medium HDL percentage
+p23622	Free Cholesterol to Total Lipids in Medium LDL percentage
+p23597	Free Cholesterol to Total Lipids in Medium VLDL percentage
+p23647	Free Cholesterol to Total Lipids in Small HDL percentage
+p23627	Free Cholesterol to Total Lipids in Small LDL percentage
+p23602	Free Cholesterol to Total Lipids in Small VLDL percentage
+p23632	Free Cholesterol to Total Lipids in Very Large HDL percentage
+p23587	Free Cholesterol to Total Lipids in Very Large VLDL percentage
+p23607	Free Cholesterol to Total Lipids in Very Small VLDL percentage
+p23470	Glucose
+p20280	Glucose-lactate
+p23461	Glutamine
+p23462	Glycine
+p23480	Glycoprotein Acetyls
+p23406	HDL Cholesterol
+p23463	Histidine
+p23465	Isoleucine
+p23405	LDL Cholesterol
+p23471	Lactate
+p23466	Leucine
+p23449	Linoleic Acid
+p23456	Linoleic Acid to Total Fatty Acids percentage
+p23447	Monounsaturated Fatty Acids
+p23454	Monounsaturated Fatty Acids to Total Fatty Acids percentage
+p23444	Omega-3 Fatty Acids
+p23451	Omega-3 Fatty Acids to Total Fatty Acids percentage
+p23445	Omega-6 Fatty Acids
+p23459	Omega-6 Fatty Acids to Omega-3 Fatty Acids ratio
+p23452	Omega-6 Fatty Acids to Total Fatty Acids percentage
+p23468	Phenylalanine
+p23437	Phosphatidylcholines
+p23434	Phosphoglycerides
+p23483	Phospholipids in Chylomicrons and Extremely Large VLDL
+p23414	Phospholipids in HDL
+p23525	Phospholipids in IDL
+p23413	Phospholipids in LDL
+p23560	Phospholipids in Large HDL
+p23532	Phospholipids in Large LDL
+p23497	Phospholipids in Large VLDL
+p23567	Phospholipids in Medium HDL
+p23539	Phospholipids in Medium LDL
+p23504	Phospholipids in Medium VLDL
+p23574	Phospholipids in Small HDL
+p23546	Phospholipids in Small LDL
+p23511	Phospholipids in Small VLDL
+p23412	Phospholipids in VLDL
+p23553	Phospholipids in Very Large HDL
+p23490	Phospholipids in Very Large VLDL
+p23518	Phospholipids in Very Small VLDL
+p23579	Phospholipids to Total Lipids in Chylomicrons and Extremely Large VLDL percentage
+p23609	Phospholipids to Total Lipids in IDL percentage
+p23634	Phospholipids to Total Lipids in Large HDL percentage
+p23614	Phospholipids to Total Lipids in Large LDL percentage
+p23589	Phospholipids to Total Lipids in Large VLDL percentage
+p23639	Phospholipids to Total Lipids in Medium HDL percentage
+p23619	Phospholipids to Total Lipids in Medium LDL percentage
+p23594	Phospholipids to Total Lipids in Medium VLDL percentage
+p23644	Phospholipids to Total Lipids in Small HDL percentage
+p23624	Phospholipids to Total Lipids in Small LDL percentage
+p23599	Phospholipids to Total Lipids in Small VLDL percentage
+p23629	Phospholipids to Total Lipids in Very Large HDL percentage
+p23584	Phospholipids to Total Lipids in Very Large VLDL percentage
+p23604	Phospholipids to Total Lipids in Very Small VLDL percentage
+p23446	Polyunsaturated Fatty Acids
+p23458	Polyunsaturated Fatty Acids to Monounsaturated Fatty Acids ratio
+p23453	Polyunsaturated Fatty Acids to Total Fatty Acids percentage
+p23472	Pyruvate
+p23402	Remnant Cholesterol (Non-HDL, Non-LDL -Cholesterol)
+p23448	Saturated Fatty Acids
+p23455	Saturated Fatty Acids to Total Fatty Acids percentage
+p20281	Spectrometer-corrected alanine
+p23438	Sphingomyelins
+p23400	Total Cholesterol
+p23401	Total Cholesterol Minus HDL-C
+p23436	Total Cholines
+p23464	Total Concentration of Branched-Chain Amino Acids (Leucine + Isoleucine + Valine)
+p23427	Total Concentration of Lipoprotein Particles
+p23415	Total Esterified Cholesterol
+p23442	Total Fatty Acids
+p23419	Total Free Cholesterol
+p23482	Total Lipids in Chylomicrons and Extremely Large VLDL
+p23426	Total Lipids in HDL
+p23524	Total Lipids in IDL
+p23425	Total Lipids in LDL
+p23559	Total Lipids in Large HDL
+p23531	Total Lipids in Large LDL
+p23496	Total Lipids in Large VLDL
+p23423	Total Lipids in Lipoprotein Particles
+p23566	Total Lipids in Medium HDL
+p23538	Total Lipids in Medium LDL
+p23503	Total Lipids in Medium VLDL
+p23573	Total Lipids in Small HDL
+p23545	Total Lipids in Small LDL
+p23510	Total Lipids in Small VLDL
+p23424	Total Lipids in VLDL
+p23552	Total Lipids in Very Large HDL
+p23489	Total Lipids in Very Large VLDL
+p23517	Total Lipids in Very Small VLDL
+p23411	Total Phospholipids in Lipoprotein Particles
+p23407	Total Triglycerides
+p23487	Triglycerides in Chylomicrons and Extremely Large VLDL
+p23410	Triglycerides in HDL
+p23529	Triglycerides in IDL
+p23409	Triglycerides in LDL
+p23564	Triglycerides in Large HDL
+p23536	Triglycerides in Large LDL
+p23501	Triglycerides in Large VLDL
+p23571	Triglycerides in Medium HDL
+p23543	Triglycerides in Medium LDL
+p23508	Triglycerides in Medium VLDL
+p23578	Triglycerides in Small HDL
+p23550	Triglycerides in Small LDL
+p23515	Triglycerides in Small VLDL
+p23408	Triglycerides in VLDL
+p23557	Triglycerides in Very Large HDL
+p23494	Triglycerides in Very Large VLDL
+p23522	Triglycerides in Very Small VLDL
+p23435	Triglycerides to Phosphoglycerides ratio
+p23583	Triglycerides to Total Lipids in Chylomicrons and Extremely Large VLDL percentage
+p23613	Triglycerides to Total Lipids in IDL percentage
+p23638	Triglycerides to Total Lipids in Large HDL percentage
+p23618	Triglycerides to Total Lipids in Large LDL percentage
+p23593	Triglycerides to Total Lipids in Large VLDL percentage
+p23643	Triglycerides to Total Lipids in Medium HDL percentage
+p23623	Triglycerides to Total Lipids in Medium LDL percentage
+p23598	Triglycerides to Total Lipids in Medium VLDL percentage
+p23648	Triglycerides to Total Lipids in Small HDL percentage
+p23628	Triglycerides to Total Lipids in Small LDL percentage
+p23603	Triglycerides to Total Lipids in Small VLDL percentage
+p23633	Triglycerides to Total Lipids in Very Large HDL percentage
+p23588	Triglycerides to Total Lipids in Very Large VLDL percentage
+p23608	Triglycerides to Total Lipids in Very Small VLDL percentage
+p23469	Tyrosine
+p23403	VLDL Cholesterol
+p23467	Valine

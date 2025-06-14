@@ -12,7 +12,12 @@ p129	birth_north	# Place of birth in UK - north co-ordinate
 p130	birth_east	# Place of birth in UK - east co-ordinate
 p191	date_lost
 p738	income
-p796	job_dist	# Distance between home and job workplace  
+p767	job_week_length	# Length of working week for main job
+p777	job_travel_freq	# Frequency of travelling from home to job workplace
+p796	job_travel_dist	# Distance between home and job workplace
+p806	job_walk	# Job involves mainly walking or standing
+p816	job_heavy	# Job involves heavy manual or physical work
+p826	job_shift	# Job involves shift work
 p845	age_edu
 p884	days_pa_mod
 p894	dura_pa_mod
@@ -29,7 +34,7 @@ p1180	sleep_chronotype
 p1200	sleep_insomnia
 p1210	sleep_snoring
 p1220	sleep_narcolepsy
-p1249	smoke_history
+p1249	smoke_past
 p1259	smoke_in_house
 p1647	birth_country
 p1757	age_facial
@@ -42,10 +47,12 @@ p2443	dm_dr
 p2714	age_mn
 p2897	smoke_quit_age
 p3063	fev1
+p3426	job_shift_night	# Job involves night shift work
 p3581	age_menopause
 p4041	dm_gestational
 p4079	dbp_auto	
 p4080	sbp_auto
+p4537	job_satisfy	# Work/job satisfaction
 p6138	edu
 p6142	emp
 p6150	cvd_dr
@@ -56,11 +63,13 @@ p20022	birth_weight
 p20115	birth_country_nonUK	# Country of Birth (non-UK origin)
 p20116	smoke_status
 p20117	alcohol_status
+p20119	job_status	# Current employment status - corrected
 p20126	depress
 p20127	neuroticism
 p20160	smoke_ever
 p20161	smoke_pack
 p20258	fev1fvc
+p20277	job_code	# Job code at visit
 p20403	alcohol_amount
 p20453	cannabis
 p20458	happy_general
@@ -86,13 +95,14 @@ p22020	in_pca
 p22021	gen_kinship
 p22027	gen_outliers
 p22032	IPAQ_activity
-p22038	pa_mod
-p22039	pa_vig
+p22038	pa_moderate
+p22039	pa_vigorous
 p22189	deprive
 p22190	telomere
 p22191	telomere_adj
 p22192	telomere_adjZ
 p22194	telomere_reg
+p22599	job_num	# Number of jobs held
 p22688	home_east	# Home location at assessment - east co-ordinate (1km resolution)
 p22689	home_north	# Home location at assessment - north co-ordinate (1km resolution)
 p24003	air_no2       
@@ -117,9 +127,14 @@ p24507	nature_300m	# Natural environment percentage, buffer 300m
 p24508	dist_coast	# Distance (Euclidean) to coast
 p26248	prs_istroke
 p26249	prs2_istroke
+p26411	income_score_eng	# Income score (England)
+p26412	emp_score_eng	# Employment score (England)
 p26414	edu_score
 p26415	house_score	# Housing score (England)
-p26427	deprive_sct	# Index of Multiple Deprivation (Scotland)
+p26418	income_score_wales	# Income score (Wales)
+p26426	deprive_wales	# Index of Multiple Deprivation (Wales)
+p26427	deprive_scotland	# Index of Multiple Deprivation (Scotland)
+p26428	income_scotland	# Income score (Scotland)
 p30000	bc_WBC
 p30010	bc_RBC
 p30020	bc_HGB
@@ -178,9 +193,7 @@ p30860	bb_TP
 p30870	bb_TG
 p30880	bb_UA
 p30890	bb_VITD
-p32220	home_date		# Home location history - date first recorded	Home locations  
-p32223	home_east_his	# Home location history - east co-ordinate (1km resolution)
-p32224	home_north_his	# Home location history - north co-ordinate (1km resolution)
+p30900	prot	# Number of proteins measured	Protein biomarkers 
 p40000	date_death
 p40001	death_icd10		# Underlying (primary) cause of death: ICD10
 p40007	age_death
