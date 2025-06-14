@@ -4,11 +4,11 @@
 
 ![middle school](./images/middle.jpg)
 
-* ### #1.1 [HAPMAP3 genotype 数据](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3), 1百多万个SNP，一般作为 LD 计算的 reference panel。
+* ### 📍1.1 [HAPMAP3 genotype 数据](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3), 1百多万个SNP，一般作为 LD 计算的 reference panel。
 
-* ### #1.2 [千人基因组项目数据](https://www.internationalgenome.org/data)， 将近1亿个SNP，一般作为 imputation 的 reference panel。
+* ### 📍1.2 [千人基因组项目数据](https://www.internationalgenome.org/data)， 将近1亿个SNP，一般作为 imputation 的 reference panel。
 
-* ### #1.3 UKB 数据，现在推荐用[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)。
+* ### 📍1.3 UKB 数据，现在推荐用[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)。
 <br/>
 
 
@@ -17,9 +17,9 @@
 ![GWAS](./images/GWAS.jpg)
 <br/>
 
-* ### #2.1 GWAS数据获取，最经典的是起源于美国NIH 的 [GWAS Catalog](https://www.ebi.ac.uk/gwas)。
+* ### 📍2.1 GWAS数据获取，最经典的是起源于美国NIH 的 [GWAS Catalog](https://www.ebi.ac.uk/gwas)。
 
-* ### #2.2 GWAS数据QC示例
+* ### 📍2.2 GWAS数据QC示例
 ```
 1. 确保文件每一行的列数目是一样的。将连续空格中插入NA，扣好第一粒纽扣。
 	zcat GWAS.gz | awk '{print NF}' | sort -nu | wc -l 
@@ -56,7 +56,7 @@
 本课题组建议将所有列名标准化为： SNP CHR POS EA NEA EAF N BETA SE P。
 ```
 
-* ### #2.3 GWAS数据可视化
+* ### 📍2.3 GWAS数据可视化
 > 可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) ，日本版本[pheweb.jp](pheweb.jp)。
 > Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。
 > 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 
@@ -99,7 +99,7 @@
 > - 一天发了7篇 NATURE系列文章的Gnomad项目 browser: https://gnomad.broadinstitute.org/ 
 ```
 
-GWAS-PRS-MR ”三驾马车“ 入门指南🐎：
+🐎GWAS-PRS-MR ”三驾马车“ 入门指南：
 ```
 > GWAS入门： 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 🏮中文版 [gwaslab.org](https://gwaslab.org)
@@ -107,7 +107,7 @@ GWAS-PRS-MR ”三驾马车“ 入门指南🐎：
 > MR入门： 2022. Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
 ```
 
-R 🛵
+🛵R 
 ```
 > 本机上设置环境: Windows底部 “搜索” 写 env，在“环境变量”里 将 R_LIBS_USER 设为 D:\software_win\R_lib
 > HPC上用他人的环境: source /share/apps/anaconda3/2020.7/bin/activate /work/sph-huangj/.conda/envs/R4.4.2
@@ -119,7 +119,7 @@ R 🛵
 > 🏮梁志生R包荟萃🎇 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)
 ```
 
-Linux🤖
+🤖Linux
 ```
 > 安装: 遇到 press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
 > 在HPC上后台提交： nohup ./assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
