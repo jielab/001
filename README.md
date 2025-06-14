@@ -1,6 +1,6 @@
 ## #1. 获取数据
 
-> ### 这是初二生物学课本里面的一页。
+### 这是初二生物学课本里面的一页。
 
 ![middle school](./images/middle.jpg)
 
@@ -17,14 +17,9 @@
 ![GWAS](./images/GWAS.jpg)
 <br/>
 
-### #2.1 公开的GWAS数据进行练手，或对比
+* ### #2.1 GWAS数据获取，最经典的是起源于美国NIH 的 [GWAS Catalog](https://www.ebi.ac.uk/gwas)。
 
-> 最经典的，起源于美国NIH 的 [GWAS Catalog](https://www.ebi.ac.uk/gwas). 这个页面也罗列了一些大型GWAS数据联盟。
-> 欧洲版本，不需要下载就能通过 TwoSampleMR 远程读入。
-> 英国UKB的GWAS，全部网上发布：http://www.nealelab.is/uk-biobank 
-<br/>
-
-### #2.2 GWAS数据QC示例
+* ### #2.2 GWAS数据QC示例
 ```
 1. 确保文件每一行的列数目是一样的。将连续空格中插入NA，扣好第一粒纽扣。
 	zcat GWAS.gz | awk '{print NF}' | sort -nu | wc -l 
@@ -35,10 +30,9 @@
    (1) Allele 最好是大写，awk 和 R 都有 toupper()功能。
    (2) P值最好不要小于1e-312，awk 会把其当成0，有一些软件（比如LDSC）也会报错，这个时候要么用Z值，要么人为将这些P值设为1e-300。
    (3) BETA|SE|P出现“三缺一” 的情况： b = se * qnorm(p/2); se = abs(b/qnorm(p/2)); se = (CI_upper - CI_lower)/(1.96*2); p = 2*pnorm(-abs(b/se))
-```
 
-> 对检查没问题的GWAS，深加工示例：
-```
+对检查没问题的GWAS，深加工示例：
+
 1. liftOver 🚜
 	dat=XYZ; head -1 $dat.txt > $dat.sorted; tail -n +2 $dat.txt | sort -k 1,1V -k 2,2n > $dat.sorted
 	python ~/scripts/f/add_rsid.py -i $dat.sorted --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d ~/data/dbsnp/rsids-v154-hg19.tsv.gz -o $dat.tmp1
@@ -59,13 +53,10 @@
 5. 索引🔍 
 	tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz
 ```
-
-GCTA要求 SNP A1 A2 freq b se p N，顺序对了就行。
-PRS-CS严格要求5列SNP A1 A2 BETA(或OR) SE(或P)。
 本课题组建议将所有列名标准化为： SNP CHR POS EA NEA EAF N BETA SE P。
 
 
-> 📺可视化，可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) ，日本版本[pheweb.jp](pheweb.jp)。
+* ### #2.3 GWAS数据可视化，可使用密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) ，日本版本[pheweb.jp](pheweb.jp)。
 > Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。。
 ```
 修改前：rsids = [rsid['rsid'] for rsid in rsid_group if cpra['ref'] == rsid['ref'] and are_match(cpra['alt'], rsid['alt'])]
@@ -75,12 +66,10 @@ PRS-CS严格要求5列SNP A1 A2 BETA(或OR) SE(或P)。
 > 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 
 <br/>
 
-## #3. Mendelian Randomization 分析
+## #3. MR
 > 如果有个体数据，可以用 [OneSampleMR包](https://cran.r-project.org/web/packages/OneSampleMR/index.html)。
 > 如果只有已发表的summary数据，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/8-449)。
-> 工具变量，一般需要去掉 F_stats <10 或者位于 <b>[MHC区间]</b> 【chr6:28477897-33448354 [(GRCh37)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC?asm=GRCh37), chr6:28510120-33480577 [(GRCh38)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC)】 的SNP。
-> <b>密西根大学</b>开发的 [imputation server](https://imputationserver.sph.umich.edu) 用的是： 从rs57232568 【29000554 (版本37), 29032777 (版本38)】 到 rs116206961【33999992 (版本37), 34032215 (版本38)】
-> 成败在于细节，10个注意事项示例：
+> 10个注意事项示例：
 ```
 > 1. 用 allele.qc，协调两组数据的 BETA和EAF，但是输出文件依然是原来的EA和 NEA。
 > 2. 用 fread和fwrite 比 read.table 和 write.table 更快，但fwrite默认输出带quote。
@@ -93,6 +82,8 @@ PRS-CS严格要求5列SNP A1 A2 BETA(或OR) SE(或P)。
 > 9. 注意HLA的GRCh37或GRCh37的确切 chr:start-end。
 >10. 最后可能发现软件跑出来的结果有重大问题，不“鲁棒” https://github.com/ZhaotongL/cisMRcML/issues/6
 ```
+> 工具变量，一般需要去掉 F_stats <10 或者位于 <b>[MHC区间]</b> 【chr6:28477897-33448354 [(GRCh37)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC?asm=GRCh37), chr6:28510120-33480577 [(GRCh38)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC)】 的SNP。
+> <b>密西根大学</b>开发的 [imputation server](https://imputationserver.sph.umich.edu) 用的是： 从rs57232568 【29000554 (版本37), 29032777 (版本38)】 到 rs116206961【33999992 (版本37), 34032215 (版本38)】
 <br/>
 
 
