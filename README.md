@@ -1,4 +1,4 @@
-## #1. 获取数据
+## 🧬1. 获取数据
 
 ### 这是初二生物学课本里面的一页。
 
@@ -12,7 +12,7 @@
 <br/>
 
 
-## #2. GWAS
+## 🧬2. GWAS
 
 ![GWAS](./images/GWAS.jpg)
 <br/>
@@ -65,7 +65,8 @@
 > 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 
 <br/>
 
-## #3. MR
+
+## 🧬3. MR
 > 如果有个体数据，可以用 [OneSampleMR包](https://cran.r-project.org/web/packages/OneSampleMR/index.html)。
 > 如果只有已发表的summary数据，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/8-449)。
 > 10个注意事项示例：
@@ -86,7 +87,7 @@
 <br/>
 
 
-## # 参考文献和网站
+## 🧬4. 参考资料
 
 基因注释信息🔍
 ```
