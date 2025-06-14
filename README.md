@@ -33,7 +33,7 @@
 
 对检查没问题的GWAS，深加工示例：
 
-1. liftOver 🚜
+1. 🚜liftOver 
 	dat=XYZ; head -1 $dat.txt > $dat.sorted; tail -n +2 $dat.txt | sort -k 1,1V -k 2,2n > $dat.sorted
 	python ~/scripts/f/add_rsid.py -i $dat.sorted --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d ~/data/dbsnp/rsids-v154-hg19.tsv.gz -o $dat.tmp1
 	cat $dat.tmp1 | awk 'NR >1 {print "chr"$1, $2 -1, $2, $9}' | sed 's/^chr23/chrX/' > $dat.tolift
@@ -41,19 +41,19 @@
 	cut -f 3,4 $dat.lifted > $dat.pos_snp
 	python ~/scripts/f/join_file.py -i "$dat.tmp1,TAB,8 $dat.pos_snp,TAB,1" -o $dat.tmp2
 	cut -d " " -f 1-10 $dat.tmp2 | sed '1s/POS/POS.37/; 1s/NA/POS/' | gzip -f > clean/$dat.gz
-2. 跟其他数据合并 ⛄
+2. ⛄跟其他数据合并 
 	python scripts/library/join_file.py -i "$dat,TAB,0 $dat.lifted.3col,TAB,2" -o $dat.NEW.tmp
 	sed -i 's/  */\t/g' $dat.NEW.tmp; awk '$NF=="NA"' $dat.NEW.tmp | wc -l
 	cut -f 1-10,12 $dat.NEW.tmp | sed '1 s/POS/POS.b38/' > $dat.NEW.txt
-3. 添加 rsID 🧢
+3. 🧢添加 rsID 
 	用户也可以在pheweb网站下载 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid.py; dos2unix add_rsid.py，然后运行如下示例命令。
 	python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg19.tsv.gz -o out.tsv
-4. 瘦身 🏃‍
+4. 🏃瘦身 ‍
 	zcat $dat.gz | awk '{if (NR!=1) {$5=sprintf("%.4f",$5); $6=sprintf("%.4f",$6)} print $0}' | bgzip > $dat.lean.gz
-5. 索引🔍 
+5. 🔍索引 
 	tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz
 	
-本课题组建议将所有列名标准化为： SNP CHR POS EA NEA EAF N BETA SE P。
+本课题组建议GWAS列名称： SNP CHR POS EA NEA EAF N BETA SE P。
 ```
 
 * ### 📍2.3 GWAS数据可视化
@@ -102,7 +102,7 @@
 🐎GWAS-PRS-MR ”三驾马车“ 入门指南：
 ```
 > GWAS入门： 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
-🏮中文版 [gwaslab.org](https://gwaslab.org)
+> 🏮GWAS详解中文版：[gwaslab.org](https://gwaslab.org)
 > PRS入门. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
 > MR入门： 2022. Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
 ```
