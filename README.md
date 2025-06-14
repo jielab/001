@@ -227,45 +227,30 @@ names(dat) <- stringi::stri_replace_all_regex(toupper(names(dat)), pattern=toupp
 GWAS-PRS-MR ”三驾马车“ 入门指南🐎：
 ```
 > GWAS入门： 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
-	[芬兰赫尔辛基大学 GWAS 课程](https://www.mv.helsinki.fi/home/mjxpirin/GWAS_course/)
-	🏮中文版 [gwaslab.org](https://gwaslab.org)
+🏮中文版 [gwaslab.org](https://gwaslab.org)
 > PRS入门. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
 > MR入门： 2022. Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
 ```
 
 R 🛵
 ```
-> packageVersion("XY"); remove.packages("XY"); update.packages(ask=FALSE, checkBuilt=TRUE)
-> install.packages("XY", repos="http://cran.rstudio.com/", dependencies=TRUE)
-> 本机: Windows底部 “搜索” 写 env，在“环境变量”里 将 R_LIBS_USER 设为 D:\software_win\R_lib
-> HPC: source /share/apps/anaconda3/2020.7/bin/activate /work/sph-huangj/.conda/envs/R4.4.2
+> 本机上设置环境: Windows底部 “搜索” 写 env，在“环境变量”里 将 R_LIBS_USER 设为 D:\software_win\R_lib
+> HPC上用他人的环境: source /share/apps/anaconda3/2020.7/bin/activate /work/sph-huangj/.conda/envs/R4.4.2
        export R_LIBS=/work/sph-huangj/.conda/envs/R4.4.2/lib/R/library:/work/sph-huangj/.conda/envs/R/lib/R/library:$R_LIBS
 > 画图集锦: https://r-graph-gallery.com/index.html
-> 顾祖广炫酷生信图： https://jokergoo.github.io/software/
 > R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/
 > 供复现代码： https://globalenvhealth.org/code-data-download/
+> 🏮顾祖广炫酷生信图： [https://jokergoo.github.io/software/](https://jokergoo.github.io/software/)
+> 🏮梁志生R包荟萃🎇 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)
 ```
 
 Linux🤖
 ```
-> 安装Linux: 用管理员权限打开cmd, 运行 wsl --install，或者 wsl --import。 遇到 press any key to continue，运行 netsh winsock reset
-  在 ~/.bashrc:  export PATH="XYZ:$PATH"; export R_LIBS="/mnt/d/software_lin/R_lib" 
-  apt install bcftools samtools tabix; pip install XXX; conda install
-> 批量删除文件: ls | grep -vE "\.log$|\.dat$" | xargs rm -f
+> 安装: 遇到 press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
 > 在HPC上后台提交： nohup ./assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
-> 后台多线程下载: apt-get install aria2;  sudo screen -S jack -d -m aria2c -x 4 -i files.txt; 然后查看 sudo screen -r jack
-> 基于某一列生成多个文件: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
-> 将duplicate改名唯一: awk '{if(array[$2]=="Y") {i++; $2=$2".DUP"i}; print $0; array[$2]="Y"}' chr20.bim.COPY 
-  或者: plink2 --set-all-var-ids to generate new IDs based on position and alleles, to avoid duplicate IDs
-> 将文件每列读入变量中: cut -f 1,4 $file | while IFS=$'\t' read -r pheno_code file_url; do file_name=$(basename $file_url); file_ext=${file_name##*.}
-> 给bed文件加索引: tabix -pbed; tabix -s1 -b2 -e2; bedtools intersect -a -b -wa
+> 后台多线程下载: apt-get install aria2; sudo screen -S jack -d -m aria2c -x 4 -i files.txt; sudo screen -r jack
+> 三剑客🗡代码示例: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
 ```
 
-Interactive Python 🏂 
-```
-安装 pip install keplergl pandas jupyter
-运行 jupyter notebook 
-民航地图示例：https://github.com/wybert/minhang
-```
 <br/>
 <br/>
