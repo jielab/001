@@ -4,13 +4,11 @@
 
 ![middle school](./images/middle.jpg)
 
-### #1.1 [HAPMAP3 genotype 数据](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3), 一般作为 LD 计算的 reference panel
+### #1.1 [HAPMAP3 genotype 数据](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3), 1百多万个SNP，一般作为 LD 计算的 reference panel。
 
-### #1.2 [千人基因组项目数据](https://www.internationalgenome.org/data)，一般作为 imputation 的 reference panel.
+### #1.2 [千人基因组项目数据](https://www.internationalgenome.org/data)， 将近1亿个SNP，一般作为 imputation 的 reference panel.
 
-### #1.3 UKB 数据
-表型数据[更新信息](https://community.ukbiobank.ac.uk/hc/en-gb/articles/26088595922333-New-and-Updated-Data)<br>
-点击[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)左边的 <b>accessing phenotype data</b>。
+### #1.3 UKB 数据，现在推荐用[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)。
 <br/><br/>
 
 
