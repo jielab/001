@@ -1,6 +1,3 @@
-<br/>
-<br/>
-
 ## #1. 获取数据
 
 > ### 这是初二生物学课本里面的一页。
@@ -8,15 +5,13 @@
 ![middle school](./images/middle.jpg)
 
 ### #1.1 [HAPMAP3 genotype 数据](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3), 一般作为 LD 计算的 reference panel
-<br/>
 
 ### #1.2 [千人基因组项目数据](https://www.internationalgenome.org/data)，一般作为 imputation 的 reference panel.
-<br/>
 
 ### #1.3 UKB 数据
 表型数据[更新信息](https://community.ukbiobank.ac.uk/hc/en-gb/articles/26088595922333-New-and-Updated-Data)<br>
 点击[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)左边的 <b>accessing phenotype data</b>。
-<br/>
+<br/><br/>
 
 
 ## #2. GWAS
@@ -30,7 +25,6 @@
 > 欧洲版本，不需要下载就能通过 TwoSampleMR 远程读入。
 > 英国UKB的GWAS，全部网上发布：http://www.nealelab.is/uk-biobank 
 <br/>
-
 
 ### #2.2 GWAS数据QC示例
 ```
@@ -102,10 +96,9 @@ PRS-CS严格要求5列SNP A1 A2 BETA(或OR) SE(或P)。
 >10. 最后可能发现软件跑出来的结果有重大问题，不“鲁棒” https://github.com/ZhaotongL/cisMRcML/issues/6
 ```
 <br/>
-<br/>
 
 
-# # 参考文献和网站
+## # 参考文献和网站
 
 基因注释信息🔍
 ```
