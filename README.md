@@ -177,7 +177,6 @@ names(dat) <- stringi::stri_replace_all_regex(toupper(names(dat)), pattern=toupp
 ## #4.1 单个 GWAS 的深度功能（function）分析 
 
 > 可先尝试傻瓜相机式的[FUMA](https://fuma.ctglab.nl/) 网上解读系统，见[参考文献](https://www.frontiersin.org/articles/10.3389/fgene.2020.00424/full)
-> ![FUMA](./images/fuma.png) 
 <br/>
 
 
@@ -189,7 +188,6 @@ names(dat) <- stringi::stri_replace_all_regex(toupper(names(dat)), pattern=toupp
 
 ## #4.3. 两个或多个GWAS之间的 genetic correlation 分析
 > 一般用[LDSC](https://github.com/bulik/ldsc)软件。
-> ![compareB](./images/T2D.Z.png)
 <br/> 
 
 ## #4.4. 两个或多个GWAS之间的 Mendelian Randomization 分析
