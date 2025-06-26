@@ -94,32 +94,30 @@
 
 基因注释信息🔍
 ```
-> - dbSNP: https://www.ncbi.nlm.nih.gov/snp/   
-> - UCSC genome browser: https://www.genome.ucsc.edu/ 
-> - 美国精准医学All of Us：https://www.researchallofus.org/ 和 https://databrowser.researchallofus.org/   
-> - 密西根大学公卫学院 TopMed browser: https://bravo.sph.umich.edu/ 
-> - 一天发了7篇 NATURE系列文章的Gnomad项目 browser: https://gnomad.broadinstitute.org/ 
+> - dbSNP: https://www.ncbi.nlm.nih.gov/snp
+> - UCSC genome browser: https://www.genome.ucsc.edu
+> - 美国精准医学All of Us： https://databrowser.researchallofus.org 
+> - 密西根大学公卫学院 TopMed browser: https://bravo.sph.umich.edu
+> - 一天发了7篇 NATURE系列文章的Gnomad项目 browser: https://gnomad.broadinstitute.org
 ```
 
 🐎GWAS-PRS-MR ”三驾马车“ 入门指南：
-```
 > GWAS入门： 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 > 🏮GWAS详解中文版：[gwaslab.org](https://gwaslab.org)
 > PRS入门. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
 > MR入门： 2022. Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
-```
+
 
 🛵R 
-```
-> 本机上设置环境: Windows底部 “搜索” 写 env，在“环境变量”里 将 R_LIBS_USER 设为 D:\software_win\R_lib
-> HPC上用他人的环境: source /share/apps/anaconda3/2020.7/bin/activate /work/sph-huangj/.conda/envs/R4.4.2
-       export R_LIBS=/work/sph-huangj/.conda/envs/R4.4.2/lib/R/library:/work/sph-huangj/.conda/envs/R/lib/R/library:$R_LIBS
-> 画图集锦: https://r-graph-gallery.com/index.html
+
+> 在“环境变量”里 将 R_LIBS_USER 设为 D:\software_win\R_lib
+> HPC上的环境变量位于 /work/sph-huangj/.conda/envs/R4.4.2
+> R画图集锦: https://r-graph-gallery.com/index.html
 > R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/
 > 供复现代码： https://globalenvhealth.org/code-data-download/
 > 🏮顾祖广炫酷生信图： [https://jokergoo.github.io/software/](https://jokergoo.github.io/software/)
 > 🏮梁志生R包荟萃🎇 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)
-```
+
 
 🤖Linux
 ```
