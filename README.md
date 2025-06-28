@@ -122,7 +122,8 @@
 🤖Linux
 ```
 > 安装: 遇到 press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
-> 在HPC上后台提交： nohup ./assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
+> HPC后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
+> HPC硬盘额度：mmlsquota -g sph-huangj --block-size auto
 > 后台多线程下载: screen -dmS jack aria2c -x 4 -i files.txt --log-level=info --log=jack.log; screen -ls; screen -S jack -X quit 
 > 三剑客🗡代码示例: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
 ```
