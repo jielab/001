@@ -102,22 +102,20 @@
 ```
 
 🐎GWAS-PRS-MR ”三驾马车“ 入门指南：
-* GWAS入门： 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
-* 🏮GWAS详解中文版：[gwaslab.org](https://gwaslab.org)，比如其中提到 [REGENIE](https://gwaslab.org/2021/03/28/regenie/)
-* PRS入门. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
-* MR入门： 2022. Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
-
+▸ GWAS入门： 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
+▸ 🏮GWAS详解中文版：[gwaslab.org](https://gwaslab.org)，比如其中提到 [REGENIE](https://gwaslab.org/2021/03/28/regenie/)
+▸ PRS入门. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
+▸ MR入门： 2022. Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
 
 🛵R 
 
-▶ 在“环境变量”里 将 R_LIBS_USER 设为 D:\software_win\R_lib  
-▶ HPC上的环境变量位于 /work/sph-huangj/.conda/envs/R4.4.2  
-▶ R画图集锦: https://r-graph-gallery.com/index.html  
-▶ R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/  
-▶ 供复现代码： https://globalenvhealth.org/code-data-download/  
-▶ 🏮顾祖广炫酷生信图： [https://jokergoo.github.io/software/](https://jokergoo.github.io/software/)  
-▶ 🏮梁志生R包荟萃🎇 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)  
-
+▸ 在“环境变量”里 将 R_LIBS_USER 设为 D:\software_win\R_lib  
+▸ HPC上的环境变量位于 /work/sph-huangj/.conda/envs/R4.4.2  
+▸ R画图集锦: https://r-graph-gallery.com/index.html  
+▸ R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/  
+▸ 供复现代码： https://globalenvhealth.org/code-data-download/  
+▸ 🏮顾祖广炫酷生信图： [https://jokergoo.github.io/software/](https://jokergoo.github.io/software/)  
+▸ 🏮梁志生R包荟萃🎇 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)  
 
 
 
