@@ -101,11 +101,12 @@
 > - 一天发了7篇 NATURE系列文章的Gnomad项目 browser: https://gnomad.broadinstitute.org
 ```
 
-🐎GWAS-PRS-MR ”三驾马车“ 入门指南： 
+🐎GWAS-PRS-MR ”三驾马车“ 入门指南
+ 
 ▸ GWAS入门： 2021. Nature Reviews Methods Primers. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)  
 ▸ 🏮GWAS详解中文版：[gwaslab.org](https://gwaslab.org)，比如其中提到 [REGENIE](https://gwaslab.org/2021/03/28/regenie/)  
-  ▸ PRS入门. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)  
-  ▸ MR入门： 2022. Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)  
+▸ PRS入门. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)  
+▸ MR入门： 2022. Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)  
 
 🛵R 
 
