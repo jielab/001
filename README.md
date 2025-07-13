@@ -59,7 +59,7 @@
 ```
 
 * ### 📍2.3 GWAS数据可视化
-> 密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) ，UKB的几千个GWAS的数据放在[pheweb.org](https://pheweb.org/)上，日本版本[pheweb.jp](pheweb.jp)。
+> 密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) ，UKB的几千个GWAS的数据放在[pheweb.org](https://pheweb.org/)上，[中国版本](https://pheweb.ckbiobank.org/)，[日本版本](https://pheweb.jp/)。
 > Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。
 > 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 
 ```
