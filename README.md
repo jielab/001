@@ -22,7 +22,7 @@
 
 * ### 📍2.1 GWAS数据获取，最经典的是[GWAS Catalog](https://www.ebi.ac.uk/gwas)。
 
-* ### 📍2.2 GWAS数据QC示例
+* ### 📍2.2 GWAS数据QC示例 【本课题组建议GWAS列名称： SNP CHR POS CHRPOS ⭐ EA NEA EAF N ⭐ BETA SE Z P】
 ```
 1. 确保文件每一行的列数目是一样的。将连续空格中插入NA，扣好第一粒纽扣。
    zcat GWAS.gz | awk '{print NF}' | sort -nu | wc -l 
@@ -51,11 +51,10 @@
 3. 🧢添加 rsID 
    用户也可以在pheweb网站下载 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid.py; dos2unix add_rsid.py，然后运行如下示例命令。
    python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg19.tsv.gz -o out.tsv
-4. 🏃瘦身 ‍
-   zcat $dat.gz | awk '{if (NR!=1) {$5=sprintf("%.4f",$5); $6=sprintf("%.4f",$6)} print $0}' | bgzip > $dat.lean.gz
+4. 🏃瘦身 ‍[比如说FUMA不能接受超过600MB的文件]
+   zcat $dat.gz | awk 'function r(x) {return sprintf("%.4f", x)} {if (NR == 1) print; else if ($6 > 0.005 && $6 <= 0.995) {$6 = r($6); $8 = r($8); $9 = r($9); $10 = r($10); print}}' | sed 's/ /\t/g' | bgzip > $dat.lean.gz
 5. 🔍索引 
    tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz
-6. 本课题组建议GWAS列名称： SNP CHR POS EA NEA EAF N BETA SE P。
 ```
 
 * ### 📍2.3 GWAS数据可视化
