@@ -52,7 +52,7 @@
    用户也可以在pheweb网站下载 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid.py; dos2unix add_rsid.py，然后运行如下示例命令。
    python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg19.tsv.gz -o out.tsv
 4. 🏃瘦身 ‍[比如说FUMA不能接受超过600MB的文件]
-   zcat $dat.gz | awk 'function r(x) {return sprintf("%.4f", x)} {if (NR == 1) print; else if ($6 > 0.005 && $6 <= 0.995) {$6 = r($6); $8 = r($8); $9 = r($9)); print}}' | sed 's/ /\t/g' | bgzip > $dat.lean.gz
+   zcat $dat.gz | awk 'function r(x) {return sprintf("%.4f", x)} {if (NR == 1) print; else if ($6 > 0.005 && $6 <= 0.995) {$6 = r($6); $8 = r($8); $9 = r($9); print}}' | sed 's/ /\t/g' | bgzip > $dat.lean.gz
 5. 🔍索引 
    tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz
 ```
