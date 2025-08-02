@@ -1,0 +1,16 @@
+{
+  "title": "基孔肯雅病毒基因组分析——南方科技大学黄捷",
+  "maintainers": [
+    {
+      "name": "Jie Huang",
+      "url": "http://github.com/jielab"
+    }
+  ],
+  "colorings": [
+    { "key": "country", "title": "Country", "type": "categorical" },
+    { "key": "region", "title": "Region", "type": "categorical" }
+  ],
+  "geo_resolutions": ["region", "country"],
+  "panels": ["tree", "map", "entropy"],
+  "filters": ["region", "country"]
+}
