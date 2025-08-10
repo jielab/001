@@ -91,22 +91,23 @@
 
 ## 🧬4. 参考资料及经验分享
 
-基因注释信息🔍
-```
-> - dbSNP: https://www.ncbi.nlm.nih.gov/snp
-> - UCSC genome browser: https://www.genome.ucsc.edu
-> - 美国精准医学All of Us： https://databrowser.researchallofus.org 
-> - 密西根大学公卫学院 TopMed browser: https://bravo.sph.umich.edu
-> - 一天发了7篇 NATURE系列文章的Gnomad项目 browser: https://gnomad.broadinstitute.org
-```
-
 🐎GWAS-PRS-MR ”三驾马车“ 入门指南  
 ▸ GWAS入门： 2021. Nature RMP. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)  
 ▸ 🏮GWAS详解中文版：[gwaslab.org](https://gwaslab.org)，比如其中提到 [REGENIE](https://gwaslab.org/2021/03/28/regenie/)  
 ▸ PRS入门. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)  
 ▸ MR入门： 2022. Nature RMP. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)  
 
-🛵R  
+基因注释信息🔍
+```
+> dbSNP: https://www.ncbi.nlm.nih.gov/snp
+> UCSC genome browser: https://www.genome.ucsc.edu
+> 美国精准医学All of Us： https://databrowser.researchallofus.org 
+> 密西根大学公卫学院 TopMed browser: https://bravo.sph.umich.edu
+> 一天发了7篇 NATURE系列文章的Gnomad项目 browser: https://gnomad.broadinstitute.org
+```
+
+🛵R 
+``` 
 ▸ 在“环境变量”里 将 R_LIBS_USER 设为 D:\software_win\R_lib  
 ▸ HPC上的环境变量位于 /work/sph-huangj/.conda/envs/R4.4.2  
 ▸ R画图集锦: https://r-graph-gallery.com/index.html  
@@ -114,6 +115,7 @@
 ▸ 供复现代码： https://globalenvhealth.org/code-data-download/  
 ▸ 🏮顾祖广炫酷生信图： [https://jokergoo.github.io/software/](https://jokergoo.github.io/software/)  
 ▸ 🏮梁志生R包荟萃🎇 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)  
+```
 
 🤖Python 包安装
 ```
@@ -132,6 +134,8 @@
 > 后台多线程下载: screen -dmS jack aria2c -x 4 -i url.txt --log-level=info --log=jack.log; screen -ls; screen -S jack -X quit 
 > 三剑客🗡代码示例: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
 ```
+
+🌅 🌇 🌙 🦟 🐜 
 
 <br/>
 <br/>
