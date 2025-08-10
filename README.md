@@ -89,7 +89,7 @@
 <br/>
 
 
-## 🧬4. 参考资料
+## 🧬4. 参考资料及经验分享
 
 基因注释信息🔍
 ```
@@ -115,11 +115,18 @@
 ▸ 🏮顾祖广炫酷生信图： [https://jokergoo.github.io/software/](https://jokergoo.github.io/software/)  
 ▸ 🏮梁志生R包荟萃🎇 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)  
 
-
-
-🤖Linux
+🤖Python 包安装
 ```
-> 安装: 遇到 press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
+> 当运行 pip install -r requirements.txt，遇到 Could not find a version that
+  先根据提示，用正确的python版本：conda create -n py311 python=3.11; conda activate py311
+> touch这个包单拿出来安装，然后再 pip install 别的包
+  pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+```
+
+🤖Ubuntu Linux 操作系统
+```
+> D盘的路径分别是/mnt/d，以此类推⚡
+> 当打开 shell，遇到press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
 > HPC后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
 > HPC硬盘额度：mmlsquota -g sph-huangj --block-size auto
 > 后台多线程下载: screen -dmS jack aria2c -x 4 -i url.txt --log-level=info --log=jack.log; screen -ls; screen -S jack -X quit 
