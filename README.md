@@ -101,8 +101,7 @@
 	pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu # https://download.pytorch.org/whl/cu121 
 	pip install numpy tqdm transformers pandas requests openpyxl # bitsandbytes 没显卡就不要装
 	pip install -U "transformers>=4.47" "accelerate>=0.34" datasets peft evaluate scikit-learn
-	pip install -U "huggingface_hub[cli]"
-	# hf auth login # 在访问受限/私有模型时必须
+	pip install -U "huggingface_hub[cli]" # hf auth login # 在访问受限/私有模型时必须
 	hf download Qwen/Qwen3-235B --local-dir /mnt/d/data/ai/qwen/model # 🏮
 ```
 <br/>
