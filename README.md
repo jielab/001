@@ -89,7 +89,26 @@
 <br/>
 
 
-## 🧬4. 参考资料及经验分享
+## 💃 4. AI系统
+```
+0.	比较 pip --version; python -m pip --version
+	检查是否有GPU芯片 lspci -nnk | grep -iA3 'vga\|3d\|display' | grep NVIDIA 
+	推荐移动工作站：MSI Titan，HP ZBook
+   
+1.	🤖Python 包安装
+	conda env list # conda env remove -n py311
+	conda create -n ems120 python=3.11; conda activate ems120
+	pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu # https://download.pytorch.org/whl/cu121 
+	pip install numpy tqdm transformers pandas requests openpyxl # bitsandbytes 没显卡就不要装
+	pip install -U "transformers>=4.47" "accelerate>=0.34" datasets peft evaluate scikit-learn
+	pip install -U "huggingface_hub[cli]"
+	# hf auth login # 在访问受限/私有模型时必须
+	hf download Qwen/Qwen3-235B --local-dir /mnt/d/data/ai/qwen/model # 🏮
+```
+<br/>
+
+
+## 🧬5. 参考资料及经验分享
 
 🐎GWAS-PRS-MR ”三驾马车“ 入门指南  
 ▸ GWAS入门： 2021. Nature RMP. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)  
@@ -117,14 +136,6 @@
 ▸ 🏮梁志生R包荟萃🎇 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)  
 ```
 
-🤖Python 包安装
-```
-> 当运行 pip install -r requirements.txt，遇到 Could not find a version that
-  先根据提示，用正确的python版本：conda create -n py311 python=3.11; conda activate py311
-> touch这个包单拿出来安装，然后再 pip install 别的包
-  pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-```
-
 🤖Ubuntu Linux 操作系统
 ```
 > D盘的路径分别是/mnt/d，以此类推⚡
@@ -133,10 +144,6 @@
 > HPC硬盘额度：mmlsquota -g sph-huangj --block-size auto
 > 后台多线程下载: screen -dmS jack aria2c -x 4 -i url.txt --log-level=info --log=jack.log; screen -ls; screen -S jack -X quit 
 > 三剑客🗡代码示例: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
-> 生信三剑客🗡： plink; bcftools; ❓
 ```
 
 🌅 🌇 🌙 🦟 🐜 
-
-<br/>
-<br/>
