@@ -113,6 +113,7 @@
 3.  LLaMA (Meta/Face­book发布) 本地安装
 
 ```
+![middle school](./images/LLM.png)
 <br/>
 
 
