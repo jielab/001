@@ -89,20 +89,29 @@
 <br/>
 
 
-## 💃 4. AI系统
+## 💃4. AI系统
 ```
 0.	比较 pip --version; python -m pip --version
 	检查是否有GPU芯片 lspci -nnk | grep -iA3 'vga\|3d\|display' | grep NVIDIA 
 	推荐移动工作站：MSI Titan，HP ZBook
    
-1.	🤖Python 包安装
+1.	🤖qwen 本地安装
 	conda env list # conda env remove -n py311
 	conda create -n ems120 python=3.11; conda activate ems120
 	pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu # https://download.pytorch.org/whl/cu121 
 	pip install numpy tqdm transformers pandas requests openpyxl # bitsandbytes 没显卡就不要装
 	pip install -U "transformers>=4.47" "accelerate>=0.34" datasets peft evaluate scikit-learn
 	pip install -U "huggingface_hub[cli]" # hf auth login # 在访问受限/私有模型时必须
-	hf download Qwen/Qwen3-235B --local-dir /mnt/d/data/ai/qwen/model # 🏮
+	hf download Qwen/Qwen3-8B --local-dir /mnt/d/data/ai/qwen/model # 🏮
+	# 如果上面命令报错，可到https://huggingface.co/Qwen/Qwen3-8B/tree/main 直接下载
+	
+2.	Deepseek 本地安装
+	从 ollama.com/download 下载，点击安装，然后在cmd中运行ollama确认
+	设置环境变量 OLLAMA_MODELS 为 D:\ollama\ollama 
+	从 ollama.com 点击 Models，点击 deepseek-r1, 选择 deepseek-r1:14b，在cmd中ollama run deepseek-r1:14b; ollama list
+
+3.  LLaMA (Meta/Face­book发布) 本地安装
+
 ```
 <br/>
 
