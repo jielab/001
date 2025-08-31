@@ -92,6 +92,7 @@
 ## 💃4. AI系统
 >- Transformer（架构）：指 2017 年论文 Attention Is All You Need 提出的神经网络架构，最初来自 Google 团队。
 >- Transformers（库）：指 Hugging Face 的 Python 库，封装了 BERT、 Qwen、 LLaMA、 DeepSeek 等大量模型的加载、推理与微调接口，常搭配 PyTorch（torch） 使用。
+>- Transformers：做底层训练/微调； Ollama：本地跑生成式聊天； AnythingLLM：在更上层把“模型+数据+接口”拼装成可用的应用。
 >- OpenAI：提供 ChatGPT 闭源模型和API的公司；如果要用 OpenAI 的模型，一般用 openai 官方 SDK 调 API，而不是用 HF 的 transformers 库加载本地权重。
 ```
 0.	比较 pip --version; python -m pip --version
@@ -107,7 +108,6 @@
 	https://huggingface.co/Qwen/Qwen3-8B/tree/main 直接下载 #🏮
 ```
 ![middle school](./images/ollama.png)
-![middle school](./images/LLM.png)
 <br/><br/>
 
 
