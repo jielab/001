@@ -89,7 +89,7 @@
 <br/>
 
 
-## 💃4. AI系统
+## 🤖4. AI系统
 >- Transformer（架构）：指 2017 年论文 Attention Is All You Need 提出的神经网络架构，最初来自 Google 团队。
 >- Transformers（库）：指 Hugging Face 的 Python 库，封装了 BERT、 Qwen、 LLaMA、 DeepSeek 等大量模型的加载、推理与微调接口，常搭配 PyTorch（torch） 使用。
 >- Transformers：做底层训练/微调； Ollama：本地跑生成式聊天； AnythingLLM：在更上层把“模型+数据+接口”拼装成可用的应用。
@@ -98,7 +98,7 @@
 0.	比较 pip --version; python -m pip --version
 	检查是否有GPU芯片 lspci -nnk | grep -iA3 'vga\|3d\|display' | grep NVIDIA 
    
-1.	🤖Linux本地安装（以千问为例）
+1.	Linux本地安装（以千问为例）
 	conda env list # conda env remove -n ai
 	conda create -n ai python=3.11; conda activate ai
 	pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu # whl/cu121 
@@ -136,10 +136,10 @@
 ▸ R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/  
 ▸ 供复现代码： https://globalenvhealth.org/code-data-download/  
 ▸ 🏮顾祖广炫酷生信图： [https://jokergoo.github.io/software/](https://jokergoo.github.io/software/)  
-▸ 🏮梁志生R包荟萃🎇 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)  
+▸ 🏮梁志生R包荟萃 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)  
 ```
 
-🤖Ubuntu Linux 操作系统
+🎇Ubuntu Linux 操作系统
 ```
 > D盘的路径分别是/mnt/d，以此类推⚡
 > 当打开 shell，遇到press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
