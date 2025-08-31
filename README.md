@@ -90,31 +90,21 @@
 
 
 ## 💃4. AI系统
+>- Transformer（架构）：指 2017 年论文 Attention Is All You Need 提出的神经网络架构，最初来自 Google 团队。
+>- Transformers（库）：指 Hugging Face 的 Python 库，封装了 BERT、 Qwen、 LLaMA、 DeepSeek 等大量模型的加载、推理与微调接口，常搭配 PyTorch（torch） 使用。
+>- OpenAI：提供 ChatGPT 闭源模型和API的公司；如果要用 OpenAI 的模型，一般用 openai 官方 SDK 调 API，而不是用 HF 的 transformers 库加载本地权重。
 ```
 0.	比较 pip --version; python -m pip --version
 	检查是否有GPU芯片 lspci -nnk | grep -iA3 'vga\|3d\|display' | grep NVIDIA 
-	推荐移动工作站：MSI Titan，HP ZBook
    
-1.	🤖qwen 本地安装
-	conda env list # conda env remove -n py311
-	conda create -n ems120 python=3.11; conda activate ems120
-	pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu # https://download.pytorch.org/whl/cu121 
+1.	🤖Linux本地安装（以千问为例）
+	conda env list # conda env remove -n ai
+	conda create -n ai python=3.11; conda activate ai
+	pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu # whl/cu121 
 	pip install numpy tqdm transformers pandas requests openpyxl # bitsandbytes 没显卡就不要装
-	pip install -U "transformers>=4.47" "accelerate>=0.34" datasets peft evaluate scikit-learn
-	# 或者 hf auth login; hf download Qwen/Qwen3-8B --local-dir /mnt/d/data/ai/qwen/model # 🏮
-	# 或者 https://huggingface.co/Qwen/Qwen3-8B/tree/main 直接下载
-	
-2.	Deepseek 【Ubuntu版本】本地安装
-	curl -fsSL https://ollama.com/install.sh | sh
-	ollama serve &; ollama pull deepseek-r1:14b; ollama run  deepseek-r1:14b
-	pkill -f "ollama serve" || true
-	echo 'export OLLAMA_MODELS=/mnt/d/data/ai/deepseek/model' >> ~/.bashrc
-	echo 'export OLLAMA_MODELS=/mnt/d/data/ai/deepseek/model' >> ~/.profile
-	source ~/.bashrc; ollama serve & 
-
-3.  LLaMA (Meta/Face­book发布) 本地安装
-
-
+	pip install -U "transformers>=4.56.0" "accelerate>=1.10.1" datasets peft evaluate scikit-learn
+	# hf auth login; hf download Qwen/Qwen3-8B --local-dir /mnt/d/data/ai/qwen/model 
+	https://huggingface.co/Qwen/Qwen3-8B/tree/main 直接下载 #🏮
 ```
 ![middle school](./images/ollama.png)
 ![middle school](./images/LLM.png)
