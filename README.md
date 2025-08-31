@@ -101,18 +101,22 @@
 	pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu # https://download.pytorch.org/whl/cu121 
 	pip install numpy tqdm transformers pandas requests openpyxl # bitsandbytes 没显卡就不要装
 	pip install -U "transformers>=4.47" "accelerate>=0.34" datasets peft evaluate scikit-learn
-	pip install -U "huggingface_hub[cli]" # hf auth login # 在访问受限/私有模型时必须
-	hf download Qwen/Qwen3-8B --local-dir /mnt/d/data/ai/qwen/model # 🏮
-	# 如果上面命令报错，可到https://huggingface.co/Qwen/Qwen3-8B/tree/main 直接下载
+	# 或者 hf auth login; hf download Qwen/Qwen3-8B --local-dir /mnt/d/data/ai/qwen/model # 🏮
+	# 或者 https://huggingface.co/Qwen/Qwen3-8B/tree/main 直接下载
 	
-2.	Deepseek 本地安装
-	从 ollama.com/download 下载，点击安装，然后在cmd中运行ollama确认
-	设置环境变量 OLLAMA_MODELS 为 D:\ollama\ollama 
-	从 ollama.com 点击 Models，点击 deepseek-r1, 选择 deepseek-r1:14b，在cmd中ollama run deepseek-r1:14b; ollama list
+2.	Deepseek 【Ubuntu版本】本地安装
+	curl -fsSL https://ollama.com/install.sh | sh
+	ollama serve &; ollama pull deepseek-r1:14b; ollama run  deepseek-r1:14b
+	pkill -f "ollama serve" || true
+	echo 'export OLLAMA_MODELS=/mnt/d/data/ai/deepseek/model' >> ~/.bashrc
+	echo 'export OLLAMA_MODELS=/mnt/d/data/ai/deepseek/model' >> ~/.profile
+	source ~/.bashrc; ollama serve & 
 
 3.  LLaMA (Meta/Face­book发布) 本地安装
 
+
 ```
+![middle school](./images/ollama.png)
 ![middle school](./images/LLM.png)
 <br/><br/>
 
