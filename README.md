@@ -103,9 +103,9 @@
 	conda create -n ai python=3.11; conda activate ai
 	pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu # whl/cu121 
 	pip install numpy tqdm transformers pandas requests openpyxl # bitsandbytes 没显卡就不要装
-	pip install -U "transformers>=4.56.0" "accelerate>=1.10.1" datasets peft evaluate scikit-learn
-	# hf auth login; hf download Qwen/Qwen3-8B --local-dir /mnt/d/data/ai/qwen/model 
-	https://huggingface.co/Qwen/Qwen3-8B/tree/main 直接下载 #🏮
+	pip install -U "transformers>=4.56.0" "accelerate>=1.10.1" datasets peft evaluate scikit-learn protobuf sentencepiece
+	# hf auth login; hf download Qwen/Qwen3-8B --local-dir /mnt/d/data/ai/qwen/model
+	git clone https://huggingface.co/Qwen/Qwen3-8B ./ # 或网站直接下载，确保tokenizer.json文件的size正确🏮
 ```
 ![middle school](./images/ollama.png)
 <br/><br/>
