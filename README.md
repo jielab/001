@@ -131,7 +131,6 @@
 🛵R 
 ``` 
 ▸ WINDOWS “环境变量”里设置R_LIBS_USER，LINUX在 ~/.Renviron设置。 用 .libPaths()查看
-▸ HPC上的环境变量位于 /work/sph-huangj/.conda/envs/R4.4.2  
 ▸ R画图集锦: https://r-graph-gallery.com/index.html  
 ▸ R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/  
 ▸ 供复现代码： https://globalenvhealth.org/code-data-download/  
@@ -143,10 +142,12 @@
 ```
 ⭕D盘的路径分别是/mnt/d，以此类推⚡
 > 当打开 shell，遇到press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
-> HPC后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
-> HPC硬盘额度：mmlsquota -g sph-huangj --block-size auto
 > 后台多线程下载: screen -dmS jack aria2c -x 4 -i url.txt --log-level=info --log=jack.log; screen -ls; screen -S jack -X quit 
 > 三剑客🗡代码示例: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
+> HPC 登录： ssh sph-huangj@172.18.6.178 【太乙】； ssh -p 18188 sph-huangj@172.18.6.10 【启明】
+  后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
+  硬盘额度：mmlsquota -g sph-huangj --block-size auto
+  bsub等: queueinfo -gpu -cpu; module avail  
 ```
 
 🌅 🌇 🌙 🦟 🐜 
