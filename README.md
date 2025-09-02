@@ -130,7 +130,7 @@
 
 🛵R 
 ``` 
-▸ 在“环境变量”里 将 R_LIBS_USER 设为 D:\software_win\R_lib  
+▸ WINDOWS “环境变量”里设置R_LIBS_USER，LINUX在 ~/.Renviron设置。 用 .libPaths()查看
 ▸ HPC上的环境变量位于 /work/sph-huangj/.conda/envs/R4.4.2  
 ▸ R画图集锦: https://r-graph-gallery.com/index.html  
 ▸ R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/  
@@ -141,7 +141,7 @@
 
 🎇Ubuntu Linux 操作系统
 ```
-> D盘的路径分别是/mnt/d，以此类推⚡
+⭕D盘的路径分别是/mnt/d，以此类推⚡
 > 当打开 shell，遇到press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
 > HPC后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep assoc.sum.sh 之后 kill
 > HPC硬盘额度：mmlsquota -g sph-huangj --block-size auto
