@@ -103,8 +103,8 @@
 	pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu # whl/cu121 
 	pip install numpy tqdm transformers pandas requests openpyxl # bitsandbytes 没显卡就不要装
 	pip install -U "transformers>=4.56.0" "accelerate>=1.10.1" datasets peft evaluate scikit-learn protobuf sentencepiece
-	# hf auth login; hf download Qwen/Qwen3-8B --local-dir /mnt/d/data/ai/qwen/model
-	git clone https://huggingface.co/google-bert/bert-base-chinese ./ # 或网站直接下载，确保tokenizer.json文件的size正确🏮
+	# hf auth login; hf download Qwen/Qwen3-8B 或 git clone https://huggingface.co/Qwen/Qwen3-8B
+	大模型的权重文件走 Git LFS（以及 cdn-lfs.huggingface.co 等域名/CDN）。浏览器访问网页树可以正常，但命令行走的 LFS/CDN 域名在网络里被屏蔽、限速或劫持，于是就 “Failed to connect to port 443”。
 ```
 ![middle school](./images/nn-youtube.png)
 <br/><br/>
