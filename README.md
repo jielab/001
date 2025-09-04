@@ -106,7 +106,8 @@
 	# hf auth login; hf download Qwen/Qwen3-8B 或 git clone https://huggingface.co/Qwen/Qwen3-8B
 	大模型的权重文件走 Git LFS（以及 cdn-lfs.huggingface.co 等域名/CDN）。浏览器访问网页树可以正常，但命令行走的 LFS/CDN 域名在网络里被屏蔽、限速或劫持，于是就 “Failed to connect to port 443”。
 ```
-![middle school](./images/nn-youtube.png)
+![middle school]()
+[![点击看视频](./images/nn-youtube.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
 <br/><br/>
 
 
