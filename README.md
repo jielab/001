@@ -91,9 +91,9 @@
 
 
 ## 🤖4. AI系统
->- Transformer（架构）：指 2017 年论文 Attention Is All You Need 提出的神经网络架构，最初来自 Google 团队。
->- Transformers（库）：指 Hugging Face 的 Python 库，封装了 BERT、 Qwen、 LLaMA、 DeepSeek 等大量模型的加载、推理与微调接口，常搭配 PyTorch（torch） 使用，做底层训练/微调。
->- OpenAI：提供 ChatGPT 闭源模型和API的公司；如果要用 OpenAI 的模型，一般用 openai 官方 SDK 调 API，而不是用 HF 的 transformers 库加载本地权重。
+>- ▸Transformer（架构）：指 2017 年论文 Attention Is All You Need 提出的神经网络架构，最初来自 Google 团队。
+>- ▸Transformers（库）：指 Hugging Face 的 Python 库，封装了 BERT、 Qwen、 LLaMA、 DeepSeek 等大量模型的加载、推理与微调接口，常搭配 PyTorch（torch） 使用，做底层训练/微调。
+>- ▸OpenAI：提供 ChatGPT 闭源模型和API的公司；如果要用 OpenAI 的模型，一般用 openai 官方 SDK 调 API，而不是用 HF 的 transformers 库加载本地权重。
 ```
 0.	比较 pip --version; python -m pip --version
 	检查是否有GPU芯片 lspci -nnk | grep -iA3 'vga\|3d\|display' | grep NVIDIA 
@@ -114,11 +114,13 @@
 
 ## 🧬5. 参考资料及经验分享
 
-🐎GWAS-PRS-MR ”三驾马车“ 入门指南  
-> ▸ GWAS入门： 2021. Nature RMP. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)  
-> ▸ 🏮GWAS详解中文版：[gwaslab.org](https://gwaslab.org)，比如其中提到 [REGENIE](https://gwaslab.org/2021/03/28/regenie/)  
-> ▸ PRS入门. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)  
-> ▸ MR入门： 2022. Nature RMP. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)  
+🐎GWAS-PRS-MR ”三驾马车“ 入门指南 
+``` 
+> GWAS入门： 2021. Nature RMP. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)  
+> 🏮GWAS详解中文版：gwaslab.org
+> PRS入门. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)  
+> MR入门： 2022. Nature RMP. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)  
+```
 
 基因注释信息🔍
 ```
