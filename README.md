@@ -8,9 +8,8 @@
 
 * ### 📍1.2 [千人基因组项目数据](https://www.internationalgenome.org/data)， 将近1亿个SNP，一般作为 imputation 的 reference panel。
 
-
-![middle school](./images/ukb-disease.jpg)
 * ### 📍1.3 UKB 数据，现在推荐用[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)。
+![middle school](./images/ukb-disease.jpg)
 ```
 1. 最新数据通知 https://community.ukbiobank.ac.uk/hc/en-gb/articles/26088595922333-New-and-Updated-Data
 2. UKB RAP：https://ukbiobank.dnanexus.com/landing
