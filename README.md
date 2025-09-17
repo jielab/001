@@ -104,6 +104,7 @@
 	# 大模型的权重文件，浏览器访问网页树可以正常，但命令行走的 LFS/CDN 域名在网络里被屏蔽、限速或劫持，于是就 “Failed to connect to port 443”。
 
 2. 安装 VS code，在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
+   wsl里面用 which python, cmd 里面用 where python, 而VS code 里面用 python -c "import sys; print(sys.executable)"
 
 
 ```
