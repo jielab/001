@@ -91,13 +91,9 @@
 
 
 ## 🤖4. AI系统
->- ▸Transformer（架构）：指 2017 年论文 Attention Is All You Need 提出的神经网络架构，最初来自 Google 团队。
->- ▸Transformers（库）：指 Hugging Face 的 Python 库，封装了 BERT、 Qwen、 LLaMA、 DeepSeek 等大量模型的加载、推理与微调接口，常搭配 PyTorch（torch） 使用，做底层训练/微调。
->- ▸OpenAI：提供 ChatGPT 闭源模型和API的公司；如果要用 OpenAI 的模型，一般用 openai 官方 SDK 调 API，而不是用 HF 的 transformers 库加载本地权重。
+>- Transformer（架构）：指 2017 年论文 Attention Is All You Need 提出的神经网络架构，最初来自 Google 团队。
+>- Transformers（库）：指 Hugging Face 里的 Python 库，常搭配 PyTorch（torch） 使用，做底层训练/微调。
 ```
-0.	比较 pip --version; python -m pip --version
-	检查是否有GPU芯片 lspci -nnk | grep -iA3 'vga\|3d\|display' | grep NVIDIA 
-   
 1.	本地安装大模型（以千问为例）
 	conda env list # conda env remove -n ai
 	conda create -n ai python=3.11; conda activate ai
@@ -105,13 +101,10 @@
 	pip install numpy tqdm transformers pandas requests openpyxl bitsandbytes
 	pip install -U "transformers>=4.56.0" "accelerate>=1.10.1" datasets peft evaluate scikit-learn protobuf sentencepiece
 	# hf auth login; hf download Qwen/Qwen3-8B 或 git clone https://huggingface.co/Qwen/Qwen3-8B
-	大模型的权重文件走 Git LFS（以及 cdn-lfs.huggingface.co 等域名/CDN）。浏览器访问网页树可以正常，但命令行走的 LFS/CDN 域名在网络里被屏蔽、限速或劫持，于是就 “Failed to connect to port 443”。
-	module load python/anaconda3/2022.10; source activate; conda activate ai
+	# 大模型的权重文件，浏览器访问网页树可以正常，但命令行走的 LFS/CDN 域名在网络里被屏蔽、限速或劫持，于是就 “Failed to connect to port 443”。
 
-2. 安装 VS code 写代码界面
-   在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
-   如果需要，在最右下角，选择conda环境【比如ai】🏮
-   每个代码，可以右键，转换为.ipynb文件
+2. 安装 VS code，在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
+
 
 ```
 [![点击看视频](./images/nn-youtube.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
@@ -159,4 +152,4 @@
   bsub等: queueinfo -gpu -cpu; module avail  
 ```
 
-🌅 🌇 🌙 🦟 🐜 
+🌅 🌇 🌙 🦟 🐜 ▸
