@@ -100,13 +100,15 @@
 	pip install torch>=2.6.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 	pip install numpy tqdm transformers pandas requests openpyxl bitsandbytes
 	pip install -U "transformers>=4.56.0" "accelerate>=1.10.1" datasets peft evaluate scikit-learn protobuf sentencepiece
-	# hf auth login; hf download Qwen/Qwen3-8B 或 git clone https://huggingface.co/Qwen/Qwen3-8B
-	# 如果 Failed to connect to port 443，就用python代码： from huggingface_hub import snapshot_download
 
-2. 安装 VS code，在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
+2. 	# hf auth login; hf download Qwen/Qwen3-8B 或 git clone https://huggingface.co/Qwen/Qwen3-8B
+	# 如果 Failed to connect to port 443，就用下面的python代码： 
+	import os, time
+	from huggingface_hub import snapshot_download
+	snapshot_download(repo_id="google-bert/bert-large-uncased", repo_type="model", local_dir="D:/data/ai/bert/bert-large-uncased")
+
+3. 安装 VS code，在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
    wsl里面用 which python, cmd 里面用 where python, 而VS code 里面用 python -c "import sys; print(sys.executable)"
-
-
 ```
 [![点击看视频](./images/nn-youtube.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
 <br/><br/>
