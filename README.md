@@ -97,7 +97,8 @@
 1.	本地安装大模型（以千问为例）
 	conda env list # conda env remove -n ai
 	conda create -n ai python=3.11; conda activate ai
-	pip install torch>=2.6.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+#	pip install --upgrade --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+	pip install --pre --upgrade --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
 	pip install numpy tqdm transformers pandas requests openpyxl bitsandbytes
 	pip install -U "transformers>=4.56.0" "accelerate>=1.10.1" datasets peft evaluate scikit-learn protobuf sentencepiece
 
