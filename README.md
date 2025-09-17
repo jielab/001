@@ -97,11 +97,11 @@
 1.	本地安装大模型（以千问为例）
 	conda env list # conda env remove -n ai
 	conda create -n ai python=3.11; conda activate ai
-	pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+	pip install torch>=2.6.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 	pip install numpy tqdm transformers pandas requests openpyxl bitsandbytes
 	pip install -U "transformers>=4.56.0" "accelerate>=1.10.1" datasets peft evaluate scikit-learn protobuf sentencepiece
 	# hf auth login; hf download Qwen/Qwen3-8B 或 git clone https://huggingface.co/Qwen/Qwen3-8B
-	# 大模型的权重文件，浏览器访问网页树可以正常，但命令行走的 LFS/CDN 域名在网络里被屏蔽、限速或劫持，于是就 “Failed to connect to port 443”。
+	# 如果 Failed to connect to port 443，就用python代码： from huggingface_hub import snapshot_download
 
 2. 安装 VS code，在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
    wsl里面用 which python, cmd 里面用 where python, 而VS code 里面用 python -c "import sys; print(sys.executable)"
