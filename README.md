@@ -114,7 +114,7 @@
 <br/>
 
 ### 关于蛋白质结构预测
-> 下载 [千人基因组深度测序VCF文件](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/), [参考基因组fasta文件](https://ftp.ensembl.org/pub/current_fasta/homo_sapiens/dna) 【samtools faidx】, [gff3文件](https://ftp.ensembl.org/pub/current_gff3/homo_sapiens/), [vcf2prot软件](https://github.com/ikmb/vcf2prot)
+> 下载 [千人基因组深度测序VCF文件](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/), 下载[参考基因组fasta文件](https://ftp.ensembl.org/pub/current_fasta/homo_sapiens/dna) 然后samtools faidx, 下载[gff3文件](https://ftp.ensembl.org/pub/current_gff3/homo_sapiens/), [vcf2prot软件](https://github.com/ikmb/vcf2prot)
 > 在Alpha-fold服务器输入的DNA，是mRNA逆转录形成的cDNA【不含内含子】，snapgene或Editseq可将DNA转为蛋白质🥚序列
 > 蛋白质3D之间【包括冷冻电镜数据】比较，可用TMalign
 > 很多样本 _1 和 _2 的蛋白完全一致，先 seqkit rmdup 去重，再跑 Alpha-Fold
