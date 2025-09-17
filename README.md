@@ -111,7 +111,19 @@
    wsl里面用 which python, cmd 里面用 where python, 而VS code 里面用 python -c "import sys; print(sys.executable)"
 ```
 [![点击看视频](./images/nn-youtube.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
-<br/><br/>
+<br/>
+
+### 关于蛋白质结构预测
+> 下载 [千人基因组深度测序VCF文件](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/), [参考基因组fasta文件](https://ftp.ensembl.org/pub/current_fasta/homo_sapiens/dna) 【samtools faidx】, [gff3文件](https://ftp.ensembl.org/pub/current_gff3/homo_sapiens/), [vcf2prot软件](https://github.com/ikmb/vcf2prot)
+> 在Alpha-fold服务器输入的DNA，是mRNA逆转录形成的cDNA【不含内含子】，snapgene或Editseq可将DNA转为蛋白质🥚序列
+> 蛋白质3D之间【包括冷冻电镜数据】比较，可用TMalign
+> 很多样本 _1 和 _2 的蛋白完全一致，先 seqkit rmdup 去重，再跑 Alpha-Fold
+```
+bcftools +liftover chr9.vcf.gz -Oz -o chr9.lifted.vcf.gz -- -s $fasta_37 -f $fasta_38 -c $dir0/files/liftOver/hg19ToHg38.over.chain.gz 
+bcftools view NEFL.csq.vcf -i 'INFO/BCSQ ~ "missense"' | bcftools query -f '[%SAMPLE\t%GT\n]' missense.vcf.gz | awk '$2 !~ /0\|0/' > missense.person
+bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if ($3 ~ /^ENST/) print $3}' | sort -u
+```
+<br/>
 
 
 ## 🧬5. 参考资料及经验分享
