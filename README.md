@@ -4,11 +4,11 @@
 
 ![middle school](./images/middle.jpg)
 
-* ### 📍1.1 [HAPMAP3 genotype 数据](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3), 1百多万个SNP，一般作为 LD 计算的 reference panel。
+### 📍1.1 [HAPMAP3 genotype 数据](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3), 1百多万个SNP，一般作为 LD 计算的 reference panel。
 
-* ### 📍1.2 [千人基因组项目数据](https://www.internationalgenome.org/data)， 将近1亿个SNP，一般作为 imputation 的 reference panel。
+### 📍1.2 [千人基因组项目数据](https://www.internationalgenome.org/data)， 将近1亿个SNP，一般作为 imputation 的 reference panel。
 
-* ### 📍1.3 UKB 数据，现在推荐用[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)。
+### 📍1.3 UKB 数据，现在推荐用[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)。
 ![middle school](./images/ukb-disease.jpg)
 ```
 1. 最新数据通知 https://community.ukbiobank.ac.uk/hc/en-gb/articles/26088595922333-New-and-Updated-Data
@@ -21,9 +21,9 @@
 
 ![GWAS](./images/GWAS.jpg)
 
-* ### 📍2.1 GWAS数据获取，最经典的是[GWAS Catalog](https://www.ebi.ac.uk/gwas)。
+### 📍2.1 GWAS数据获取，最经典的是[GWAS Catalog](https://www.ebi.ac.uk/gwas)。
 
-* ### 📍2.2 GWAS数据QC示例 【本课题组建议GWAS列名称： SNP CHR POS CHRPOS ⭐ EA NEA EAF N ⭐ BETA SE Z P】
+### 📍2.2 GWAS数据QC示例 【本课题组建议GWAS列名称： SNP CHR POS CHRPOS ⭐ EA NEA EAF N ⭐ BETA SE Z P】
 ```
 1. 确保文件每一行的列数目是一样的。将连续空格中插入NA，扣好第一粒纽扣。
    zcat GWAS.gz | awk '{print NF}' | sort -nu | wc -l 
@@ -58,13 +58,12 @@
    tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz
 ```
 
-* ### 📍2.3 GWAS数据可视化
+### 📍2.3 GWAS数据可视化
 >- 密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) ，UKB的几千个GWAS的数据放在[pheweb.org](https://pheweb.org/)上，[中国版本](https://pheweb.ckbiobank.org/)，[日本版本](https://pheweb.jp/)。
 >- Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷，见[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。
 >- 用户也可以在[pheweb资源库](https://resources.pheweb.org/)网站下载 rsids-v??-hg??.tsv.gz 文件（7亿多行）。
 >- 如果要从这个超大文件里提取SNP的信息，可用 bcftools view -i 'ID==@bmi.snp' rsids-v154-hg38.tsv.gz -Ou -o bmi.chrpos.txt
 >- 如果GWAS文件 “三缺一” ，想一键补齐，可以从scripts文件夹下载add_rsid.py，示例命令如下。 
-
 ```
    python snp_chrpos.py -i bmi.gwas.gz --sep $'\t' --chr CHR --pos POS --ref A1 --alt A2 -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
    python snp_chrpos.py -i bmi.gwas.gz --sep ',' --snp SNP --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
@@ -75,11 +74,11 @@
 
 
 ## 🧬3. MR
-> 如果有个体数据，可以用 [OneSampleMR包](https://cran.r-project.org/web/packages/OneSampleMR/index.html)。
-> 如果只有已发表的summary数据，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/8-449)。
-> 工具变量，一般需要去掉 F_stats <10 或者位于 <b>[MHC区间]</b> 【chr6:28477897-33448354 [(GRCh37)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC?asm=GRCh37), chr6:28510120-33480577 [(GRCh38)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC)】 的SNP。
-> <b>密西根大学</b>开发的 [imputation server](https://imputationserver.sph.umich.edu) 用的是： 从rs57232568 【29000554 (版本37), 29032777 (版本38)】 到 rs116206961【33999992 (版本37), 34032215 (版本38)】
-> 10个注意事项示例：
+>- 如果有个体数据，可以用 [OneSampleMR包](https://cran.r-project.org/web/packages/OneSampleMR/index.html)。
+>- 如果只有已发表的summary数据，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/8-449)。
+>- 工具变量，一般需要去掉 F_stats <10 或者位于 <b>[MHC区间]</b> 【chr6:28477897-33448354 [(GRCh37)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC?asm=GRCh37), chr6:28510120-33480577 [(GRCh38)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC)】 的SNP。
+>- <b>密西根大学</b>开发的 [imputation server](https://imputationserver.sph.umich.edu) 用的是： 从rs57232568 【29000554 (版本37), 29032777 (版本38)】 到 rs116206961【33999992 (版本37), 34032215 (版本38)】
+>- 10个注意事项示例：
 ```
 > 1. 用 allele.qc，协调两组数据的 BETA和EAF，但是输出文件依然是原来的EA和 NEA。
 > 2. 用 fread和fwrite 比 read.table 和 write.table 更快，但fwrite默认输出带quote。
