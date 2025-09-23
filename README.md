@@ -45,30 +45,31 @@
    cut -f 3,4 $dat.lifted > $dat.pos_snp
    python ~/scripts/f/join_file.py -i "$dat.tmp1,TAB,8 $dat.pos_snp,TAB,1" -o $dat.tmp2
    cut -d " " -f 1-10 $dat.tmp2 | sed '1s/POS/POS.37/; 1s/NA/POS/' | gzip -f > clean/$dat.gz
+
 2. ⛄跟其他数据合并 
    python scripts/library/join_file.py -i "$dat,TAB,0 $dat.lifted.3col,TAB,2" -o $dat.NEW.tmp
    sed -i 's/  */\t/g' $dat.NEW.tmp; awk '$NF=="NA"' $dat.NEW.tmp | wc -l
    cut -f 1-10,12 $dat.NEW.tmp | sed '1 s/POS/POS.b38/' > $dat.NEW.txt
-3. 🧢添加 rsID 
-   用户也可以在[pheweb资源库](https://resources.pheweb.org/)网站下载 rsids-v??-hg??.tsv.gz 文件（7亿多行）。
-   如果要从这个超大文件里提取SNP的信息，可用 bcftools view -i 'ID==@bmi.snp' data/dbsnp/rsids-v154-hg38.tsv.gz -Ou -o bmi.chrpos.txt
-   如果GWAS文件 “三缺一” ，想一键补齐，可以从scripts文件夹下载add_rsid.py，示例命令如下。 
-   python snp_chrpos.py -i bmi.gwas.gz --sep $'\t' --chr CHR --pos POS --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
-   python snp_chrpos.py -i bmi.gwas.gz --sep ',' --snp SNP --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
-4. 🏃瘦身 ‍[比如说FUMA不能接受超过600MB的文件]
+
+3. 🏃瘦身 ‍[比如说FUMA不能接受超过600MB的文件]
    zcat $dat.gz | awk 'function r(x) {return sprintf("%.4f", x)} {if (NR == 1) print; else if ($6 > 0.005 && $6 <= 0.995) {$6 = r($6); $8 = r($8); $9 = r($9); print}}' | sed 's/ /\t/g' | bgzip > $dat.lean.gz
-5. 🔍索引 
+
+4. 🔍索引 
    tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz
 ```
 
 * ### 📍2.3 GWAS数据可视化
 > 密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) ，UKB的几千个GWAS的数据放在[pheweb.org](https://pheweb.org/)上，[中国版本](https://pheweb.ckbiobank.org/)，[日本版本](https://pheweb.jp/)。
-> Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷。根据该[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。
+> Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷，见[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。
+> 用户也可以在[pheweb资源库](https://resources.pheweb.org/)网站下载 rsids-v??-hg??.tsv.gz 文件（7亿多行）。
+> 如果要从这个超大文件里提取SNP的信息，可用 bcftools view -i 'ID==@bmi.snp' rsids-v154-hg38.tsv.gz -Ou -o bmi.chrpos.txt
+> 如果GWAS文件 “三缺一” ，想一键补齐，可以从scripts文件夹下载add_rsid.py，示例命令如下。 
+```
+   python snp_chrpos.py -i bmi.gwas.gz --sep $'\t' --chr CHR --pos POS --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
+   python snp_chrpos.py -i bmi.gwas.gz --sep ',' --snp SNP --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
+```
+
 > 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 
-```
-修改前：rsids = [rsid['rsid'] for rsid in rsid_group if cpra['ref'] == rsid['ref'] and are_match(cpra['alt'], rsid['alt'])]
-修改后：rsids = [rsid['rsid'] for rsid in rsid_group if (cpra['ref'] == rsid['ref'] and are_match(cpra['alt'], rsid['alt'])) or (cpra['ref'] == rsid['alt'] and are_match(cpra['alt'], rsid['ref']))]
-```
 <br/>
 
 
