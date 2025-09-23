@@ -50,8 +50,11 @@
    sed -i 's/  */\t/g' $dat.NEW.tmp; awk '$NF=="NA"' $dat.NEW.tmp | wc -l
    cut -f 1-10,12 $dat.NEW.tmp | sed '1 s/POS/POS.b38/' > $dat.NEW.txt
 3. 🧢添加 rsID 
-   用户也可以在pheweb网站下载 rsids-v154-hgXX.tsv.gz 文件（7亿多行）后，在本Github的 scripts文件夹下载本课题组修订的 add_rsid.py; dos2unix add_rsid.py，然后运行如下示例命令。
-   python add_rsid.py -i test.tsv --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg19.tsv.gz -o out.tsv
+   用户也可以在[pheweb资源库](https://resources.pheweb.org/)网站下载 rsids-v??-hg??.tsv.gz 文件（7亿多行）。
+   如果要从这个超大文件里提取SNP的信息，可用 bcftools view -i 'ID==@bmi.snp' data/dbsnp/rsids-v154-hg38.tsv.gz -Ou -o bmi.chrpos.txt
+   如果GWAS文件 “三缺一” ，想一键补齐，可以从scripts文件夹下载add_rsid.py，示例命令如下。 
+   python snp_chrpos.py -i bmi.gwas.gz --sep $'\t' --chr CHR --pos POS --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
+   python snp_chrpos.py -i bmi.gwas.gz --sep ',' --snp SNP --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
 4. 🏃瘦身 ‍[比如说FUMA不能接受超过600MB的文件]
    zcat $dat.gz | awk 'function r(x) {return sprintf("%.4f", x)} {if (NR == 1) print; else if ($6 > 0.005 && $6 <= 0.995) {$6 = r($6); $8 = r($8); $9 = r($9); print}}' | sed 's/ /\t/g' | bgzip > $dat.lean.gz
 5. 🔍索引 
