@@ -59,13 +59,14 @@
 ```
 
 * ### 📍2.3 GWAS数据可视化
-> 密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) ，UKB的几千个GWAS的数据放在[pheweb.org](https://pheweb.org/)上，[中国版本](https://pheweb.ckbiobank.org/)，[日本版本](https://pheweb.jp/)。
-> Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷，见[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。
-> 用户也可以在[pheweb资源库](https://resources.pheweb.org/)网站下载 rsids-v??-hg??.tsv.gz 文件（7亿多行）。
-> 如果要从这个超大文件里提取SNP的信息，可用 bcftools view -i 'ID==@bmi.snp' rsids-v154-hg38.tsv.gz -Ou -o bmi.chrpos.txt
-> 如果GWAS文件 “三缺一” ，想一键补齐，可以从scripts文件夹下载add_rsid.py，示例命令如下。 
+>- 密西根大学开发的[Pheweb](https://github.com/statgen/pheweb) ，UKB的几千个GWAS的数据放在[pheweb.org](https://pheweb.org/)上，[中国版本](https://pheweb.ckbiobank.org/)，[日本版本](https://pheweb.jp/)。
+>- Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷，见[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。
+>- 用户也可以在[pheweb资源库](https://resources.pheweb.org/)网站下载 rsids-v??-hg??.tsv.gz 文件（7亿多行）。
+>- 如果要从这个超大文件里提取SNP的信息，可用 bcftools view -i 'ID==@bmi.snp' rsids-v154-hg38.tsv.gz -Ou -o bmi.chrpos.txt
+>- 如果GWAS文件 “三缺一” ，想一键补齐，可以从scripts文件夹下载add_rsid.py，示例命令如下。 
+
 ```
-   python snp_chrpos.py -i bmi.gwas.gz --sep $'\t' --chr CHR --pos POS --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
+   python snp_chrpos.py -i bmi.gwas.gz --sep $'\t' --chr CHR --pos POS --ref A1 --alt A2 -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
    python snp_chrpos.py -i bmi.gwas.gz --sep ',' --snp SNP --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
 ```
 
