@@ -65,8 +65,8 @@
 >- 如果要从这个超大文件里提取SNP的信息，可用 bcftools view -i 'ID==@bmi.snp' rsids-v154-hg38.tsv.gz -Ou -o bmi.chrpos.txt
 >- 如果GWAS文件 “三缺一” ，想一键补齐，可以从scripts文件夹下载add_rsid.py，示例命令如下。 
 ```
-   python snp_chrpos.py -i bmi.gwas.gz --sep $'\t' --chr CHR --pos POS --ref A1 --alt A2 -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
-   python snp_chrpos.py -i bmi.gwas.gz --sep ',' --snp SNP --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
+   python snp_chrpos.py -i bmi.gwas.gz --sep $'\t' --snp SNP --ref A1 --alt A2 -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
+   python snp_chrpos.py -i bmi.gwas.gz --sep ',' --chr CHR --pos POS --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
 ```
 
 > 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 
