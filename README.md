@@ -106,7 +106,7 @@
 	pip install numpy tqdm transformers pandas requests openpyxl bitsandbytes
 	pip install -U "transformers>=4.56.0" "accelerate>=1.10.1" datasets peft evaluate scikit-learn protobuf sentencepiece
 
-2. 	pip install huggingface_hub; hf auth login; hf download Qwen/Qwen3-8B 或 git clone https://huggingface.co/Qwen/Qwen3-8B
+2. 	pip install huggingface_hub; hf auth login; hf download google-bert/bert-base-chinese --local-dir . 或 git clone https://huggingface.co/Qwen/Qwen3-8B
 	# 如果 Failed to connect to port 443，就用下面的python代码： 
 	import os, time
 	from huggingface_hub import snapshot_download
