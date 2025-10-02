@@ -154,6 +154,7 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 🛵R 
 ``` 
 ▸ WINDOWS “环境变量”里设置R_LIBS_USER，LINUX在 ~/.Renviron设置。 用 .libPaths()查看
+▸ 先安装 devtools, remotes 包
 ▸ R画图集锦: https://r-graph-gallery.com/index.html  
 ▸ R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/  
 ▸ 供复现代码： https://globalenvhealth.org/code-data-download/  
