@@ -1,6 +1,6 @@
 ## 🧬1. Gen数据和Phe数据
 
-### 初二生物学课本里面的一页。
+### 初二生物学课本。
 
 ![middle school](./images/middle.jpg)
 
