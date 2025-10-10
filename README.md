@@ -173,5 +173,6 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
   硬盘额度：mmlsquota -g sph-huangj --block-size auto
   bsub等: queueinfo -gpu -cpu; module avail  
 ```
+🖨： 添加设备 👉 手动添加设备 👉 使用IP地址 👉“设备类型” 选TCP/IP 👉 “输入IP” 写 10.20.30.6
 
 🌅 🌇 🌙 🦟 🐜 ▸
