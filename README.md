@@ -170,7 +170,7 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 > 三剑客🗡代码示例: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
 > HPC 登录： ssh sph-huangj@172.18.6.178 【太乙】； ssh -p 18188 sph-huangj@172.18.6.10 【启明】
   后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
-  硬盘额度：mmlsquota -g sph-huangj --block-size auto
+  硬盘额度：du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
   bsub等: queueinfo -gpu -cpu; module avail  
 ```
 创园301🖨： 从[富士官网](https://m3support-fb.fujifilm-fb.com.cn/driver_downloads/www/)搜索 ApeosPort C2060 下载驱动程序，然后运行。 👉“设备类型” 选TCP/IP 👉 打印机IP为 10.20.40.6
