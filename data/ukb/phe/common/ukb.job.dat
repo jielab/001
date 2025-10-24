@@ -1,9 +1,0 @@
-p22601	job_coding_hist	# 🎄 Job coding
-p22617	job_code_hist	# 🎄 Job code - historical
-p22620	job_shift_hist	# 🎄 Job involved shift work
-p22630	job_shift_day_hist	# 🎄Day shifts worked
-p22640	job_shift_mix_hist	# 🎄Mixture of day and night shifts worked
-p22650	job_shift_night_hist	# 🎄Night shifts worked
-p32220	home_date_hist		# Home location history - date first recorded	Home locations  
-p32223	home_east_hist	# Home location history - east co-ordinate (1km resolution)
-p32224	home_north_hist	# Home location history - north co-ordinate (1km resolution)

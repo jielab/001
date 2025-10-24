@@ -1,6 +1,0 @@
-Bucket name	largescaleplasma-2023
-S3 Host Url	s3-ext.decode.is
-S3 Host Port	10443
-Access Key	3CDHPYD5J2CQNMQV79R0
-Secret Access Key	/TaGTihP0nxQcNGqB/cSaTSUG23dsBSlliYHGGr8
-In the Advanced settings, under Directories, input the S3 bucket name in the 'Remote directory' field.
