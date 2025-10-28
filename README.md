@@ -178,6 +178,8 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 ```
 > which -a python python2 python3
 > sudo rm /bin/python3
+> pip uninstall -y pysankey2
+> pip install https://github.com/anazalea/pySankey2/archive/refs/heads/master.zip
 ```
 
 >- 创园301🖨： 从[富士官网](https://m3support-fb.fujifilm-fb.com.cn/driver_downloads/www/)搜索 ApeosPort C2060 下载驱动程序，然后运行。 👉“设备类型” 选TCP/IP 👉 打印机IP为 10.20.40.6
