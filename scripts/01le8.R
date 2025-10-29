@@ -37,6 +37,7 @@ phe0 %>% select(where(~ any(str_detect(as.character(.x), fixed("|")), na.rm = TR
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # LE8 湘雅版本（参考文献 PMID: 40285703)
+# LE9 苏医版本（参考文献 PMID: 40692006）
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 地中海饮食 🥢
 diet <- phe0 %>% select(matches("^(eid$|med\\.)"))
@@ -61,8 +62,8 @@ diet <- diet %>% mutate(
 	diet.sum = rowSums(across(matches("\\.sco$")), na.rm = TRUE),
 	diet.pts = cut(diet.sum, breaks = c(-Inf, 2, 4, 6, 8, Inf), labels = c(0, 25, 50, 80, 100), right = FALSE) %>% as.character() %>% as.numeric(),
 )
-table(diet$diet.pts)
-lapply(diet %>% select(matches("sco$")), table)
+table(diet$diet.pts, useNA = "always")
+lapply(diet %>% select(matches("sco$")), table, useNA = "always")
 
 # 其他7项 👨‍👩‍👧‍👦
 phe <- readRDS(paste0(indir,"/Rdata/ukb.phe.rds")) %>% mutate( 
@@ -75,7 +76,8 @@ srd <- read.table(paste0(indir,"/rap/srd.tab.gz"), header = TRUE) %>% mutate( # 
 le7 <- merge(phe, srd, by = "eid") 
 le7 <- le7 %>% mutate(
 	# 运动 🏃‍ 
-	pa_mins = dura_pa_mod + dura_pa_vig, # pa_mins = pa_mod + pa_vig * 2 # 北医版本
+	# ❌ pa_mins = dura_pa_mod + dura_pa_vig, # pa_mins = dura_pa_mod + dura_pa_vig * 2 # 北医版本
+	pa_mins = rowSums(across(c(dura_pa_mod, dura_pa_vig)), na.rm = TRUE),
 	pa.pts = cut(pa_mins, breaks = c(0, 1, 30, 60, 90, 120, 150, Inf), labels = c(0, 20, 40, 60, 80, 90, 100), right = FALSE) %>% as.character() %>% as.numeric(),
 	# 吸烟 🚬
 	smoke_quit_years = ifelse(smoke_quit_age > 0 & age >= smoke_quit_age, age - smoke_quit_age, NA), 
@@ -99,12 +101,14 @@ le7 <- le7 %>% mutate(
 	bp.pts = case_when(sbp >= 160 | dbp >= 100 ~ 0, (sbp >= 140 & sbp < 160) | (dbp >= 90 & dbp < 100) ~ 25, (sbp >= 130 & sbp < 140) | (dbp >= 80 & dbp < 90) ~ 50, (sbp >= 120 & sbp < 130) & (dbp >= 0 & dbp < 80) ~ 75, sbp >0 & sbp <120 & dbp >0 & dbp <80 ~ 100),
 	bp.pts = ifelse(drug.hpt == 1 & bp.pts > 0, bp.pts - 20, bp.pts)
 )
+le7 <- le7 %>% select(matches("^eid$|\\.pts$"))
+lapply(le7[, -1], table, useNA = "always")
 le8 <- merge(le7, diet, by = "eid") %>% select(matches("^eid$|\\.pts$")) %>% mutate( # 🎇 汇总
 	le8.sco = rowMeans(across(matches("\\.pts$")), na.rm = TRUE),
 	cvh.c = factor(cut(le8.sco, breaks = c(0, 50, 80, Inf), labels = c(0, 1, 2), right = FALSE), levels = 0:2, labels = c("unhealthy", "average", "healthy"))
 	)
-	lapply(le8 %>% select(matches("\\.pts$")), table)
-	saveRDS(le8, paste0(indir,"/Rdata/ukb.le8.rds"))
+lapply(le8[, -1], summary)
+saveRDS(le8, paste0(indir,"/Rdata/ukb.le8.rds"))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -237,67 +241,3 @@ le8 <- le7 %>% merge(dash, by="eid") %>% select(eid, all_of(paste0(vars.le8, ".p
 lapply(le8[grep("\\.pts", names(le8))], function(x) table(x, useNA="always"))
 names(le8)[-1] <- gsub("$", ".pku", names(le8)[-1])
 saveRDS(le8, paste0(indir,"/Rdata/ukb.pku.le8.rds"))
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# LE9 苏医版本（参考文献 PMID: 40692006）
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# LE6 南医版本（PMID: 36717939）
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# https://github.com/XiangyuYe/Infection_SES
-dat0 <- read.table(paste0(dir0, '/data/ukb/phe/rap/njmu.tab.gz'), sep = "\t", fill = TRUE, header = TRUE)
-dat <- dat0 %>% mutate(across(everything(), ~ ifelse(. < 0, NA, .)))
-
-dat <- dat %>% mutate( #🚬🍺
-	nosmoke_sco = ifelse(p20116_i0 == 0, 1, ifelse(p20116_i0 > 0, 0, NA)),
-	nosmoke_year = p21003_i0 - p2897_i0,
-	nosmoke_sco[which(nosmoke_year > 30)] <- 1,
-	cannabis_sco = ifelse(p20453 == 0, 1, ifelse(p20453 > 0, 0, NA)),
-	noalcohol_sco = ifelse(p20117_i0 == 0, 1, ifelse(p20117_i0 > 0, 0, NA))
-)
-
-dat <- dat %>% mutate( # 🥦
-	fruit_sco = rowSums(cbind(p1309_i0, p1319_i0 / 5), na.rm = TRUE) >= 4,
-	veg_sco = rowSums(cbind(p1289_i0 / 3, p1299_i0 / 3), na.rm = TRUE) >= 4,
-	fish_sco = (p1329_i0 >= 3 | p1339_i0 >= 3) | (p1329_i0 == 2 & p1339_i0 == 2),
-	pmeat_sco = p1349_i0 <= 2,
-	npmeat_sco = rowSums(cbind(p1369_i0, p1379_i0, p1389_i0), na.rm = TRUE) <= 3 & !(p1369_i0 >= 3 | p1379_i0 >= 3 | p1389_i0 >= 3),
-	grains_sco = rowSums(cbind(ifelse(p1448_i0 == 3, p1438_i0, 0), ifelse(p1468_i0 %in% c(1, 2, 3), p1458_i0, 0)), na.rm = TRUE) >= 3
-)
-diet_fileds <- c("fruit_sco", "veg_sco", "fish_sco", "pmeat_sco", "npmeat_sco", "grains_sco")
-dat <- dat %>% mutate(
-  diet_sum = rowSums(select(., all_of(diet_fileds)), na.rm = TRUE),
-  diet_sco = ifelse(diet_sum >= 4, TRUE, ifelse(rowSums(is.na(select(., all_of(diet_fileds)))) + diet_sum < 4, FALSE, NA))
-) 
-
-dat <- dat %>% mutate( # 🏃‍
-	num_activity = p884_i0 > 5 & p904_i0 > 1,
-	time_moderate = p894_i0 > 150,
-	time_vigorous = p914_i0 > 75,
-	mat_activity = rowSums(cbind(num_activity, time_moderate, time_vigorous), na.rm = TRUE),
-	activity_sco = ifelse(mat_activity > 0, 1, ifelse(mat_activity == 3, NA, 0))
-)
-
-dat <- dat %>% mutate( # 🛏
-	chrono_sco = ifelse(!is.na(p1180_i0) & p1180_i0 < 3, 1, 0),
-	duration_sco = ifelse(!is.na(p1160_i0) & p1160_i0 >= 7 & p1160_i0 <= 8, 1, 0),
-	insomnia_sco = ifelse(!is.na(p1200_i0) & p1200_i0 == 1, 1, 0),
-	snoring_sco = ifelse(!is.na(p1210_i0) & p1210_i0 == 2, 1, 0),
-	narcolepsy_sco = ifelse(!is.na(p1220_i0) & p1220_i0 < 2, 1, 0)
-) 
-sleep_mat <- select(dat, chrono_sco, duration_sco, insomnia_sco, snoring_sco, narcolepsy_sco)
-dat <- dat %>% mutate(
-	sleep_sum = rowSums(sleep_mat, na.rm = TRUE),
-	sleep_sco = ifelse(sleep_sum >= 4, TRUE, ifelse(rowSums(is.na(sleep_mat)) + sleep_sum < 4, FALSE, NA))
-)
-
-le_fileds <- c("nosmoke_sco", "cannabis_sco", "noalcohol_sco", "diet_sco", "activity_sco", "sleep_sco")
-dat <- dat %>% mutate( # 🎇 汇总
-	le_sum = rowSums(select(., all_of(le_fileds)), na.rm = TRUE),
-	missing_cnt = rowSums(is.na(select(., all_of(le_fileds)))),
-	le6 = ifelse(le_sum >= 4 | le_sum == 3, 3, ifelse(le_sum >= 2 & (le_sum + missing_cnt) < 4, 2, ifelse((le_sum + missing_cnt) < 2 | le_sum == 0, 1, NA)))
-)
-saveRDS(dat, paste0(indir,"/Rdata/ukb.nku.le6.rds"))
