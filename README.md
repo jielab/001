@@ -38,24 +38,24 @@
 对检查没问题的GWAS，深加工示例：
 
 1. 🚜liftOver 
-   dat=XYZ; head -1 $dat.txt > $dat.sorted; tail -n +2 $dat.txt | sort -k 1,1V -k 2,2n > $dat.sorted
-   python ~/scripts/f/add_rsid.py -i $dat.sorted --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d ~/data/dbsnp/rsids-v154-hg19.tsv.gz -o $dat.tmp1
-   cat $dat.tmp1 | awk 'NR >1 {print "chr"$1, $2 -1, $2, $9}' | sed 's/^chr23/chrX/' > $dat.tolift
-   liftOver $dat.tolift /work/sph-huangj/files/hg19ToHg38.over.chain.gz $dat.lifted $dat.unmapped
-   cut -f 3,4 $dat.lifted > $dat.pos_snp
-   python ~/scripts/f/join_file.py -i "$dat.tmp1,TAB,8 $dat.pos_snp,TAB,1" -o $dat.tmp2
-   cut -d " " -f 1-10 $dat.tmp2 | sed '1s/POS/POS.37/; 1s/NA/POS/' | gzip -f > clean/$dat.gz
+>  dat=XYZ; head -1 $dat.txt > $dat.sorted; tail -n +2 $dat.txt | sort -k 1,1V -k 2,2n > $dat.sorted
+>  python ~/scripts/f/add_rsid.py -i $dat.sorted --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d ~/data/dbsnp/rsids-v154-hg19.tsv.gz -o $dat.tmp1
+>  cat $dat.tmp1 | awk 'NR >1 {print "chr"$1, $2 -1, $2, $9}' | sed 's/^chr23/chrX/' > $dat.tolift
+>  liftOver $dat.tolift /work/sph-huangj/files/hg19ToHg38.over.chain.gz $dat.lifted $dat.unmapped
+>  cut -f 3,4 $dat.lifted > $dat.pos_snp
+>  python ~/scripts/f/join_file.py -i "$dat.tmp1,TAB,8 $dat.pos_snp,TAB,1" -o $dat.tmp2
+>  cut -d " " -f 1-10 $dat.tmp2 | sed '1s/POS/POS.37/; 1s/NA/POS/' | gzip -f > clean/$dat.gz
 
 2. ⛄跟其他数据合并 
-   python scripts/library/join_file.py -i "$dat,TAB,0 $dat.lifted.3col,TAB,2" -o $dat.NEW.tmp
-   sed -i 's/  */\t/g' $dat.NEW.tmp; awk '$NF=="NA"' $dat.NEW.tmp | wc -l
-   cut -f 1-10,12 $dat.NEW.tmp | sed '1 s/POS/POS.b38/' > $dat.NEW.txt
+>  python scripts/library/join_file.py -i "$dat,TAB,0 $dat.lifted.3col,TAB,2" -o $dat.NEW.tmp
+>  sed -i 's/  */\t/g' $dat.NEW.tmp; awk '$NF=="NA"' $dat.NEW.tmp | wc -l
+>  cut -f 1-10,12 $dat.NEW.tmp | sed '1 s/POS/POS.b38/' > $dat.NEW.txt
 
 3. 🏃瘦身 ‍[比如说FUMA不能接受超过600MB的文件]
-   zcat $dat.gz | awk 'function r(x) {return sprintf("%.4f", x)} {if (NR == 1) print; else if ($6 > 0.005 && $6 <= 0.995) {$6 = r($6); $8 = r($8); $9 = r($9); print}}' | sed 's/ /\t/g' | bgzip > $dat.lean.gz
+>  zcat $dat.gz | awk 'function r(x) {return sprintf("%.4f", x)} {if (NR == 1) print; else if ($6 > 0.005 && $6 <= 0.995) {$6 = r($6); $8 = r($8); $9 = r($9); print}}' | sed 's/ /\t/g' | bgzip > $dat.lean.gz
 
 4. 🔍索引 
-   tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz
+>  tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz
 ```
 
 ### 📍2.3 GWAS数据可视化
@@ -63,10 +63,11 @@
 >- Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷，见[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。
 >- 用户也可以在[pheweb资源库](https://resources.pheweb.org/)网站下载 rsids-v??-hg??.tsv.gz 文件（7亿多行）。
 >- 如果要从这个超大文件里提取SNP的信息，可用 bcftools view -i 'ID==@bmi.snp' rsids-v154-hg38.tsv.gz -Ou -o bmi.chrpos.txt
->- 如果GWAS文件 “三缺一” ，可以从scripts文件夹下载我改版的 snp_chrpos.py，一键补齐，示例命令如下。 如果没有 A1和 A2列，就不用 --ref A1 --alt A2。
+>- 如果GWAS文件 “三缺一” ，可以从scripts文件夹下载我改版的 add_rsids.py，一键补齐，示例命令如下。 
 ```
-   python snp_chrpos.py -i bmi.gwas.gz --sep $'\t' --snp SNP --ref A1 --alt A2 -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
-   python snp_chrpos.py -i bmi.gwas.gz --sep ',' --chr CHR --pos POS --ref NEA --alt EA -d data/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv
+> 输入文件只要有 SNP，就添加 --chr --pos； 只有 CHR 和 POS，就添加 --snp
+> 列名及新列的分隔符用命令行中的；--ref --alt 是可选项。
+> python /mnt/d/scripts/f/add_rsid.py -i bmi.2015.EUR.gz --sep $'\t' --snp SNP --chr CHR --pos POS --ref A1 --alt A2  -d /mnt/d/data/annot/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv.gz
 ```
 
 > 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 
