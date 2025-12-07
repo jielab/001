@@ -165,7 +165,8 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 
 🎇Ubuntu Linux 操作系统
 ```
-⭕D盘的路径分别是/mnt/d，以此类推⚡
+在PowerShell上: wsl --install; wsl --list --online; wsl --install -d Ubuntu-24.04; wsl --set-default-version 2; wsl -l -v
+sudo apt update; sudo apt upgrade -y; ⭕D盘的路径分别是/mnt/d
 > 当打开 shell，遇到press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
 > 后台多线程下载: screen -dmS jack aria2c -x 4 -i url.txt --log-level=info --log=jack.log; screen -ls; screen -S jack -X quit 
 > 三剑客🗡代码示例: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
