@@ -111,7 +111,7 @@
 	# 如果 Failed to connect to port 443，就用下面的python代码： 
 	import os, time
 	from huggingface_hub import snapshot_download
-	snapshot_download(repo_id="google-bert/bert-large-uncased", repo_type="model", local_dir="D:/data/ai/bert/bert-large-uncased")
+	snapshot_download(token="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", repo_id="google-bert/bert-large-uncased", repo_type="model", local_dir="D:/data/ai/bert/bert-large-uncased")
 
 3. 安装 VS code，在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
    wsl里面用 which python, cmd 里面用 where python, 而VS code 里面用 python -c "import sys; print(sys.executable)"
