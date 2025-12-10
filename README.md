@@ -76,6 +76,13 @@
 
 ## 🧬3. MR
 >- 如果有个体数据，可以用 [OneSampleMR包](https://cran.r-project.org/web/packages/OneSampleMR/index.html)。
+```
+dat$X.pred = predict.lm( lm( X ~ G, data = dat, na.action = na.exclude)) # 🏮
+summary(lm(Y ~ X.pred, data = dat, na.action = na.exclude))
+fit.mr <- ivreg::ivreg(Y ~ X | G, data = dat) # 可以是 G1+G2+G3
+	coef(summary(fit.mr))  # 跟上面的结果一样
+```
+
 >- 如果只有已发表的summary数据，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/8-449)。
 >- 工具变量，一般需要去掉 F_stats <10 或者位于 <b>[MHC区间]</b> 【chr6:28477897-33448354 [(GRCh37)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC?asm=GRCh37), chr6:28510120-33480577 [(GRCh38)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC)】 的SNP。
 >- <b>密西根大学</b>开发的 [imputation server](https://imputationserver.sph.umich.edu) 用的是： 从rs57232568 【29000554 (版本37), 29032777 (版本38)】 到 rs116206961【33999992 (版本37), 34032215 (版本38)】
@@ -92,6 +99,21 @@
 > 9. 注意HLA的GRCh37或GRCh37的确切 chr:start-end。
 >10. 最后可能发现软件跑出来的结果有重大问题，不“鲁棒” https://github.com/ZhaotongL/cisMRcML/issues/6
 ```
+
+>- MR的本质是两次回归，而中介mediation的本质是三次♻回归
+```
+library(mediation)
+# fit.X2Y <- lm(Y ~ X +age+sex+PC1+PC2, data = dat)
+fit.X2Y <- survreg(Surv(time, event) ~ X +age+sex+PC1+PC2, data = dat); res.X2Y = summary(fit.X2Y)$table
+fit.X2M <- lm(M ~ X +age+sex+PC1+PC2, data = dat); res.X2M = coef(summary(fit.X2M))
+# fit.M2Y <- lm(Y ~ M + X +age+sex+PC1+PC2, data = dat)
+fit.M2Y <- survreg(Surv(time, event) ~ M + X +age+sex+PC1+PC2, data = dat); res.M2Y = summary(fit.M2Y)$table
+res <- mediation::mediate(fit.X2M, fit.M2Y, treat = "X", mediator = "M", boot = TRUE, sims = 1000) # outcome = 
+SUM <- summary(res)
+c(ACME = rb(SUM$d.avg), ADE = rb(SUM$z.avg), Total = rb(SUM$tau.coef), Prop = rb(SUM$n.avg))
+```
+>- 当只有summary数据的时候，用MR的方式来做mediation，就可以用mrMed📍R包
+
 <br/>
 
 
@@ -154,7 +176,7 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 
 🛵R 
 ``` 
-▸ WINDOWS “环境变量”里设置R_LIBS_USER，LINUX在 ~/.Renviron设置。 用 .libPaths()查看
+▸ WINDOWS 环境变量里设置R_LIBS_USER，LINUX在 ~/.Renviron设置。 用 .libPaths()查看
 ▸ 先安装 devtools, remotes 包
 ▸ R画图集锦: https://r-graph-gallery.com/index.html  
 ▸ R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/  
@@ -167,6 +189,7 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 ```
 在PowerShell上: wsl --install; wsl --list --online; wsl --install -d Ubuntu-24.04; wsl --set-default-version 2; wsl -l -v
 sudo apt update; sudo apt upgrade -y; ⭕D盘的路径分别是/mnt/d
+which -a python python2 python3
 > 当打开 shell，遇到press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
 > 后台多线程下载: screen -dmS jack aria2c -x 4 -i url.txt --log-level=info --log=jack.log; screen -ls; screen -S jack -X quit 
 > 三剑客🗡代码示例: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
@@ -176,13 +199,6 @@ sudo apt update; sudo apt upgrade -y; ⭕D盘的路径分别是/mnt/d
   bsub等: queueinfo -gpu -cpu; module avail  
 ```
 
-🐍python
-```
-> which -a python python2 python3
-> sudo rm /bin/python3
-> pip uninstall -y pysankey2
-> pip install https://github.com/anazalea/pySankey2/archive/refs/heads/master.zip
-```
 
 >- 创园301🖨： 从[富士官网](https://m3support-fb.fujifilm-fb.com.cn/driver_downloads/www/)搜索 ApeosPort C2060 下载驱动程序，然后运行。 👉“设备类型” 选TCP/IP 👉 打印机IP为 10.20.40.6
 >- 创园204🖨：首先连接 LINK_7204无线网，密码是???2025??04，然后下载[驱动程序](https://www.canon.com.cn/supports/download/simsdetail/0101228601.html?modelId=1524&channel=4)，点击一步步安装。
