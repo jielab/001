@@ -1,0 +1,42 @@
+PLINK v2.0.0-a.6.15LM AVX2 Intel (4 Jun 2025)
+Options in effect:
+  --1
+  --covar /work/sph-huangj/data/ukb/phe/common/ukb.phe
+  --covar-name age sex center tdi PC1 PC2 PC3 PC4
+  --covar-variance-standardize age tdi PC1 PC2 PC3 PC4
+  --extract /work/sph-huangj/data/ukb/gen/imp/chr20.extract
+  --glm cols=+omitted,+nobs,+beta,+a1freq,+a1count,+totallelecc hide-covar allow-no-covars no-x-sex
+  --memory 12000
+  --no-input-missing-phenotype
+  --no-psam-pheno
+  --out jie
+  --pfile /work/sph-huangj/data/ukb/gen/imp/chr20
+  --pheno /work/sph-huangj/data/ukb/phe/common/ukb.phe
+  --pheno-name bmi,height,le8.sco,siops,isei,egp,camsis,cognitive_ability,delayed_gratification,self_efficacy,mental_health,risk_taking,move
+  --split-cat-pheno center
+  --threads 40
+
+Hostname: login04
+Working directory: /data/sph-huangj/data/gwas/self/vip/plink/qt
+Start time: Sat Dec 13 13:15:43 2025
+
+Random number seed: 1765602943
+386426 MiB RAM detected, ~356174 available; reserving 12000 MiB for main
+workspace.
+Using up to 40 threads (change this with --threads).
+487162 samples (264224 females, 222938 males; 487162 founders) loaded from
+/work/sph-huangj/data/ukb/gen/imp/chr20.psam.
+2082495 variants loaded from /work/sph-huangj/data/ukb/gen/imp/chr20.pvar.
+13 quantitative phenotypes loaded.
+--extract: 1067359 variants remaining.
+8 covariates loaded from /work/sph-huangj/data/ukb/phe/common/ukb.phe.
+--split-cat-pheno: 1 categorical covariate converted to 22 covariates.
+--covar-variance-standardize: 6 covariates transformed.
+Calculating allele frequencies... done.
+1067359 variants remaining after main filters.
+Error: Cannot proceed with --glm regression on phenotype 'siops', and other(s)
+with identical missingness patterns, since covariate correlation matrix could
+not be inverted (VIF_INFINITE). You may want to remove redundant covariates and
+try again.
+
+End time: Sat Dec 13 13:16:09 2025
