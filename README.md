@@ -197,13 +197,6 @@ which -a python python2 python3
   后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
   硬盘额度：du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
   bsub等: queueinfo -gpu -cpu; module avail
-
-并行处理🎇🚀
-export OMP_NUM_THREADS=1
-export OPENBLAS_NUM_THREADS=1
-export MKL_NUM_THREADS=1
-export NUMEXPR_NUM_THREADS=1
-seq 1 22 | xargs -P 8 -I{} sh -c './chr{}.cmd'
 ```
 
 
