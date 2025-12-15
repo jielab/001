@@ -203,7 +203,7 @@ export OMP_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export NUMEXPR_NUM_THREADS=1
-seq 1 22 | xargs -I% -P 8 ./chr%.cmd
+seq 1 22 | xargs -P 8 -I{} sh -c './chr{}.cmd'
 ```
 
 
