@@ -196,7 +196,14 @@ which -a python python2 python3
 > HPC 登录： ssh sph-huangj@172.18.6.178 【太乙】； ssh -p 18188 sph-huangj@172.18.6.10 【启明】
   后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
   硬盘额度：du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
-  bsub等: queueinfo -gpu -cpu; module avail  
+  bsub等: queueinfo -gpu -cpu; module avail
+
+并行处理🎇🚀
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export NUMEXPR_NUM_THREADS=1
+seq 1 22 | xargs -I% -P 8 ./chr%.cmd
 ```
 
 
