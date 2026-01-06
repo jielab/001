@@ -167,16 +167,15 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 
 基因注释信息🔍
 ```
-> dbSNP: https://www.ncbi.nlm.nih.gov/snp
-> UCSC genome browser: https://www.genome.ucsc.edu
-> 美国精准医学All of Us： https://databrowser.researchallofus.org 
-> 密西根大学公卫学院 TopMed browser: https://bravo.sph.umich.edu
-> 一天发了7篇 NATURE系列文章的Gnomad项目 browser: https://gnomad.broadinstitute.org
+> 剑桥： VEP， http://www.phenoscanner.medschl.cam.ac.uk/
+> 哈麻： https://spliceailookup.broadinstitute.org/， gnomad.broadinstitute.org
+> 美国公立: https://bravo.sph.umich.edu，UCSC genome browser: https://www.genome.ucsc.edu，
+> 美国政府： https://databrowser.researchallofus.org，dbSNP: https://www.ncbi.nlm.nih.gov/snp
 ```
 
 🛵R 
 ``` 
-▸ WINDOWS 环境变量里设置R_LIBS_USER，LINUX在 ~/.Renviron设置。 用 .libPaths()查看
+▸ WINDOWS 环境变量里设置R_LIBS_USER，LINUX在 ~/.Renviron设置。 用 .libPaths()查看，可通过 ~/.Rprofile 更改。
 ▸ 先安装 devtools, remotes 包
 ▸ R画图集锦: https://r-graph-gallery.com/index.html  
 ▸ R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/  
