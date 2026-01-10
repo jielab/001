@@ -130,10 +130,7 @@ c(ACME = rb(SUM$d.avg), ADE = rb(SUM$z.avg), Total = rb(SUM$tau.coef), Prop = rb
 	pip install -U "transformers>=4.56.0" "accelerate>=1.10.1" datasets peft evaluate scikit-learn protobuf sentencepiece
 
 2. 	pip install huggingface_hub; hf auth login; hf download google-bert/bert-base-chinese --local-dir . 或 git clone https://huggingface.co/Qwen/Qwen3-8B
-	# 如果 Failed to connect to port 443，就用下面的python代码： 
-	import os, time
-	from huggingface_hub import snapshot_download
-	snapshot_download(token="XXXX", repo_id="google-bert/bert-large-uncased", repo_type="model", local_dir="D:/data/ai/bert/bert-large-uncased")
+	# 如果 Failed to connect to port 443，就用 scripts/f/00hf_download.py 
 
 3. 安装 VS code，在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
    wsl里面用 which python, cmd 里面用 where python, 而VS code 里面用 python -c "import sys; print(sys.executable)"
