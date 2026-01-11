@@ -128,7 +128,7 @@ c(ACME = rb(SUM$d.avg), ADE = rb(SUM$z.avg), Total = rb(SUM$tau.coef), Prop = rb
 	conda env list 
 	# conda env remove -n ai; conda create -n ai python=3.12 
 	conda activate ai
-	pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 && \
+	pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128 && \
 	pip install -U numpy tqdm transformers pandas requests openpyxl bitsandbytes \
 		accelerate datasets peft evaluate scikit-learn protobuf sentencepiece \
 		huggingface_hub tabpfn
