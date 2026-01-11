@@ -118,24 +118,25 @@ c(ACME = rb(SUM$d.avg), ADE = rb(SUM$z.avg), Total = rb(SUM$tau.coef), Prop = rb
 
 
 ## 🤖4. AI系统
->- Transformer（架构）：指 2017 年论文 Attention Is All You Need 提出的神经网络架构，最初来自 Google 团队。
->- Transformers（库）：指 Hugging Face 里的 Python 库，常搭配 PyTorch（torch） 使用，做底层训练/微调。
-```
-1.	本地安装大模型（以千问为例）
-	conda env list # conda env remove -n ai
-	conda create -n ai python=3.11; conda activate ai
-#	pip install --upgrade --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
-	pip install --pre --upgrade --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
-	pip install numpy tqdm transformers pandas requests openpyxl bitsandbytes
-	pip install -U "transformers>=4.56.0" "accelerate>=1.10.1" datasets peft evaluate scikit-learn protobuf sentencepiece
+[![点击看视频](./images/nn-youtube.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
 
-2. 	pip install huggingface_hub; hf auth login; hf download google-bert/bert-base-chinese --local-dir . 或 git clone https://huggingface.co/Qwen/Qwen3-8B
+```
+1.	Python + VS code，在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
+	which python; python --version # cmd用 where python, VS code 用 python -c "import sys; print(sys.executable)"
+
+1.	本地安装大模型
+	conda env list 
+	# conda env remove -n ai; conda create -n ai python=3.12 
+	conda activate ai
+	pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 && \
+	pip install -U numpy tqdm transformers pandas requests openpyxl bitsandbytes \
+		accelerate datasets peft evaluate scikit-learn protobuf sentencepiece \
+		huggingface_hub tabpfn
+	python -c "import torch; print(torch.cuda.is_available()); print(torch.version.cuda); print(torch.cuda.get_device_name(0))"
+2.	hf auth login; hf download google-bert/bert-base-chinese --local-dir . 或 git clone https://huggingface.co/Qwen/Qwen3-8B
 	# 如果 Failed to connect to port 443，就用 scripts/f/00hf_download.py 
 
-3. 安装 VS code，在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
-   wsl里面用 which python, cmd 里面用 where python, 而VS code 里面用 python -c "import sys; print(sys.executable)"
 ```
-[![点击看视频](./images/nn-youtube.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
 <br/>
 
 ### 关于蛋白质结构预测
@@ -183,8 +184,8 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 
 🎇操作系统
 ```
-在PowerShell上: robocopy "D:/Source_Folder" "E:/Target_Folder" /E /XO /FFT /V
-在PowerShell上: wsl --list --online; wsl --install -d Ubuntu-24.04; wsl --set-default-version 2; wsl -l -v
+在PowerShell: robocopy "D:/data" "G:/黄捷文件备份/data" /MIR /XO /FFT /V # /L
+在PowerShell: wsl --list --online; wsl --install -d Ubuntu-24.04; wsl --set-default-version 2; wsl -l -v
 sudo apt update; sudo apt upgrade -y; ⭕D盘的路径分别是/mnt/d
 which -a python python2 python3
 > 当打开 shell，遇到press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
