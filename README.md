@@ -181,9 +181,10 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 ▸ 🏮梁志生R包荟萃 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)  
 ```
 
-🎇Ubuntu Linux 操作系统
+🎇操作系统
 ```
-在PowerShell上: wsl --install; wsl --list --online; wsl --install -d Ubuntu-24.04; wsl --set-default-version 2; wsl -l -v
+在PowerShell上: robocopy "D:/Source_Folder" "E:/Target_Folder" /E /XO /FFT /V
+在PowerShell上: wsl --list --online; wsl --install -d Ubuntu-24.04; wsl --set-default-version 2; wsl -l -v
 sudo apt update; sudo apt upgrade -y; ⭕D盘的路径分别是/mnt/d
 which -a python python2 python3
 > 当打开 shell，遇到press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
