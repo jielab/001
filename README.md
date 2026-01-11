@@ -182,12 +182,16 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 ▸ 🏮梁志生R包荟萃 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)  
 ```
 
-🎇操作系统
+🎇Win操作系统
 ```
-在PowerShell: robocopy "D:/data" "G:/黄捷文件备份/data" /MIR /XO /FFT /V # /L
-在PowerShell: wsl --list --online; wsl --install -d Ubuntu-24.04; wsl --set-default-version 2; wsl -l -v
-sudo apt update; sudo apt upgrade -y; ⭕D盘的路径分别是/mnt/d
-which -a python python2 python3
+> 在PowerShell: robocopy "D:/data" "G:/黄捷文件备份/data" /MIR /XO /FFT /V # /L
+> 在PowerShell: wsl --list --online; wsl --install -d Ubuntu-24.04; wsl --set-default-version 2; wsl -l -v
+> 安装Anaconda后，以管理员身份运行PowerShell: conda init powershell; Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+🎇Lin操作系统
+```
+> sudo apt update; sudo apt upgrade -y; ⭕D盘的路径分别是/mnt/d
 > 当打开 shell，遇到press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
 > 后台多线程下载: sudo apt install -y aria2; screen -dmS jack aria2c -x 4 -i url.txt --log-level=info --log=jack.log; screen -ls; screen -S jack -X quit 
 > 三剑客🗡代码示例: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
