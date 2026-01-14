@@ -131,7 +131,7 @@ c(ACME = rb(SUM$d.avg), ADE = rb(SUM$z.avg), Total = rb(SUM$tau.coef), Prop = rb
 	pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
 	pip install -U numpy tqdm transformers pandas requests openpyxl bitsandbytes \
 		accelerate datasets peft evaluate scikit-learn protobuf sentencepiece \
-		huggingface_hub tabpfn
+		huggingface_hub tabpfn pytorch-tabular[all]
 	python -c "import torch; print(torch.cuda.is_available()); print(torch.version.cuda); print(torch.cuda.get_device_name(0))"
 2.	hf auth login; hf download google-bert/bert-base-chinese --local-dir . 或 git clone https://huggingface.co/Qwen/Qwen3-8B
 	# 如果 Failed to connect to port 443，就用 scripts/f/00hf_download.py 
@@ -184,7 +184,8 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 
 🎇Win操作系统
 ```
-> 在PowerShell: robocopy "D:/data" "G:/黄捷文件备份/data" /MIR /XO /FFT /V # /L
+> 以管理员身份运行 CMD: rd /s /q D:\$RECYCLE.BIN
+> 在PowerShell: robocopy "D:" "G:\黄捷文件备份" /MIR /XO /FFT /V /XD "D:\R_lib" # /L
 > 在PowerShell: wsl --list --online; wsl --install -d Ubuntu-24.04; wsl --set-default-version 2; wsl -l -v
 > 安装Anaconda后，以管理员身份运行PowerShell: conda init powershell; Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
