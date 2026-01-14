@@ -185,7 +185,7 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 🎇Win操作系统
 ```
 > 以管理员身份运行 CMD: rd /s /q D:\$RECYCLE.BIN
-> 在PowerShell: robocopy "D:" "G:\黄捷文件备份" /MIR /XO /FFT /V /XD "D:\R_lib" # /L
+> 在PowerShell: robocopy "D:" "G:\黄捷文件备份" /MIR /XO /FFT /V /XD "D:\R_lib" "D:\$RECYCLE.BIN" /A-:SH
 > 在PowerShell: wsl --list --online; wsl --install -d Ubuntu-24.04; wsl --set-default-version 2; wsl -l -v
 > 安装Anaconda后，以管理员身份运行PowerShell: conda init powershell; Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
