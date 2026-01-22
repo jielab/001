@@ -167,7 +167,7 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 基因注释信息🔍
 ```
 > 剑桥： VEP， http://www.phenoscanner.medschl.cam.ac.uk/
-> 哈麻： https://spliceailookup.broadinstitute.org/， gnomad.broadinstitute.org
+> 哈麻： https://spliceailookup.broadinstitute.org/, gnomad.broadinstitute.org, 调控相关🏮https://screen.wenglab.org/
 > 美国公立: https://bravo.sph.umich.edu，UCSC genome browser: https://www.genome.ucsc.edu，
 > 美国政府： https://databrowser.researchallofus.org，dbSNP: https://www.ncbi.nlm.nih.gov/snp
 ```
