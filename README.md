@@ -39,7 +39,7 @@
 
 1. 🚜liftOver 
 >  dat=XYZ; head -1 $dat.txt > $dat.sorted; tail -n +2 $dat.txt | sort -k 1,1V -k 2,2n > $dat.sorted
->  python ~/scripts/f/add_rsids.py -i $dat.sorted --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d ~/data/dbsnp/rsids-v154-hg19.tsv.gz -o $dat.tmp1
+>  python /mnt/d/scripts/f/0add_rsids.py -i $dat.sorted --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d /mnt/d/data/annot/dbsnp/rsids-v154-hg19.tsv.gz -o $dat.tmp1
 >  cat $dat.tmp1 | awk 'NR >1 {print "chr"$1, $2 -1, $2, $9}' | sed 's/^chr23/chrX/' > $dat.tolift
 >  liftOver $dat.tolift /work/sph-huangj/files/hg19ToHg38.over.chain.gz $dat.lifted $dat.unmapped
 >  cut -f 3,4 $dat.lifted > $dat.pos_snp
@@ -68,7 +68,7 @@
 ```
 > 输入文件只要有 SNP，就添加 --chr --pos； 只有 CHR 和 POS，就添加 --snp
 > 列名及新列的分隔符用命令行中的；--ref --alt 是可选项。
-> python /mnt/d/scripts/f/add_rsid.py -i bmi.2015.EUR.gz --sep $'\t' --snp SNP --chr CHR --pos POS --ref A1 --alt A2  -d /mnt/d/data/annot/dbsnp/rsids-v154-hg38.tsv.gz -o out.tsv.gz
+> python /mnt/d/scripts/f/0add_rsid.py -i afib.txt --sep $'\t' --snp SNP --chr chr_name --pos hm_pos --ref effect_allele --alt other_allele  -d /mnt/d/data/ukb/gen/imp/ukb.imp.pvar.gz -o out.tsv.gz
 ```
 
 > 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 
