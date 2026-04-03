@@ -194,6 +194,7 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 
 🎇Lin操作系统
 ```
+> wsl --install; wsl --list --online; wsl --install -d Ubuntu-24.04
 > sudo apt update; sudo apt upgrade -y; ⭕D盘的路径分别是/mnt/d
 > 当打开 shell，遇到press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
 > 后台多线程下载: sudo apt install -y aria2; screen -dmS jack aria2c -x 4 -i url.txt --log-level=info --log=jack.log; screen -ls; screen -S jack -X quit 
