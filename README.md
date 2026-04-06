@@ -138,7 +138,10 @@ c(ACME = rb(SUM$d.avg), ADE = rb(SUM$z.avg), Total = rb(SUM$tau.coef), Prop = rb
 	# 如果 Failed to connect to port 443，就用 scripts/f/00hf_download.py 
 
 ```
+2025. Nature. Learning the natural history of human disease with generative transformers (https://github.com/gerstung-lab/delphi))
+2026. Nature. A foundation model for continuous glucose monitoring data (https://github.com/Guylu/GluFormer)
 <br/>
+
 
 ### 关于蛋白质结构预测
 >- 下载 [千人基因组深度测序VCF文件](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/), 下载[参考基因组fasta文件](https://ftp.ensembl.org/pub/current_fasta/homo_sapiens/dna) 然后samtools faidx, 
@@ -209,4 +212,4 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 >- 创园301🖨： 从[富士官网](https://m3support-fb.fujifilm-fb.com.cn/driver_downloads/www/)搜索 ApeosPort C2060 下载驱动程序，然后运行。 👉“设备类型” 选TCP/IP 👉 打印机IP为 10.20.40.6
 >- 创园204🖨：首先连接 LINK_7204无线网，密码是???2025??04，然后下载[驱动程序](https://www.canon.com.cn/supports/download/simsdetail/0101228601.html?modelId=1524&channel=4)，点击一步步安装。
 
-🌅 🌙 🦟 🐜 ▸ 🛫 🧬 🅱️ H
+🌅 🌙 🦟 🐜 ▸ 🛫 🧬 🅱️ H 💊
