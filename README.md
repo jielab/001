@@ -61,7 +61,7 @@
 ### 📍2.3 GWAS数据可视化
 >- 密西根大学开发的[Pheweb](https://pheweb.org/)，上面放了英美大队列的数千个GWAS数据。 此外，[中国CKB](https://pheweb.ckbiobank.org/)，[中国台湾TPMI](https://pheweb.ibms.sinica.edu.tw/)，[日本BBJ](https://pheweb.jp/)都用pheweb发布GWAS。
 >- 2026年的一篇NG文章推出了[Pheweb2](https://github.com/GaglianoTaliun-Lab/PheWeb2)。
->- Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷，见[聊天记录](https://github.com/statgen/pheweb/issues/217)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。
+>- Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷，见[聊天记录1](https://github.com/statgen/pheweb/issues/217)和[聊天记录2](https://github.com/statgen/pheweb/issues/230#event-24757585494)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。
 >- 用户也可以在[pheweb资源库](https://resources.pheweb.org/)网站下载 rsids-v??-hg??.tsv.gz 文件（7亿多行）。
 >- 如果要从这个超大文件里提取SNP的信息，可用 bcftools view -i 'ID==@bmi.snp' rsids-v154-hg38.tsv.gz -Ou -o bmi.chrpos.txt
 >- 如果GWAS文件 “三缺一” ，可以从scripts文件夹下载我改版的 add_rsids.py，一键补齐，示例命令如下。 
