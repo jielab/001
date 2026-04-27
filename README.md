@@ -1,14 +1,14 @@
-## 🧬1. Gen数据和Phe数据
+## 🧬Gen数据和Phe数据
 
 ### 初二生物学课本
 
 ![middle school](./images/middle.jpg)
 
-### 📍1.1 [HAPMAP3 genotype 数据](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3), 1百多万个SNP，一般作为 LD 计算的 reference panel。
+### 📍[HAPMAP3 genotype 数据](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3), 1百多万个SNP，一般作为 LD 计算的 reference panel。
 
-### 📍1.2 [千人基因组项目数据](https://www.internationalgenome.org/data)， 将近1亿个SNP，一般作为 imputation 的 reference panel。
+### 📍[千人基因组项目数据](https://www.internationalgenome.org/data)， 将近1亿个SNP，一般作为 imputation 的 reference panel。
 
-### 📍1.3 UKB 数据，现在推荐用[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)。
+### 📍UKB 数据，现在推荐用[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)。
 ![middle school](./images/ukb-disease.jpg)
 ```
 1. 最新数据通知 https://community.ukbiobank.ac.uk/hc/en-gb/articles/26088595922333-New-and-Updated-Data
@@ -17,13 +17,13 @@
 <br/>
 
 
-## 🧬2. GWAS
+## 🧬1. GWAS
 
 ![GWAS](./images/GWAS.jpg)
 
-### 📍2.1 GWAS数据获取，最经典的是[GWAS Catalog](https://www.ebi.ac.uk/gwas)。
+### 📍1.1 GWAS数据获取，最经典的是[GWAS Catalog](https://www.ebi.ac.uk/gwas)。
 
-### 📍2.2 GWAS数据QC示例 【本课题组建议GWAS列名称： SNP CHR POS CHRPOS ⭐ EA NEA EAF N ⭐ BETA SE Z P】
+### 📍1.2 GWAS数据QC示例 【本课题组建议GWAS列名称： SNP CHR POS CHRPOS ⭐ EA NEA EAF N ⭐ BETA SE Z P】
 ```
 1. 确保文件每一行的列数目是一样的。将连续空格中插入NA，扣好第一粒纽扣。
    zcat GWAS.gz | awk '{print NF}' | sort -nu | wc -l 
@@ -58,7 +58,7 @@
 >  tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz
 ```
 
-### 📍2.3 GWAS数据可视化
+### 📍1.3 GWAS数据可视化
 >- 密西根大学开发的[Pheweb](https://pheweb.org/)，上面放了英美大队列的数千个GWAS数据。 此外，[中国CKB](https://pheweb.ckbiobank.org/)，[中国台湾TPMI](https://pheweb.ibms.sinica.edu.tw/)，[日本BBJ](https://pheweb.jp/)都用pheweb发布GWAS。
 >- 2026年的一篇NG文章推出了[Pheweb2](https://github.com/GaglianoTaliun-Lab/PheWeb2)。
 >- Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷，见[聊天记录1](https://github.com/statgen/pheweb/issues/217)和[聊天记录2](https://github.com/statgen/pheweb/issues/230#event-24757585494)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。
@@ -75,7 +75,7 @@
 <br/>
 
 
-## 🧬3. MR
+## 🧬2. MR
 >- 如果有个体数据，可以用 [OneSampleMR包](https://cran.r-project.org/web/packages/OneSampleMR/index.html)。
 ```
 dat$X.pred = predict.lm( lm( X ~ G, data = dat, na.action = na.exclude)) # 🏮
@@ -118,32 +118,10 @@ c(ACME = rb(SUM$d.avg), ADE = rb(SUM$z.avg), Total = rb(SUM$tau.coef), Prop = rb
 <br/>
 
 
-## 🤖4. AI系统
-[![点击看视频](./images/nn-youtube.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
-
-```
-1.	Python + VS code，在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
-	which python; python --version # cmd用 where python, VS code 用 python -c "import sys; print(sys.executable)"
-
-1.	本地安装大模型
-	conda env list 
-	# conda env remove -n ai; conda create -n ai python=3.12 
-	conda activate ai
-	pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
-	pip install -U numpy tqdm transformers pandas requests openpyxl bitsandbytes \
-		accelerate datasets peft evaluate scikit-learn protobuf sentencepiece \
-		huggingface_hub tabpfn pytorch-tabular[all]
-	python -c "import torch; print(torch.cuda.is_available()); print(torch.version.cuda); print(torch.cuda.get_device_name(0))"
-2.	hf auth login; hf download google-bert/bert-base-chinese --local-dir . 或 git clone https://huggingface.co/Qwen/Qwen3-8B
-	# 如果 Failed to connect to port 443，就用 scripts/f/00hf_download.py 
-
-```
-2025. Nature. Learning the natural history of human disease with generative transformers (https://github.com/gerstung-lab/delphi))
-2026. Nature. A foundation model for continuous glucose monitoring data (https://github.com/Guylu/GluFormer)
-<br/>
+## 🧬3. PRS 【或者 ProtRS】
 
 
-### 关于蛋白质结构预测
+## 🧬4. STL
 >- 下载 [千人基因组深度测序VCF文件](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/), 下载[参考基因组fasta文件](https://ftp.ensembl.org/pub/current_fasta/homo_sapiens/dna) 然后samtools faidx, 
 从[gencode](https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/) 或者 [ensembl](https://ftp.ensembl.org/pub/current_gtf/homo_sapiens/) 下载<b>gtf</b> 和 gff3文件, 下载[vcf2prot软件](https://github.com/ikmb/vcf2prot)。
 >- 在Alpha-fold服务器输入的DNA，是mRNA逆转录形成的cDNA【不含内含子】，snapgene或Editseq可将DNA转为蛋白质🥚序列
@@ -157,7 +135,34 @@ bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if (
 <br/>
 
 
-## 🧬5. 参考资料及经验分享
+## 🤖 AI系统
+[![点击看视频](./images/nn-youtube.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
+
+```
+1.	Python + VS code，在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
+	which python; python --version # cmd用 where python, VS code 用 python -c "import sys; print(sys.executable)"
+
+1.	本地安装大模型，现在 PyTorch 稳定版支持 Python 3.12
+	Windows Powershell 上安装，可以不用conda。 用 where python; where pip; pip -V; python -m pip -V 确认一下。
+	conda env list 
+	# conda env remove -n ai; conda create -n ai python=3.12 
+	conda activate ai
+	pip uninstall -y torch torchvision torchaudio
+	pip install --upgrade pip
+	pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
+	pip install --upgrade numpy tqdm transformers pandas requests openpyxl bitsandbytes accelerate datasets peft evaluate scikit-learn protobuf sentencepiece huggingface_hub tabpfn pytorch-tabular[all]
+	python -c "import torch; print(torch.cuda.is_available()); print(torch.__version__); print(torch.version.cuda); print(torch.cuda.get_device_name(0))"
+
+3.	hf auth login; hf download google-bert/bert-base-chinese --local-dir . 或 git clone https://huggingface.co/Qwen/Qwen3-8B
+	如果 Failed to connect to port 443，就用 scripts/f/00hf_download.py 
+
+```
+2025. Nature. Learning the natural history of human disease with generative transformers (https://github.com/gerstung-lab/delphi))
+2026. Nature. A foundation model for continuous glucose monitoring data (https://github.com/Guylu/GluFormer)
+<br/>
+
+
+## 🧬参考资料及经验分享
 
 🐎GWAS-PRS-MR ”三驾马车“ 入门指南 
 ``` 
