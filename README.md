@@ -72,16 +72,12 @@ Polygenic risk scores summarize many genetic effects into an individual-level sc
 - [PRS Catalog](https://www.pgscatalog.org/): public repository of published polygenic score scoring files.
 - [GWAS Catalog](https://www.ebi.ac.uk/gwas): useful for finding the GWAS evidence behind many traits.
 
-**Key distinction**
 
-```text
-Reference scoring file: SNP / effect allele / weight
-Individual PRS:         sum of allele dosage × weight for each person
-```
 
 **Recommended reading**
 
 - Choi et al. *Nature Protocols* 2020. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
+- Choi et al. *Nature Protocols* 2020. [Development and Validation of a Clinical Polygenic Risk Report in U.S.-Based Health Systems for 8 Cardiovascular Conditions](https://www.jacc.org/doi/10.1016/j.jacc.2026.03.035)
 
 ---
 
