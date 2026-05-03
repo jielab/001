@@ -10,7 +10,8 @@
 
 ---
 
-## 1. GWAS
+<br><br>
+## 1. GWAS全基因组关联研究
 
 ![GWAS](./images/GWAS.jpg)
 
@@ -36,7 +37,8 @@ Genome-wide association studies identify statistical associations between geneti
 
 ---
 
-## 2. Mendelian randomization
+<br><br>
+## 2. MR孟德尔随机化
 
 ![MR](./images/MR.jpg)
 
@@ -58,7 +60,8 @@ Mendelian randomization uses genetic variants as instrumental variables to estim
 
 ---
 
-## 3. PRS / ProtRS
+<br><br>
+## 3. PRS/ProtRS组学风险预测
 
 ![PRS](./images/PRS.jpg)
 
@@ -82,7 +85,8 @@ Individual PRS:         sum of allele dosage × weight for each person
 
 ---
 
-## 4. AI systems for biomedical analysis
+<br><br>
+## 4. AI人工智能
 
 [![AI](./images/AI.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
 
@@ -95,7 +99,8 @@ AI tools are useful for text classification, phenotype extraction, local model d
 
 ---
 
-## 5. Miscellaneous notes
+<br><br>
+## 5. 基础ℹ分享
 
 - [R setup and package installation notes](./pages/note_R.md)
 - [Operating system and WSL notes](./pages/note_OS.md)
