@@ -11,20 +11,6 @@ Common filters:
 - LD-clump instruments before harmonization unless the method explicitly models correlated instruments.
 - Check whether the exposure and outcome samples overlap.
 
-MHC/HLA region examples:
-
-```text
-GRCh37: chr6:28477897-33448354
-GRCh38: chr6:28510120-33480577
-```
-
-The Michigan Imputation Server uses a broader HLA-region definition:
-
-```text
-rs57232568 to rs116206961
-GRCh37: 29,000,554-33,999,992
-GRCh38: 29,032,777-34,032,215
-```
 
 ## 2. Allele harmonization
 
