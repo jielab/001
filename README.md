@@ -1,5 +1,5 @@
 # 🧬 **GWAS**, **MR**, **Polygenic/Protein RS**, and **AI**.
-
+![jielab](./images/banner.png)
 ---
 
 ## 0. Data resources
