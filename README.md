@@ -1,220 +1,127 @@
-## 🧬Gen数据和Phe数据
+# 🧬 Genetic Data, GWAS, MR, PRS and AI Notes
 
-### 初二生物学课本
+This repository collects practical notes for genetic epidemiology and AI-assisted biomedical analysis. The main page gives a brief map of the topics; detailed notes and runnable examples are placed in [`pages/`](./pages/).
 
-![middle school](./images/middle.jpg)
+> Focus: **GWAS summary statistics**, **Mendelian randomization**, **polygenic/protein risk scores**, and **local AI/Transformer workflows**.
 
-### 📍[HAPMAP3 genotype 数据](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3), 1百多万个SNP，一般作为 LD 计算的 reference panel。
+---
 
-### 📍[千人基因组项目数据](https://www.internationalgenome.org/data)， 将近1亿个SNP，一般作为 imputation 的 reference panel。
+## 0. Data resources
 
-### 📍UKB 数据，现在推荐用[UKB RAP](https://dnanexus.gitbook.io/uk-biobank-rap)。
-![middle school](./images/ukb-disease.jpg)
-```
-1. 最新数据通知 https://community.ukbiobank.ac.uk/hc/en-gb/articles/26088595922333-New-and-Updated-Data
-2. UKB RAP：https://ukbiobank.dnanexus.com/landing
-```
-<br/>
+- [HapMap3 genotype data](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3): a compact SNP set often used as an LD reference panel.
+- [1000 Genomes Project](https://www.internationalgenome.org/data): a widely used reference resource for imputation, LD calculation, and ancestry-aware analyses.
+- [UK Biobank Research Analysis Platform](https://dnanexus.gitbook.io/uk-biobank-rap): the recommended cloud environment for large-scale UK Biobank analyses.
 
+---
 
-## 🧬1. GWAS
+## 1. GWAS
 
 ![GWAS](./images/GWAS.jpg)
 
-### 📍1.1 GWAS数据获取，最经典的是[GWAS Catalog](https://www.ebi.ac.uk/gwas)。
+Genome-wide association studies identify statistical associations between genetic variants and traits. In practice, the most important first step is not plotting, but making sure the summary statistics are clean, consistently named, genome-build-aware, and correctly indexed.
 
-### 📍1.2 GWAS数据QC示例 【本课题组建议GWAS列名称： SNP CHR POS CHRPOS ⭐ EA NEA EAF N ⭐ BETA SE Z P】
-```
-1. 确保文件每一行的列数目是一样的。将连续空格中插入NA，扣好第一粒纽扣。
-   zcat GWAS.gz | awk '{print NF}' | sort -nu | wc -l 
-   sed 's/^\t/NA\t/; s/\t\t/\tNA\t/g; s/\t\t/\tNA\t/g; s/\t$/\tNA/'。
-2. 按照CHR和POS排序，否则pheweb 会报错
-   sort -k 1,1V -k 2,2n # -V是为了把chrX和chrY排到最后，但是需要把第一行先写到新文件里。
-3. GWAS数据本身的问题：
-   (1) Allele 最好是大写，awk 和 R 都有 toupper()功能。
-   (2) P值最好不要小于1e-312，awk 会把其当成0，有一些软件（比如LDSC）也会报错，这个时候要么用Z值，要么人为将这些P值设为1e-300。
-   (3) BETA|SE|P出现“三缺一” 的情况： b = se * qnorm(p/2); se = abs(b/qnorm(p/2)); se = (CI_upper - CI_lower)/(1.96*2); p = 2*pnorm(-abs(b/se))
+**Start here**
 
-对检查没问题的GWAS，深加工示例：
+- [GWAS summary statistics QC checklist](./pages/GWAS.post.md)
+- [Genome-build liftOver for GWAS/COJO tables and VCF files](./pages/liftOver.md)
+- [GWAS signal annotation resources](./pages/note_annotate.md)
 
-1. 🚜liftOver 
->  dat=XYZ; head -1 $dat.txt > $dat.sorted; tail -n +2 $dat.txt | sort -k 1,1V -k 2,2n > $dat.sorted
->  python /mnt/d/scripts/f/0add_rsids.py -i $dat.sorted --sep "\t" --chr CHR --pos POS --ref NEA --alt EA -d /mnt/d/data/annot/dbsnp/rsids-v154-hg19.tsv.gz -o $dat.tmp1
->  cat $dat.tmp1 | awk 'NR >1 {print "chr"$1, $2 -1, $2, $9}' | sed 's/^chr23/chrX/' > $dat.tolift
->  liftOver $dat.tolift /work/sph-huangj/files/hg19ToHg38.over.chain.gz $dat.lifted $dat.unmapped
->  cut -f 3,4 $dat.lifted > $dat.pos_snp
->  python ~/scripts/f/join_file.py -i "$dat.tmp1,TAB,8 $dat.pos_snp,TAB,1" -o $dat.tmp2
->  cut -d " " -f 1-10 $dat.tmp2 | sed '1s/POS/POS.37/; 1s/NA/POS/' | gzip -f > clean/$dat.gz
+**Public resources and visualization**
 
-2. ⛄跟其他数据合并 
->  python scripts/library/join_file.py -i "$dat,TAB,0 $dat.lifted.3col,TAB,2" -o $dat.NEW.tmp
->  sed -i 's/  */\t/g' $dat.NEW.tmp; awk '$NF=="NA"' $dat.NEW.tmp | wc -l
->  cut -f 1-10,12 $dat.NEW.tmp | sed '1 s/POS/POS.b38/' > $dat.NEW.txt
+- [GWAS Catalog](https://www.ebi.ac.uk/gwas): the classic public catalog of published GWAS associations.
+- [PheWeb](https://pheweb.org/): browser for large-scale GWAS/PheWAS results. Examples include [CKB PheWeb](https://pheweb.ckbiobank.org/), [TPMI PheWeb](https://pheweb.ibms.sinica.edu.tw/), and [BBJ PheWeb](https://pheweb.jp/).
+- [PheWeb2](https://github.com/GaglianoTaliun-Lab/PheWeb2): a newer implementation for interactive genetic association result browsing.
+- [LocusZoom](http://locuszoom.org/): regional association visualization around GWAS loci.
 
-3. 🏃瘦身 ‍[比如说FUMA不能接受超过600MB的文件]
->  zcat $dat.gz | awk 'function r(x) {return sprintf("%.4f", x)} {if (NR == 1) print; else if ($6 > 0.005 && $6 <= 0.995) {$6 = r($6); $8 = r($8); $9 = r($9); print}}' | sed 's/ /\t/g' | bgzip > $dat.lean.gz
+**Recommended reading**
 
-4. 🔍索引 
->  tabix -f -S 1 -s 1 -b 2 -e 2 GWAS.gz
-```
+- Tam et al. *Nature Reviews Methods Primers* 2021. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
+- Chinese tutorial resource: [gwaslab.org](https://gwaslab.org/)
 
-### 📍1.3 GWAS数据可视化
->- 密西根大学开发的[Pheweb](https://pheweb.org/)，上面放了英美大队列的数千个GWAS数据。 此外，[中国CKB](https://pheweb.ckbiobank.org/)，[中国台湾TPMI](https://pheweb.ibms.sinica.edu.tw/)，[日本BBJ](https://pheweb.jp/)都用pheweb发布GWAS。
->- 2026年的一篇NG文章推出了[Pheweb2](https://github.com/GaglianoTaliun-Lab/PheWeb2)。
->- Pheweb有一个强大的add_rsids.py 的功能，但是存在先天缺陷，见[聊天记录1](https://github.com/statgen/pheweb/issues/217)和[聊天记录2](https://github.com/statgen/pheweb/issues/230#event-24757585494)，用户可以在安装pheweb 后找到 add_rsids.py 文件（find /home/ -name "add_rsid*" 或者 pip show --files pheweb），修改一行代码（第140行）。
->- 用户也可以在[pheweb资源库](https://resources.pheweb.org/)网站下载 rsids-v??-hg??.tsv.gz 文件（7亿多行）。
->- 如果要从这个超大文件里提取SNP的信息，可用 bcftools view -i 'ID==@bmi.snp' rsids-v154-hg38.tsv.gz -Ou -o bmi.chrpos.txt
->- 如果GWAS文件 “三缺一” ，可以从scripts文件夹下载我改版的 add_rsids.py，一键补齐，示例命令如下。 
-```
-> 输入文件只要有 SNP，就添加 --chr --pos； 只有 CHR 和 POS，就添加 --snp
-> 列名及新列的分隔符用命令行中的；--ref --alt 是可选项。
-> python /mnt/d/scripts/f/0add_rsid.py -i afib.txt --sep $'\t' --snp SNP --chr chr_name --pos hm_pos --ref effect_allele --alt other_allele  -d /mnt/d/data/ukb/gen/imp/ukb.imp.pvar.gz -o out.tsv.gz
-```
+---
 
-> 密西根大学还开发了[locuszoom](http://locuszoom.org/) 实现基因组局部地区的可视化🔍。 
-<br/>
+## 2. Mendelian randomization
 
+![MR](./images/MR.jpg)
 
-## 🧬2. MR
->- 如果有个体数据，可以用 [OneSampleMR包](https://cran.r-project.org/web/packages/OneSampleMR/index.html)。
-```
-dat$X.pred = predict.lm( lm( X ~ G, data = dat, na.action = na.exclude)) # 🏮
-summary(lm(Y ~ X.pred, data = dat, na.action = na.exclude))
-fit.mr <- ivreg::ivreg(Y ~ X | G, data = dat) # 可以是 G1+G2+G3
-	coef(summary(fit.mr))  # 跟上面的结果一样
-```
+Mendelian randomization uses genetic variants as instrumental variables to estimate whether an exposure may have a causal effect on an outcome. The core workflow is simple, but the details matter: instrument strength, allele harmonization, LD clumping, sample overlap, MHC/HLA regions, and pleiotropy checks can all change the interpretation.
 
->- 如果只有已发表的summary数据，就可以使用Bristol大学开发的[TwoSampleMR R包](https://mrcieu.github.io/TwoSampleMR/index.html)或剑桥大学团队开发的[MendelianRandomization R包](https://wellcomeopenresearch.org/articles/8-449)。
->- 工具变量，一般需要去掉 F_stats <10 或者位于 <b>[MHC区间]</b> 【chr6:28477897-33448354 [(GRCh37)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC?asm=GRCh37), chr6:28510120-33480577 [(GRCh38)](https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC)】 的SNP。
->- <b>密西根大学</b>开发的 [imputation server](https://imputationserver.sph.umich.edu) 用的是： 从rs57232568 【29000554 (版本37), 29032777 (版本38)】 到 rs116206961【33999992 (版本37), 34032215 (版本38)】
->- 10个注意事项示例：
-```
-> 1. 用 allele.qc，协调两组数据的 BETA和EAF，但是输出文件依然是原来的EA和 NEA。
-> 2. 用 fread和fwrite 比 read.table 和 write.table 更快，但fwrite默认输出带quote。
-> 3. EAF如果是0，fwrite 会将其视为NA，输出后TXT就是一个空格，导致数据少了一列。
-> 4. gcta –cojo-slct 生成的 .ldr.cojo 文件最后多出一列TAB。
-> 5. 添加代码，处理两个输入GWAS，其中一个或者两个都不存在 EAF 和 N 的问题。
-> 6. 连着用几个 %>%，缩减代码，最后实际上跑偏了、失控了。
-> 7. 用 group() 之后，如果后面没有跟上 ungroup()，后面会出问题。
-> 8. 用 plink，.bim 文件中的染色体可以用 X表示。但是 gcta 必须用 23。
-> 9. 注意HLA的GRCh37或GRCh37的确切 chr:start-end。
->10. 最后可能发现软件跑出来的结果有重大问题，不“鲁棒” https://github.com/ZhaotongL/cisMRcML/issues/6
+**Start here**
+
+- [MR practical notes and common pitfalls](./pages/note_MR.md)
+
+**Common tools**
+
+- Individual-level data: [OneSampleMR](https://cran.r-project.org/web/packages/OneSampleMR/index.html)
+- Summary-level data: [TwoSampleMR](https://mrcieu.github.io/TwoSampleMR/index.html) and [MendelianRandomization](https://wellcomeopenresearch.org/articles/8-449)
+- MR mediation: `mrMed`/`mrMedR`-style workflows can be considered when the scientific question is exposure → mediator → outcome.
+
+**Recommended reading**
+
+- Sanderson et al. *Nature Reviews Methods Primers* 2022. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
+
+---
+
+## 3. PRS / ProtRS
+
+![PRS](./images/PRS.jpg)
+
+Polygenic risk scores summarize many genetic effects into an individual-level score. A published PRS usually has two layers: a **reference scoring file** containing SNPs and weights, and an **individual-level score** calculated by applying those weights to genotype data. The same idea can be extended to protein-based risk scores, where protein abundances or genetically predicted proteins are used for risk prediction.
+
+**Start here**
+
+- [PRS Catalog](https://www.pgscatalog.org/): public repository of published polygenic score scoring files.
+- [GWAS Catalog](https://www.ebi.ac.uk/gwas): useful for finding the GWAS evidence behind many traits.
+
+**Key distinction**
+
+```text
+Reference scoring file: SNP / effect allele / weight
+Individual PRS:         sum of allele dosage × weight for each person
 ```
 
->- MR的本质是两次回归，而中介mediation的本质是三次♻回归
+**Recommended reading**
+
+- Choi et al. *Nature Protocols* 2020. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
+
+---
+
+## 4. AI systems for biomedical analysis
+
+[![AI](./images/AI.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
+
+AI tools are useful for text classification, phenotype extraction, local model deployment, and code-assisted analysis. For biomedical data, the practical questions are usually: how to install the environment, how to run models locally, and how to connect model outputs with downstream statistical analysis.
+
+**Start here**
+
+- [Windows/WSL, Python, PyTorch and local Transformer setup](./pages/note_OS.md)
+- [VCF-to-protein and AlphaFold-related notes](./pages/vcf2prot.md)
+
+---
+
+## 5. Miscellaneous notes
+
+- [R setup and package installation notes](./pages/note_R.md)
+- [Operating system and WSL notes](./pages/note_OS.md)
+
+---
+
+## Suggested repository structure
+
+```text
+.
+├── README.md
+├── images/
+│   ├── GWAS.jpg
+│   ├── MR.jpg
+│   ├── PRS.jpg
+│   └── AI.png
+└── pages/
+    ├── GWAS.post.md
+    ├── liftOver.md
+    ├── note_annotate.md
+    ├── note_MR.md
+    ├── note_OS.md
+    ├── note_R.md
+    └── vcf2prot.md
 ```
-library(mediation)
-# fit.X2Y <- lm(Y ~ X +age+sex+PC1+PC2, data = dat)
-fit.X2Y <- survreg(Surv(time, event) ~ X +age+sex+PC1+PC2, data = dat); res.X2Y = summary(fit.X2Y)$table
-fit.X2M <- lm(M ~ X +age+sex+PC1+PC2, data = dat); res.X2M = coef(summary(fit.X2M))
-# fit.M2Y <- lm(Y ~ M + X +age+sex+PC1+PC2, data = dat)
-fit.M2Y <- survreg(Surv(time, event) ~ M + X +age+sex+PC1+PC2, data = dat); res.M2Y = summary(fit.M2Y)$table
-res <- mediation::mediate(fit.X2M, fit.M2Y, treat = "X", mediator = "M", boot = TRUE, sims = 1000) # outcome = 
-SUM <- summary(res)
-c(ACME = rb(SUM$d.avg), ADE = rb(SUM$z.avg), Total = rb(SUM$tau.coef), Prop = rb(SUM$n.avg))
-```
->- 当只有summary数据的时候，用MR的方式来做mediation，就可以用mrMed📍R包
-
-<br/>
-
-
-## 🧬3. PRS 【或者 ProtRS】
-
-
-## 🧬4. STL
->- 下载 [千人基因组深度测序VCF文件](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/), 下载[参考基因组fasta文件](https://ftp.ensembl.org/pub/current_fasta/homo_sapiens/dna) 然后samtools faidx, 
-从[gencode](https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/) 或者 [ensembl](https://ftp.ensembl.org/pub/current_gtf/homo_sapiens/) 下载<b>gtf</b> 和 gff3文件, 下载[vcf2prot软件](https://github.com/ikmb/vcf2prot)。
->- 在Alpha-fold服务器输入的DNA，是mRNA逆转录形成的cDNA【不含内含子】，snapgene或Editseq可将DNA转为蛋白质🥚序列
->- 蛋白质3D之间【包括冷冻电镜数据】比较，可用TMalign
->- 很多样本 _1 和 _2 的蛋白完全一致，先 seqkit rmdup 去重，再跑 Alpha-Fold
-```
-bcftools +liftover chr9.vcf.gz -Oz -o chr9.lifted.vcf.gz -- -s $fasta_37 -f $fasta_38 -c $dir0/files/liftOver/hg19ToHg38.over.chain.gz 
-bcftools view NEFL.csq.vcf -i 'INFO/BCSQ ~ "missense"' | bcftools query -f '[%SAMPLE\t%GT\n]' missense.vcf.gz | awk '$2 !~ /0\|0/' > missense.person
-bcftools query ABO.csq.vcf.gz -f '%INFO/BCSQ\n' | tr ',' '\n' | awk -F'|' '{if ($3 ~ /^ENST/) print $3}' | sort -u
-```
-<br/>
-
-
-## 🤖 AI系统
-[![点击看视频](./images/nn-youtube.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
-
-```
-1.	Python + VS code，在左边Extensions菜单分别搜索并安装 wsl、 python、 jupyter
-	which python; python --version # cmd用 where python, VS code 用 python -c "import sys; print(sys.executable)"
-
-1.	本地安装大模型，现在 PyTorch 稳定版支持 Python 3.12
-	Windows Powershell 上安装，可以不用conda。 用 where python; where pip; pip -V; python -m pip -V 确认一下。
-	conda env list 
-	# conda env remove -n ai; conda create -n ai python=3.12 
-	conda activate ai
-	pip uninstall -y torch torchvision torchaudio
-	pip install --upgrade pip
-	pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
-	pip install --upgrade numpy tqdm transformers pandas requests openpyxl bitsandbytes accelerate datasets peft evaluate scikit-learn protobuf sentencepiece huggingface_hub tabpfn pytorch-tabular[all]
-	python -c "import torch; print(torch.cuda.is_available()); print(torch.__version__); print(torch.version.cuda); print(torch.cuda.get_device_name(0))"
-
-3.	hf auth login; hf download google-bert/bert-base-chinese --local-dir . 或 git clone https://huggingface.co/Qwen/Qwen3-8B
-	如果 Failed to connect to port 443，就用 scripts/f/00hf_download.py 
-
-```
-2025. Nature. Learning the natural history of human disease with generative transformers (https://github.com/gerstung-lab/delphi))
-2026. Nature. A foundation model for continuous glucose monitoring data (https://github.com/Guylu/GluFormer)
-<br/>
-
-
-## 🧬参考资料及经验分享
-
-🐎GWAS-PRS-MR ”三驾马车“ 入门指南 
-``` 
-> GWAS入门： 2021. Nature RMP. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)  
-> 🏮GWAS详解中文版：gwaslab.org
-> PRS入门. Nature Protocols. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)  
-> MR入门： 2022. Nature RMP. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)  
-```
-
-基因注释信息🔍
-```
-> 剑桥： VEP， http://www.phenoscanner.medschl.cam.ac.uk/
-> 哈麻： https://spliceailookup.broadinstitute.org/, gnomad.broadinstitute.org, 调控相关🏮https://screen.wenglab.org/
-> 美国公立: https://bravo.sph.umich.edu，UCSC genome browser: https://www.genome.ucsc.edu，
-> 美国政府： https://databrowser.researchallofus.org，dbSNP: https://www.ncbi.nlm.nih.gov/snp
-```
-
-🛵R 
-``` 
-▸ WINDOWS 环境变量里设置R_LIBS_USER，LINUX在 ~/.Renviron设置。 用 .libPaths()查看，可通过 ~/.Rprofile 更改。
-▸ 先安装 devtools, remotes 包
-▸ R画图集锦: https://r-graph-gallery.com/index.html  
-▸ R新冠地图: https://statsandr.com/blog/top-r-resources-on-covid-19-coronavirus/  
-▸ 供复现代码： https://globalenvhealth.org/code-data-download/  
-▸ 🏮顾祖广炫酷生信图： [https://jokergoo.github.io/software/](https://jokergoo.github.io/software/)  
-▸ 🏮梁志生R包荟萃 [https://gitee.com/sheng0825/projects](https://gitee.com/sheng0825/projects)  
-```
-
-🎇Win操作系统
-```
-> 重启 outlook: taskkill /f /im outlook.exe; start outlook
-> 以管理员身份运行 CMD: rd /s /q D:\$RECYCLE.BIN
-> 在PowerShell: robocopy "D:" "G:\黄捷文件备份" /MIR /XO /FFT /V /XD "D:\R_lib" "D:\$RECYCLE.BIN" /A-:SH
-> 在PowerShell: wsl --list --online; wsl --install -d Ubuntu-24.04; wsl --set-default-version 2; wsl -l -v
-> 安装Anaconda后，以管理员身份运行PowerShell: conda init powershell; Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-🎇Lin操作系统
-```
-> wsl --install; wsl --list --online; wsl --install -d Ubuntu-24.04
-> sudo apt update; sudo apt upgrade -y; ⭕D盘的路径分别是/mnt/d
-> 当打开 shell，遇到press any key to continue，用管理员权限打开cmd, 运行 netsh winsock reset
-> 后台多线程下载: sudo apt install -y aria2; screen -dmS jack aria2c -x 4 -i url.txt --log-level=info --log=jack.log; screen -ls; screen -S jack -X quit 
-> 三剑客🗡代码示例: awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}'
-> HPC 登录： ssh sph-huangj@172.18.6.178 【太乙】； ssh -p 18188 sph-huangj@172.18.6.10 【启明】
-  后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
-  硬盘额度：du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
-  bsub等: queueinfo -gpu -cpu; module avail
-```
-
-
->- 创园301🖨： 从[富士官网](https://m3support-fb.fujifilm-fb.com.cn/driver_downloads/www/)搜索 ApeosPort C2060 下载驱动程序，然后运行。 👉“设备类型” 选TCP/IP 👉 打印机IP为 10.20.40.6
->- 创园204🖨：首先连接 LINK_7204无线网，密码是???2025??04，然后下载[驱动程序](https://www.canon.com.cn/supports/download/simsdetail/0101228601.html?modelId=1524&channel=4)，点击一步步安装。
-
-🌅 🌙 🦟 🐜 ▸ 🛫 🧬 🅱️ H 💊
