@@ -1,6 +1,4 @@
-# 🧬 Genetic Data, GWAS, MR, PRS and AI Notes
-
-> Focus: **GWAS**, **MR**, **Polygenic/Protein RS**, and **AI**.
+# 🧬 **GWAS**, **MR**, **Polygenic/Protein RS**, and **AI**.
 
 ---
 
