@@ -1,4 +1,4 @@
-# 🧬 **GWAS**, **MR**, **Polygenic/Protein RS**, and **AI**.
+# 🧬 **GWAS**, **MR**, **P[ro]RS**, **AI**.
 ![jielab](./images/banner.png)
 ---
 
