@@ -1,8 +1,6 @@
 # 🧬 Genetic Data, GWAS, MR, PRS and AI Notes
 
-This repository collects practical notes for genetic epidemiology and AI-assisted biomedical analysis. The main page gives a brief map of the topics; detailed notes and runnable examples are placed in [`pages/`](./pages/).
-
-> Focus: **GWAS summary statistics**, **Mendelian randomization**, **polygenic/protein risk scores**, and **local AI/Transformer workflows**.
+> Focus: **GWAS**, **MR**, **Polygenic/Protein RS**, and **AI**.
 
 ---
 
@@ -106,16 +104,9 @@ AI tools are useful for text classification, phenotype extraction, local model d
 
 ---
 
-## Suggested repository structure
-
 ```text
 .
 ├── README.md
-├── images/
-│   ├── GWAS.jpg
-│   ├── MR.jpg
-│   ├── PRS.jpg
-│   └── AI.png
 └── pages/
     ├── GWAS.post.md
     ├── liftOver.md
