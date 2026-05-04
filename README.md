@@ -107,14 +107,6 @@ AI tools are useful for text classification, phenotype extraction, local model d
 <table>
   <tr>
     <td width="50%" valign="top">
-
-<h2>5. 基础 ℹ️ 分享</h2>
-
-<ul>
-  <li><a href="pages/note_R.md">R setup and package installation notes</a></li>
-  <li><a href="pages/note_OS.md">Operating system and WSL notes</a></li>
-</ul>
-
 <pre>
 .
 ├── README.md
