@@ -135,11 +135,11 @@ AI tools are useful for text classification, phenotype extraction, local model d
 └── pubs/
     ├── blockzoom: ui.R, server.R
 	├── ems120: ems120.R, ems120.py
-	├── gugen: gu.sh, ibdmix.sh
-	├── le8omics: le8.R, proxy.f.R
+	├── gu✳: gu.sh, ibdmix.sh
+	├── le8✳: le8.R, proxy.f.R
     ├── minhang: streamlite_app.py
     ├── pageant: GUI.py, main.py
-    └── yinyang: yy.R
+    └── yy✳: yy.R
 </pre>
     </td>
   </tr>
