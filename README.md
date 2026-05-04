@@ -2,11 +2,6 @@
 ![jielab](./images/banner.png)
 <br><br>
 
-<p align="center">
-  <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
-</p>
-
-<br>
 
 ## 0. Data resources
 
@@ -46,13 +41,12 @@ Genome-wide association studies identify statistical associations between geneti
 - Tam et al. *Nature Reviews Methods Primers* 2021. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 - Chinese tutorial resource: [gwaslab.org](https://gwaslab.org/)
 
-<br><br>
+<br>
 
 <p align="center">
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
 </p>
 
-<br>
 
 ## 2. MR孟德尔随机化
 
