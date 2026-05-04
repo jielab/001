@@ -1,4 +1,4 @@
-# 🧬 **GWAS**, **MR**, **P[ro]RS**, **AI**.
+# 🚩**GWAS** 🛞 **MR** 🛞 **P[ro]RS** 🛞 🧬 
 ![jielab](./images/banner.png)
 <br><br>
 
