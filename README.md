@@ -86,8 +86,6 @@ Polygenic risk scores summarize many genetic effects into an individual-level sc
 - Choi et al. *Nature Protocols* 2020. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
 - Choi et al. *Nature Protocols* 2020. [Development and Validation of a Clinical Polygenic Risk Report in U.S.-Based Health Systems for 8 Cardiovascular Conditions](https://www.jacc.org/doi/10.1016/j.jacc.2026.03.035)
 
-<br><br>
-
 <br>
 <p align="center">
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
