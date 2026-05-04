@@ -10,6 +10,7 @@
 
 ---
 
+<br>
 ## 1. GWAS全基因组关联研究
 
 ![GWAS](./images/GWAS.jpg)
@@ -36,6 +37,7 @@ Genome-wide association studies identify statistical associations between geneti
 
 ---
 
+<br>
 ## 2. MR孟德尔随机化
 
 ![MR](./images/MR.jpg)
@@ -58,6 +60,7 @@ Mendelian randomization uses genetic variants as instrumental variables to estim
 
 ---
 
+<br>
 ## 3. PRS/ProtRS组学风险预测
 
 ![PRS](./images/PRS.jpg)
@@ -78,6 +81,7 @@ Polygenic risk scores summarize many genetic effects into an individual-level sc
 
 ---
 
+<br>
 ## 4. AI人工智能
 
 [![AI](./images/AI.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
@@ -91,6 +95,7 @@ AI tools are useful for text classification, phenotype extraction, local model d
 
 ---
 
+<br>
 ## 5. 基础 ℹ️ 分享
 
 - [R setup and package installation notes](./pages/note_R.md)
