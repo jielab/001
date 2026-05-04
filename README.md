@@ -103,7 +103,6 @@ AI tools are useful for text classification, phenotype extraction, local model d
     <td width="50%" valign="top">
 <pre>
 .
-├── README.md
 └── pages/
     ├── GWAS.post.md
     ├── liftOver.md
@@ -118,20 +117,20 @@ AI tools are useful for text classification, phenotype extraction, local model d
 <pre>
 .
 └── pubs/
-    ├── GWAS.post.md
-    ├── liftOver.md
-    ├── note_annotate.md
-    ├── note_MR.md
-    ├── note_OS.md
-    ├── note_R.md
-    └── vcf2prot.md
+    ├── blockzoom: ui.R, server.R
+	├── ems120: ems120.R, ems120.py
+	├── gugen: gu.sh, ibdmix.sh
+	├── le8omics: le8.R, proxy.f.R
+    ├── minhang: streamlite_app.py
+    ├── pageant: GUI.py, main.py
+    └── yinyang: yy.R
 </pre>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top" align="center">
       <img src="./images/octopus.gif" alt="OCTUPUS" width="100%">
-      <br>
+      <br><br>
       <b>OCTUPUS</b>: Origin Computation and Tracing by Objective Phylogeny and Usable Screensaver
     </td>
     <td width="50%" valign="top" align="center">
