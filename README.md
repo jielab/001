@@ -10,7 +10,6 @@
 
 ---
 
-<br>
 ## 1. GWAS全基因组关联研究
 
 ![GWAS](./images/GWAS.jpg)
@@ -37,7 +36,6 @@ Genome-wide association studies identify statistical associations between geneti
 
 ---
 
-<br>
 ## 2. MR孟德尔随机化
 
 ![MR](./images/MR.jpg)
@@ -60,7 +58,6 @@ Mendelian randomization uses genetic variants as instrumental variables to estim
 
 ---
 
-<br>
 ## 3. PRS/ProtRS组学风险预测
 
 ![PRS](./images/PRS.jpg)
@@ -81,10 +78,9 @@ Polygenic risk scores summarize many genetic effects into an individual-level sc
 
 ---
 
-<br>
 ## 4. AI人工智能
 
-![AI](./images/AI.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
+[![AI](./images/AI.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
 
 AI tools are useful for text classification, phenotype extraction, local model deployment, and code-assisted analysis. For biomedical data, the practical questions are usually: how to install the environment, how to run models locally, and how to connect model outputs with downstream statistical analysis.
 
@@ -95,16 +91,14 @@ AI tools are useful for text classification, phenotype extraction, local model d
 
 ---
 
-<br>
-## 5. 基础ℹ分享
+## 5. 基础 ℹ️ 分享
 
 - [R setup and package installation notes](./pages/note_R.md)
 - [Operating system and WSL notes](./pages/note_OS.md)
 
 ---
 
-
-<table>
+<table width="100%">
   <tr>
     <td width="50%" valign="top">
 <pre>
@@ -119,11 +113,8 @@ AI tools are useful for text classification, phenotype extraction, local model d
     ├── note_R.md
     └── vcf2prot.md
 </pre>
-
-</td>
-
-<td width="50%" valign="top">
-
+    </td>
+    <td width="50%" valign="top">
 <pre>
 .
 └── pubs/
@@ -135,21 +126,19 @@ AI tools are useful for text classification, phenotype extraction, local model d
     ├── note_R.md
     └── vcf2prot.md
 </pre>
-
-</td>
+    </td>
   </tr>
-
   <tr>
-    <td width="50%" valign="top">
-	![OCTUPUS: Origin Computation and Tracing by Objective Phylogeny and Usable Screensaver](./images/octopus.gif)]
-
-</td>
-
-<td width="50%" valign="top">
-
-	![PIGEON: Practical Investigation of Genomic Errors by Observation and Notification](./images/pigeon.gif)]
-
-</td>
+    <td width="50%" valign="top" align="center">
+      <img src="./images/octopus.gif" alt="OCTUPUS" width="100%">
+      <br>
+      <b>OCTUPUS</b>: Origin Computation and Tracing by Objective Phylogeny and Usable Screensaver
+    </td>
+    <td width="50%" valign="top" align="center">
+      <img src="./images/pigeon.gif" alt="PIGEON" width="100%">
+      <br>
+      <b>PIGEON</b>: Practical Investigation of Genomic Errors by Observation and Notification
+    </td>
   </tr>
 </table>
 
