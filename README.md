@@ -9,13 +9,10 @@
 - [1000 Genomes Project](https://www.internationalgenome.org/data): a widely used reference resource for imputation, LD calculation, and ancestry-aware analyses.
 - [UK Biobank Research Analysis Platform](https://dnanexus.gitbook.io/uk-biobank-rap): the recommended cloud environment for large-scale UK Biobank analyses.
 
-<br><br>
-
+<br>
 <p align="center">
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
 </p>
-
-<br>
 
 ## 1. GWAS全基因组关联研究
 
@@ -42,11 +39,9 @@ Genome-wide association studies identify statistical associations between geneti
 - Chinese tutorial resource: [gwaslab.org](https://gwaslab.org/)
 
 <br>
-
 <p align="center">
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
 </p>
-
 
 ## 2. MR孟德尔随机化
 
@@ -68,13 +63,10 @@ Mendelian randomization uses genetic variants as instrumental variables to estim
 
 - Sanderson et al. *Nature Reviews Methods Primers* 2022. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
 
-<br><br>
-
+<br>
 <p align="center">
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
 </p>
-
-<br>
 
 ## 3. PRS/ProtRS组学风险预测
 
@@ -96,11 +88,10 @@ Polygenic risk scores summarize many genetic effects into an individual-level sc
 
 <br><br>
 
+<br>
 <p align="center">
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
 </p>
-
-<br>
 
 ## 4. AI人工智能
 
@@ -113,13 +104,10 @@ AI tools are useful for text classification, phenotype extraction, local model d
 - [Windows/WSL, Python, PyTorch and local Transformer setup](./pages/note_OS.md)
 - [VCF-to-protein and AlphaFold-related notes](./pages/vcf2prot.md)
 
-<br><br>
-
+<br>
 <p align="center">
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
 </p>
-
-<br>
 
 ## 5. 基础 ℹ️ 分享
 
