@@ -128,20 +128,11 @@ AI tools are useful for text classification, phenotype extraction, local model d
     </td>
   </tr>
   <tr>
-    <td width="50%" height="340" valign="bottom" align="center">
-      <img
-        src="./images/octopus.gif"
-        alt="OCTUPUS"
-        title="OCTUPUS: Origin Computation and Tracing by Objective Phylogeny and Usable Screensaver"
-        width="100%">
+    <td width="50%" valign="bottom" align="center">
+      <img src="./images/octopus.gif" alt="OCTUPUS" title="OCTUPUS: Origin Computation and Tracing by Objective Phylogeny and Usable Screensaver" height="250">
     </td>
-
-    <td width="50%" height="340" valign="bottom" align="center">
-      <img
-        src="./images/pigeon.gif"
-        alt="PIGEON"
-        title="PIGEON: Practical Investigation of Genomic Errors by Observation and Notification"
-        width="100%">
+    <td width="50%" valign="bottom" align="center">
+      <img src="./images/pigeon.gif" alt="PIGEON" title="PIGEON: Practical Investigation of Genomic Errors by Observation and Notification" height="250">
     </td>
   </tr>
 </table>
