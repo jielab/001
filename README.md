@@ -134,8 +134,7 @@ AI tools are useful for text classification, phenotype extraction, local model d
 
 <pre>
 .
-├── README.md
-└── pages/
+└── pubs/
     ├── GWAS.post.md
     ├── liftOver.md
     ├── note_annotate.md
