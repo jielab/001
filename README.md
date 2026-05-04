@@ -1,6 +1,12 @@
 # 🧬 **GWAS**, **MR**, **P[ro]RS**, **AI**.
 ![jielab](./images/banner.png)
----
+<br><br>
+
+<p align="center">
+  <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
+</p>
+
+<br>
 
 ## 0. Data resources
 
@@ -8,9 +14,14 @@
 - [1000 Genomes Project](https://www.internationalgenome.org/data): a widely used reference resource for imputation, LD calculation, and ancestry-aware analyses.
 - [UK Biobank Research Analysis Platform](https://dnanexus.gitbook.io/uk-biobank-rap): the recommended cloud environment for large-scale UK Biobank analyses.
 
----
+<br><br>
+
+<p align="center">
+  <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
+</p>
 
 <br>
+
 ## 1. GWAS全基因组关联研究
 
 ![GWAS](./images/GWAS.jpg)
@@ -35,9 +46,14 @@ Genome-wide association studies identify statistical associations between geneti
 - Tam et al. *Nature Reviews Methods Primers* 2021. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 - Chinese tutorial resource: [gwaslab.org](https://gwaslab.org/)
 
----
+<br><br>
+
+<p align="center">
+  <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
+</p>
 
 <br>
+
 ## 2. MR孟德尔随机化
 
 ![MR](./images/MR.jpg)
@@ -58,9 +74,14 @@ Mendelian randomization uses genetic variants as instrumental variables to estim
 
 - Sanderson et al. *Nature Reviews Methods Primers* 2022. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
 
----
+<br><br>
+
+<p align="center">
+  <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
+</p>
 
 <br>
+
 ## 3. PRS/ProtRS组学风险预测
 
 ![PRS](./images/PRS.jpg)
@@ -79,9 +100,14 @@ Polygenic risk scores summarize many genetic effects into an individual-level sc
 - Choi et al. *Nature Protocols* 2020. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
 - Choi et al. *Nature Protocols* 2020. [Development and Validation of a Clinical Polygenic Risk Report in U.S.-Based Health Systems for 8 Cardiovascular Conditions](https://www.jacc.org/doi/10.1016/j.jacc.2026.03.035)
 
----
+<br><br>
+
+<p align="center">
+  <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
+</p>
 
 <br>
+
 ## 4. AI人工智能
 
 [![AI](./images/AI.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
@@ -93,9 +119,14 @@ AI tools are useful for text classification, phenotype extraction, local model d
 - [Windows/WSL, Python, PyTorch and local Transformer setup](./pages/note_OS.md)
 - [VCF-to-protein and AlphaFold-related notes](./pages/vcf2prot.md)
 
----
+<br><br>
+
+<p align="center">
+  <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
+</p>
 
 <br>
+
 ## 5. 基础 ℹ️ 分享
 
 - [R setup and package installation notes](./pages/note_R.md)
