@@ -10,7 +10,7 @@
 
 ---
 
-<br><br>
+<br>
 ## 1. GWAS全基因组关联研究
 
 ![GWAS](./images/GWAS.jpg)
@@ -37,7 +37,7 @@ Genome-wide association studies identify statistical associations between geneti
 
 ---
 
-<br><br>
+<br>
 ## 2. MR孟德尔随机化
 
 ![MR](./images/MR.jpg)
@@ -60,7 +60,7 @@ Mendelian randomization uses genetic variants as instrumental variables to estim
 
 ---
 
-<br><br>
+<br>
 ## 3. PRS/ProtRS组学风险预测
 
 ![PRS](./images/PRS.jpg)
@@ -81,10 +81,10 @@ Polygenic risk scores summarize many genetic effects into an individual-level sc
 
 ---
 
-<br><br>
+<br>
 ## 4. AI人工智能
 
-[![AI](./images/AI.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
+![AI](./images/AI.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
 
 AI tools are useful for text classification, phenotype extraction, local model deployment, and code-assisted analysis. For biomedical data, the practical questions are usually: how to install the environment, how to run models locally, and how to connect model outputs with downstream statistical analysis.
 
@@ -95,7 +95,7 @@ AI tools are useful for text classification, phenotype extraction, local model d
 
 ---
 
-<br><br>
+<br>
 ## 5. 基础ℹ分享
 
 - [R setup and package installation notes](./pages/note_R.md)
@@ -103,7 +103,19 @@ AI tools are useful for text classification, phenotype extraction, local model d
 
 ---
 
-```text
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+
+<h2>5. 基础 ℹ️ 分享</h2>
+
+<ul>
+  <li><a href="pages/note_R.md">R setup and package installation notes</a></li>
+  <li><a href="pages/note_OS.md">Operating system and WSL notes</a></li>
+</ul>
+
+<pre>
 .
 ├── README.md
 └── pages/
@@ -114,6 +126,41 @@ AI tools are useful for text classification, phenotype extraction, local model d
     ├── note_OS.md
     ├── note_R.md
     └── vcf2prot.md
-```
+</pre>
+
+</td>
+
+<td width="50%" valign="top">
+
+<pre>
+.
+├── README.md
+└── pages/
+    ├── GWAS.post.md
+    ├── liftOver.md
+    ├── note_annotate.md
+    ├── note_MR.md
+    ├── note_OS.md
+    ├── note_R.md
+    └── vcf2prot.md
+</pre>
+
+</td>
+  </tr>
+
+  <tr>
+    <td width="50%" valign="top">
+	![OCTUPUS: Origin Computation and Tracing by Objective Phylogeny and Usable Screensaver](./images/octopus.gif)]
+
+</td>
+
+<td width="50%" valign="top">
+
+	![PIGEON: Practical Investigation of Genomic Errors by Observation and Notification](./images/pigeon.gif)]
+
+</td>
+  </tr>
+</table>
+
 
 🌅 🌙 🦟 🐜 ▸ 🛫 🧬 🅱️ H 💊
