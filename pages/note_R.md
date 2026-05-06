@@ -93,10 +93,10 @@ Install common R packages:
 
 ```bash
 sudo apt install --no-install-recommends \
-	r-cran-pacman r-cran-data.table r-cran-tidyverse r-cran-survival \
+	r-cran-pacman r-cran-devtools \
+	r-cran-data.table r-cran-tidyverse r-cran-survival r-cran-lubridate \
 	r-cran-broom r-cran-ggplot2 r-cran-patchwork r-cran-readxl \
 	r-cran-writexl r-cran-purrr r-cran-dplyr r-cran-stringr \
-	r-cran-lubridate
 
 R --version
 ```
