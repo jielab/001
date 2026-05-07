@@ -47,37 +47,78 @@ Split a large command list into smaller scripts:
 awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}' commands.txt
 ```
 
-## 3. WSL proxy through Clash Verge
+## 3. WSL proxy through Clash for Windows
 
-In Clash Verge:
+In Clash for Windows:
 
 ```text
-System proxy: on
-Allow LAN: on
 Port: 7897
+Allow LAN: on
+System Proxy: on
 ```
 
-Check the listening port in Windows PowerShell:
-
-```powershell
-netstat -ano | findstr :7897
-```
-
-Find the working proxy address from WSL. Replace the candidate IPs with your own local network addresses if needed.
+Find the Windows proxy IP from WSL:
 
 ```bash
-for ip in 127.0.0.1 <WINDOWS_HOST_IP> <LAN_IP>; do
-	echo "==== $ip ===="
-	curl -I --connect-timeout 5 http://$ip:7897
-done
+proxy_ip=$(awk '/nameserver/{print $2; exit}' /etc/resolv.conf)
+port=7897
+echo $proxy_ip
 ```
 
-Add to `~/.bashrc` when the proxy address is confirmed:
+Test whether WSL can use the Clash proxy:
 
 ```bash
-export PATH="/mnt/d/software/bin:$PATH"
+curl -I --connect-timeout 8 -x http://${proxy_ip}:${port} https://mirrors.tuna.tsinghua.edu.cn
+curl -I --connect-timeout 8 -x http://${proxy_ip}:${port} https://r2u.stat.illinois.edu
+```
+
+If the test works, set proxy for normal shell commands:
+
+```bash
+cat >> ~/.bashrc <<'EOF'
 export http_proxy=http://<PROXY_IP>:7897
 export https_proxy=http://<PROXY_IP>:7897
+export all_proxy=http://<PROXY_IP>:7897
+EOF
+source ~/.bashrc
+```
+
+Replace `<PROXY_IP>` with the value printed by `echo $proxy_ip`, for example `192.168.0.1`.
+
+`sudo apt update` may not use the proxy from `.bashrc`. Set the apt proxy directly and force IPv4:
+
+```bash
+sudo tee /etc/apt/apt.conf.d/95proxy >/dev/null <<EOF
+Acquire::http::Proxy "http://${proxy_ip}:${port}/";
+Acquire::https::Proxy "http://${proxy_ip}:${port}/";
+Acquire::ForceIPv4 "true";
+EOF
+
+apt-config dump | grep -Ei 'proxy|forceipv4'
+sudo apt update
+```
+
+If `sudo apt update` shows missing GPG keys for CRAN or r2u, for example:
+
+```text
+NO_PUBKEY 51716619E084DAB9
+NO_PUBKEY A1489FE2AB99A21A
+```
+
+add the keys through the same proxy:
+
+```bash
+proxy=http://${proxy_ip}:${port}
+
+curl -fsSL -x "$proxy" "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x51716619E084DAB9" -o /tmp/cran.asc
+curl -fsSL -x "$proxy" "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xA1489FE2AB99A21A" -o /tmp/r2u1.asc
+curl -fsSL -x "$proxy" "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x67C2D66C4B1D4339" -o /tmp/r2u2.asc
+
+cat /tmp/cran.asc /tmp/r2u1.asc /tmp/r2u2.asc | \
+  gpg --dearmor | \
+  sudo tee /etc/apt/trusted.gpg.d/cran-r2u.gpg >/dev/null
+
+sudo apt update
 ```
 
 Remove apt proxy settings if needed:
