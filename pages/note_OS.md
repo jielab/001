@@ -51,22 +51,6 @@ awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}' commands.txt
 
 ## 3. New Windows/WSL network setup: Clash, apt, R, Git, and SSH
 
-Goal on a new Windows computer:
-
-```text
-sudo apt update
-R package installation from CRAN/GitHub
-GitHub/Hugging Face downloads
-ssh <USER>@<SERVER_IP>
-```
-
-The clean rule is:
-
-```text
-WSL autoProxy: false
-apt: no apt proxy file
-shell proxy: default off; manually run proxy_on only when needed
-```
 
 ### 3.1 Clash settings in Windows
 
@@ -83,8 +67,6 @@ Check the port in Windows PowerShell:
 ```powershell
 netstat -ano | findstr :7897
 ```
-
-The examples below use port `7897`. If your Clash port is different, replace `7897` with your own port.
 
 ### 3.2 WSL2 mirrored networking: keep autoProxy=false
 
@@ -108,61 +90,12 @@ Then restart WSL:
 ```powershell
 wsl --shutdown
 ```
-
-Reason:
-
-- `networkingMode=mirrored` helps WSL follow the Windows network and VPN routes.
-- `dnsTunneling=true` helps DNS work under VPN or complex networks.
-- `autoProxy=false` is important. If it is `true`, Windows proxy settings may be automatically injected into WSL and cause confusing `http_proxy` / `https_proxy` variables in every new terminal.
-
-After reopening Ubuntu, check:
-
-```bash
-echo "=== shell proxy ==="
-env | grep -Ei '^(http_proxy|https_proxy|all_proxy|HTTP_PROXY|HTTPS_PROXY|ALL_PROXY)=' || echo "No shell proxy"
-
-echo "=== apt proxy ==="
-apt-config dump | grep -Ei 'proxy|forceipv4|retries|pipeline' || echo "No apt proxy"
-```
-
-The expected result is:
-
-```text
-No shell proxy
-No apt proxy
-```
-
-### 3.3 apt should normally use direct connection
-
-Do **not** create `/etc/apt/apt.conf.d/95proxy` by default.
-
-If this file exists from an old setup, remove it:
-
-```bash
-sudo rm -f /etc/apt/apt.conf.d/95proxy
-```
-
-Then test:
-
 ```bash
 sudo apt update
 ```
 
-If `sudo apt update` works, keep apt direct. Do not set an apt proxy.
 
-Check again:
-
-```bash
-apt-config dump | grep -Ei 'proxy|forceipv4|retries|pipeline' || echo "No apt proxy"
-```
-
-Expected:
-
-```text
-No apt proxy
-```
-
-### 3.4 Add manual proxy_on / proxy_off to ~/.bashrc
+### 3.3 Add manual proxy_on / proxy_off to ~/.bashrc
 
 Add only the functions below to the end of `~/.bashrc`. Do **not** put `export http_proxy=...` outside the function. Do **not** add a standalone `proxy_on` line.
 
@@ -194,30 +127,6 @@ BASHRC_EOF
 source ~/.bashrc
 ```
 
-Default terminal should be proxy off:
-
-```bash
-env | grep -Ei '^(http_proxy|https_proxy|all_proxy|HTTP_PROXY|HTTPS_PROXY|ALL_PROXY)=' || echo "No shell proxy"
-```
-
-Use proxy only when needed:
-
-```bash
-proxy_on
-# run git / pip / R / hf download commands
-proxy_off
-```
-
-### 3.5 When to use proxy_on
-
-Usually **do not** use proxy for:
-
-```bash
-sudo apt update
-sudo apt install xxx
-ssh <USER>@<SERVER_IP>
-```
-
 Use `proxy_on` when direct download fails for:
 
 ```bash
@@ -237,109 +146,7 @@ curl -I --connect-timeout 8 https://github.com
 proxy_off
 ```
 
-### 3.6 SSH and internal servers
-
-Test an internal server directly. Do not send SSH through Clash unless you know you need it.
-
-```bash
-proxy_off
-ip route get <SERVER_IP>
-ping -c 4 <SERVER_IP>
-nc -vz <SERVER_IP> 22
-ssh <USER>@<SERVER_IP>
-```
-
-If `ping` and SSH work but this fails:
-
-```bash
-curl -I http://<SERVER_IP>
-```
-
-that usually only means the server does not run an HTTP service on port 80. It does not mean SSH is broken.
-
-### 3.7 R package installation
-
-First try direct R package installation. If it fails because of network problems, start R after `proxy_on`.
-
-```bash
-proxy_on
-R
-```
-
-Inside R:
-
-```r
-Sys.getenv(c("http_proxy", "https_proxy", "all_proxy"))
-install.packages("remotes", repos = "https://cloud.r-project.org")
-remotes::install_github("r-lib/lintr")
-```
-
-After installation:
-
-```bash
-proxy_off
-```
-
-### 3.8 Quick diagnosis commands
-
-```bash
-echo "=== WSL config ==="
-winhome=$(powershell.exe -NoProfile -Command '[Environment]::GetFolderPath("UserProfile")' | tr -d '\r')
-cat "$(wslpath "$winhome")/.wslconfig"
-
-echo "=== shell proxy ==="
-env | grep -Ei '^(http_proxy|https_proxy|all_proxy|HTTP_PROXY|HTTPS_PROXY|ALL_PROXY)=' || echo "No shell proxy"
-
-echo "=== apt proxy ==="
-apt-config dump | grep -Ei 'proxy|forceipv4|retries|pipeline' || echo "No apt proxy"
-
-echo "=== bashrc proxy lines ==="
-grep -nEi 'proxy_on|proxy_off|export .*proxy|http_proxy|https_proxy|all_proxy' ~/.bashrc
-
-echo "=== git proxy ==="
-git config --list --show-origin | grep -i proxy || echo "No git proxy"
-
-echo "=== apt test ==="
-sudo apt update
-```
-
-Expected clean status:
-
-```text
-autoProxy=false
-No shell proxy
-No apt proxy
-No git proxy
-sudo apt update works
-```
-
-## 4. Local Python and Transformer environment
-
-Recommended VS Code extensions:
-
-```text
-WSL
-Python
-Jupyter
-```
-
-Check Python paths:
-
-```bash
-which python
-python --version
-python -c "import sys; print(sys.executable)"
-```
-
-On Windows CMD/PowerShell:
-
-```powershell
-where python
-where pip
-python -m pip -V
-```
-
-## 5. PyTorch and common AI packages
+## 4. PyTorch and common AI packages
 
 Example conda environment:
 
@@ -364,7 +171,7 @@ Check GPU availability:
 python -c "import torch; print(torch.cuda.is_available()); print(torch.__version__); print(torch.version.cuda); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU only')"
 ```
 
-## 6. Hugging Face downloads
+## 5. Hugging Face downloads
 
 For Hugging Face, direct connection may fail. Use `proxy_on` first.
 
@@ -387,29 +194,12 @@ hf version
 hf env
 ```
 
-Login:
+Login and Download:
 
 ```bash
 hf auth login
+hf download Qwen/Qwen3-8B --local-dir /mnt/d/models/qwen/Qwen3-8B
 ```
-
-Test with a small file first:
-
-```bash
-mkdir -p /mnt/d/models/qwen
-
-hf download Qwen/Qwen3-8B config.json \
-  --local-dir /mnt/d/models/qwen/Qwen3-8B-test
-```
-
-Download the full Qwen model:
-
-```bash
-hf download Qwen/Qwen3-8B \
-  --local-dir /mnt/d/models/qwen/Qwen3-8B
-```
-
-If a download stops, run the same `hf download` command again.
 
 Optional Git LFS clone:
 
@@ -417,5 +207,3 @@ Optional Git LFS clone:
 git lfs install
 git clone https://huggingface.co/Qwen/Qwen3-8B
 ```
-
-If `git clone` fails with a timeout, use `hf download` instead.
