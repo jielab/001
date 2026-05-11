@@ -1,8 +1,7 @@
 # Windows, WSL, Python and local Transformer setup
 
-> Public GitHub note: do not commit real passwords, private IPs, server names, access tokens, or institution-specific printer/network details. Use placeholders such as `<SERVER_IP>`, `<USER>`, and `<PROXY_PORT>`.
 
-## 1. Common Windows and WSL commands
+## 1. 常识和常用命令
 
 ```powershell
 # Restart Outlook
@@ -14,18 +13,11 @@ rd /s /q D:\$RECYCLE.BIN
 
 # WSL installation and status
 wsl --list --online
-wsl --install -d Ubuntu-24.04
-wsl --set-default-version 2
-wsl -l -v
-wsl --status
-wsl --version
-```
+wsl --install -d Ubuntu-24.04; wsl --set-default-version 2
+wsl -l -v; wsl --status; wsl --version
 
-Useful WSL paths:
-
-```bash
-# Windows D: drive in WSL
-/mnt/d
+# 安装Anaconda后
+conda init powershell; Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 If a shell window shows `press any key to continue` and the network stack appears broken, try running this in administrator CMD:
@@ -34,20 +26,32 @@ If a shell window shows `press any key to continue` and the network stack appear
 netsh winsock reset
 ```
 
-## 2. Background downloads
+## 2. HPC
 
 ```bash
-sudo apt install -y aria2 screen
-screen -dmS download aria2c -x 4 -i url.txt --log-level=info --log=download.log
-screen -ls
-screen -S download -X quit
+【太乙】: ssh sph-huangj@172.18.6.178
+【启明】: ssh -p 18188 sph-huangj@172.18.6.10 
 ```
 
-Split a large command list into smaller scripts:
-
-```bash
-awk '{cnt=int(NR/100); print $0 > "download"cnt".sh"}' commands.txt
+后台运行
 ```
+nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
+```
+
+硬盘额度
+```
+du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
+```
+
+bsub
+```
+queueinfo -gpu -cpu; module avail
+```
+
+创园301🖨 从[富士官网](https://m3support-fb.fujifilm-fb.com.cn/driver_downloads/www/)搜索 ApeosPort C2060 下载驱动程序，然后运行。 👉“设备类型” 选TCP/IP 👉 打印机IP为 10.20.40.6
+创园204🖨 首先连接 LINK_7204无线网，密码是???2025??04，然后下载[驱动程序](https://www.canon.com.cn/supports/download/simsdetail/0101228601.html?modelId=1524&channel=4)，点击一步步安装。
+
+
 
 ## 3. New Windows/WSL network setup: Clash, apt, R, Git, and SSH
 
@@ -67,8 +71,6 @@ Check the port in Windows PowerShell:
 ```powershell
 netstat -ano | findstr :7897
 ```
-
-### 3.2 WSL2 mirrored networking: keep autoProxy=false
 
 Create or edit the WSL configuration file in Windows PowerShell:
 
@@ -148,6 +150,7 @@ proxy_off
 
 ## 4. PyTorch and common AI packages
 
+Windows Powershell 上安装，可以不用conda
 Example conda environment:
 
 ```bash
@@ -206,4 +209,16 @@ Optional Git LFS clone:
 ```bash
 git lfs install
 git clone https://huggingface.co/Qwen/Qwen3-8B
+```
+
+再不行，就用 scripts/f/00hf_download.py 
+
+
+## 6. Background downloads
+
+```bash
+sudo apt install -y aria2 screen
+screen -dmS download aria2c -x 4 -i url.txt --log-level=info --log=download.log
+screen -ls
+screen -S download -X quit
 ```
