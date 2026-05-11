@@ -27,6 +27,7 @@ netsh winsock reset
 ```
 
 ## 2. HPC
+使用指南：https://hpc.sustech.edu.cn/ref/HPMS_UserGuide.pdf
 
 ```bash
 【太乙】: ssh sph-huangj@172.18.6.178
@@ -46,6 +47,7 @@ du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
 bsub
 ```
 queueinfo -gpu -cpu; module avail
+bjobs -wu sph-huangj | awk 'NR>1 {print $6}' | awk -F "*" '{print $NF}' | tr '\n' ' ' | xargs lsload
 ```
 
 创园301🖨
