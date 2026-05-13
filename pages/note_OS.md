@@ -105,6 +105,74 @@ wsl --shutdown
 sudo apt update
 ```
 
+### 3.2 codeX proxy setup
+
+If Windows Codex App shows `Reconnecting...`, `timeout waiting for child process to exit`, or `无法重新安装 Codex 依赖项`, first check whether Windows can reach OpenAI through Clash.
+
+Keep Clash running, and check that the local proxy port is open:
+
+```powershell
+Test-NetConnection 127.0.0.1 -Port 7897
+netstat -ano | findstr :7897
+```
+
+Test OpenAI through the Clash proxy explicitly:
+
+```powershell
+curl.exe -I -L -x http://127.0.0.1:7897 https://api.openai.com/v1/models
+curl.exe -I -L -x http://127.0.0.1:7897 https://chatgpt.com
+```
+
+Expected results:
+
+```text
+api.openai.com/v1/models: HTTP/1.1 401 Unauthorized is OK.
+chatgpt.com: HTTP 403 Cloudflare challenge may appear in curl and is not the key problem.
+```
+
+If direct `curl` fails but `curl -x` works, set proxy variables for the current PowerShell session:
+
+```powershell
+$env:HTTP_PROXY="http://127.0.0.1:7897"
+$env:HTTPS_PROXY="http://127.0.0.1:7897"
+$env:ALL_PROXY="http://127.0.0.1:7897"
+$env:NO_PROXY="localhost,127.0.0.1,::1"
+
+curl.exe -I -L https://api.openai.com/v1/models
+```
+
+If this returns `401 Unauthorized`, write the proxy variables permanently to the Windows user environment:
+
+```powershell
+setx HTTP_PROXY "http://127.0.0.1:7897"
+setx HTTPS_PROXY "http://127.0.0.1:7897"
+setx ALL_PROXY "http://127.0.0.1:7897"
+setx NO_PROXY "localhost,127.0.0.1,::1"
+```
+
+Then close all Codex processes, open a new PowerShell, and test again:
+
+```powershell
+Get-Process | Where-Object {$_.ProcessName -match "codex|openai|chatgpt"} | Stop-Process -Force
+curl.exe -I -L https://api.openai.com/v1/models
+```
+
+After `curl` returns `401 Unauthorized`, reopen Windows Codex App and run:
+
+```text
+Settings -> Diagnose
+Settings -> Reinstall Codex dependencies
+```
+
+Optional notes:
+
+```text
+1. PowerShell setx does not affect already-open Codex App or PowerShell windows.
+2. Keep Clash running before opening Codex App.
+3. netsh winhttp set proxy needs administrator PowerShell, but Codex may still rely on HTTP_PROXY/HTTPS_PROXY instead.
+4. If Windows networking becomes abnormal, remove the WinHTTP proxy with: netsh winhttp reset proxy
+5. For debugging, switch Clash from Rule to Global mode in the Proxies page, then switch back after Codex works.
+```
 
 ### 3.3 Add manual proxy_on / proxy_off to ~/.bashrc
 
