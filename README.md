@@ -37,6 +37,9 @@ Genome-wide association studies identify statistical associations between geneti
 
 - Tam et al. *Nature Reviews Methods Primers* 2021. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 - Chinese tutorial resource: [gwaslab.org](https://gwaslab.org/)
+- [2026: NC. Multi-ancestry GWAS of age-related hearing loss identifies 140 loci and key cellular mechanisms]()
+- [2026. CBio. Transformer-based InsightGWAS improves GERD genetic discovery via pretraining on GWAS for major depressive disorder]()
+- [2026. NG. Empirically determined baseline masking strategies and other considerations for gene-level burden tests]()
 
 <br>
 <p align="center">
@@ -85,6 +88,10 @@ Polygenic risk scores summarize many genetic effects into an individual-level sc
 
 - Choi et al. *Nature Protocols* 2020. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
 - Choi et al. *Nature Protocols* 2020. [Development and Validation of a Clinical Polygenic Risk Report in U.S.-Based Health Systems for 8 Cardiovascular Conditions](https://www.jacc.org/doi/10.1016/j.jacc.2026.03.035)
+- [2024 NG. Unsupervised representation learning on high-dimensional clinical data improves genomic discovery and prediction]()
+- [2026: NC. Integrating common and rare variants improves polygenic risk prediction across diverse populations]()
+- [2026. MedRxiv. Large-scale evaluation of proteomic and polygenic risk scores reveals complementary contributions to incident disease prediction]()
+- [2026. NM. Circulating metabolites, genetics and lifestyle factors in relation to future risk of type 2 diabetes]()
 
 <br>
 <p align="center">
@@ -102,12 +109,18 @@ AI tools are useful for text classification, phenotype extraction, local model d
 - [Windows/WSL, Python, PyTorch and local Transformer setup](./pages/note_OS.md)
 - [VCF-to-protein and AlphaFold-related notes](./pages/vcf2prot.md)
 
+**揭秘基因组：古人类基因；病毒基因； STL**
+- [2025. Nature. Site-saturation mutagenesis of 500 human protein domains]()
+- [2025. Nature. The role of metabolism in shaping enzyme structures over 400 million years]()
+- [2026. Nature. EBV strain interacts with host HLA to drive nasopharyngeal carcinoma risk](https://www.nature.com/articles/s41586-026-10416-8)
+- [2026. Nature. Ancient DNA reveals pervasive directional selection across West Eurasia](https://www.nature.com/articles/s41586-026-10358-1)
+
 <br>
 <p align="center">
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
 </p>
 
-## 5. 基础 ℹ️ 分享
+## 5. IT基础建设ℹ️
 
 - [R setup and package installation notes](./pages/note_R.md)
 - [Operating system and WSL notes](./pages/note_OS.md)
