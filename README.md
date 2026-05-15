@@ -88,7 +88,7 @@ Polygenic risk scores summarize many genetic effects into an individual-level sc
 **Recommended reading**
 
 - Choi et al. *Nature Protocols* 2020. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
-- Choi et al. *Nature Protocols* 2020. [Development and Validation of a Clinical Polygenic Risk Report in U.S.-Based Health Systems for 8 Cardiovascular Conditions](https://www.jacc.org/doi/10.1016/j.jacc.2026.03.035)
+- * ... Pradeep Ratarajan, Aniruddh P. Patel. *Nature Protocols* 2026. [Development and Validation of a Clinical Polygenic Risk Report in U.S.-Based Health Systems for 8 Cardiovascular Conditions](https://www.jacc.org/doi/10.1016/j.jacc.2026.03.035)
 - [2024 NG. Unsupervised representation learning on high-dimensional clinical data improves genomic discovery and prediction]()
 - [2026: NC. Integrating common and rare variants improves polygenic risk prediction across diverse populations]()
 - [2026. MedRxiv. Large-scale evaluation of proteomic and polygenic risk scores reveals complementary contributions to incident disease prediction]()
