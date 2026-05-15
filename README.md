@@ -4,7 +4,8 @@
 
 
 ## 0. Data resources
-
+- [R setup and package installation notes](./pages/note_R.md)
+- [Operating system and WSL notes](./pages/note_OS.md)
 - [HapMap3 genotype data](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3): a compact SNP set often used as an LD reference panel.
 - [1000 Genomes Project](https://www.internationalgenome.org/data): a widely used reference resource for imputation, LD calculation, and ancestry-aware analyses.
 - [UK Biobank Research Analysis Platform](https://dnanexus.gitbook.io/uk-biobank-rap): the recommended cloud environment for large-scale UK Biobank analyses.
@@ -119,11 +120,6 @@ AI tools are useful for text classification, phenotype extraction, local model d
 <p align="center">
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
 </p>
-
-## 5. IT基础建设ℹ️
-
-- [R setup and package installation notes](./pages/note_R.md)
-- [Operating system and WSL notes](./pages/note_OS.md)
 
 ---
 
