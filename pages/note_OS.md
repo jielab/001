@@ -25,6 +25,7 @@ If a shell window shows `press any key to continue` and the network stack appear
 ```cmd
 netsh winsock reset
 ```
+---
 
 ## 2. HPC
 使用指南：https://hpc.sustech.edu.cn/ref/HPMS_UserGuide.pdf
@@ -60,24 +61,11 @@ bjobs -wu sph-huangj | awk 'NR>1 {print $6}' | awk -F "*" '{print $NF}' | tr '\n
 ```
 连接 LINK_7204无线网，密码是???2025??04，然后下载安装驱动程序(https://www.canon.com.cn/supports/download/simsdetail/0101228601.html?modelId=1524&channel=4)
 ```
-
+---
 
 ## 3. Clean Windows/WSL network setup: Clash, apt, Git, pip, R, and Hugging Face
 
-目标：**平时不要记 `proxy_on`，也不要记 `sudo -E`。**
-
-最终效果：
-
-```bash
-sudo apt update
-git clone https://github.com/xxx/xxx.git
-pip install xxx
-hf download Qwen/Qwen3-8B --local-dir /mnt/d/models/qwen/Qwen3-8B
-```
-
-都尽量直接运行。唯一需要记住的是：**先打开 Clash，并确认端口是 7897。**
-
----
+**先打开 Clash，并确认端口是 7897。**
 
 ### 3.1 Windows Clash 设置
 
@@ -103,7 +91,6 @@ TcpTestSucceeded : True
 0.0.0.0:7897    LISTENING
 ```
 
----
 
 ### 3.2 WSL2 网络模式设置
 
@@ -130,7 +117,6 @@ wsl --shutdown
 
 Open Ubuntu/WSL again.
 
----
 
 ### 3.3 One-time clean setup inside WSL
 
@@ -255,60 +241,8 @@ sudo apt clean
 sudo apt update
 ```
 
-After this setup, normal use should be:
 
-```bash
-sudo apt update
-sudo apt install -y git curl build-essential
-pip install xxx
-git clone https://github.com/xxx/xxx.git
-```
-
-No `proxy_on` and no `sudo -E` should be needed for `apt`.
-
----
-
-### 3.4 Why `sudo -E` was needed before
-
-`proxy_on` only exports proxy variables in the current user shell:
-
-```bash
-http_proxy=http://127.0.0.1:7897
-https_proxy=http://127.0.0.1:7897
-all_proxy=http://127.0.0.1:7897
-```
-
-However, `sudo` normally removes most user environment variables for safety. Therefore:
-
-```bash
-sudo apt update
-```
-
-may ignore the proxy variables, while:
-
-```bash
-sudo -E apt update
-```
-
-keeps them.
-
-The clean solution is **not** to remember `sudo -E`. The clean solution is to give apt its own proxy configuration:
-
-```text
-/etc/apt/apt.conf.d/95proxy
-```
-
-Then:
-
-```bash
-sudo apt update
-```
-
-works directly.
-
----
-
-### 3.5 Quick diagnosis
+### 3.4 Quick diagnosis
 
 #### A. Check Windows Clash
 
@@ -380,7 +314,7 @@ sudo apt update
 
 ---
 
-### 3.6 Optional: remove the apt proxy
+### 3.5 Optional: remove the apt proxy
 
 Only do this if Clash is not needed anymore or if you are on a network where direct apt is stable.
 
@@ -391,7 +325,7 @@ sudo apt update
 
 ---
 
-### 3.7 codeX proxy setup
+### 3.6 codeX proxy setup
 
 If Windows Codex App shows `Reconnecting...`, `timeout waiting for child process to exit`, or `无法重新安装 Codex 依赖项`, first check whether Windows can reach OpenAI through Clash.
 
