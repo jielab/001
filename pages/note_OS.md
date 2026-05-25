@@ -62,10 +62,24 @@ bjobs -wu sph-huangj | awk 'NR>1 {print $6}' | awk -F "*" '{print $NF}' | tr '\n
 ```
 
 
-## 3. New Windows/WSL network setup: Clash, apt, R, Git, and SSH
+## 3. Clean Windows/WSL network setup: Clash, apt, Git, pip, R, and Hugging Face
 
+目标：**平时不要记 `proxy_on`，也不要记 `sudo -E`。**
 
-### 3.1 Clash settings in Windows
+最终效果：
+
+```bash
+sudo apt update
+git clone https://github.com/xxx/xxx.git
+pip install xxx
+hf download Qwen/Qwen3-8B --local-dir /mnt/d/models/qwen/Qwen3-8B
+```
+
+都尽量直接运行。唯一需要记住的是：**先打开 Clash，并确认端口是 7897。**
+
+---
+
+### 3.1 Windows Clash 设置
 
 In Clash for Windows or Clash Verge:
 
@@ -78,8 +92,20 @@ Port: 7897
 Check the port in Windows PowerShell:
 
 ```powershell
+Test-NetConnection 127.0.0.1 -Port 7897
 netstat -ano | findstr :7897
 ```
+
+Expected:
+
+```text
+TcpTestSucceeded : True
+0.0.0.0:7897    LISTENING
+```
+
+---
+
+### 3.2 WSL2 网络模式设置
 
 Create or edit the WSL configuration file in Windows PowerShell:
 
@@ -101,11 +127,271 @@ Then restart WSL:
 ```powershell
 wsl --shutdown
 ```
+
+Open Ubuntu/WSL again.
+
+---
+
+### 3.3 One-time clean setup inside WSL
+
+Run this once in WSL. It does four things:
+
+1. writes a permanent apt proxy, so `sudo apt update` does not need `sudo -E`;
+2. replaces TUNA 清华源 with more stable official Ubuntu / CRAN sources, avoiding `403 Forbidden [IP: 127.0.0.1 7897]`;
+3. creates an automatic WSL shell proxy script;
+4. loads that script automatically from `~/.bashrc`.
+
+```bash
+# ------------------------------------------------------------
+# 0. Basic check: Windows Clash should be reachable from WSL
+# ------------------------------------------------------------
+curl -I -x http://127.0.0.1:7897 --connect-timeout 8 https://github.com
+
+# ------------------------------------------------------------
+# 1. Permanent apt proxy: sudo apt will use Clash automatically
+# ------------------------------------------------------------
+sudo tee /etc/apt/apt.conf.d/95proxy >/dev/null <<'EOF'
+Acquire::http::Proxy "http://127.0.0.1:7897";
+Acquire::https::Proxy "http://127.0.0.1:7897";
+Acquire::ForceIPv4 "true";
+Acquire::Retries "3";
+Acquire::http::Timeout "30";
+Acquire::https::Timeout "30";
+EOF
+
+# ------------------------------------------------------------
+# 2. Backup apt source files
+# ------------------------------------------------------------
+stamp=$(date +%Y%m%d_%H%M%S)
+sudo cp -a /etc/apt/sources.list /etc/apt/sources.list.bak.$stamp 2>/dev/null || true
+sudo cp -a /etc/apt/sources.list.d /etc/apt/sources.list.d.bak.$stamp
+
+# ------------------------------------------------------------
+# 3. Replace TUNA Ubuntu and CRAN sources
+#    This avoids TUNA 403 errors when apt goes through Clash.
+# ------------------------------------------------------------
+sudo grep -rl "mirrors.tuna.tsinghua.edu.cn/ubuntu" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | \
+  xargs -r sudo sed -i \
+  's|http://mirrors.tuna.tsinghua.edu.cn/ubuntu|http://archive.ubuntu.com/ubuntu|g; s|https://mirrors.tuna.tsinghua.edu.cn/ubuntu|http://archive.ubuntu.com/ubuntu|g'
+
+sudo grep -rl "mirrors.tuna.tsinghua.edu.cn/CRAN" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | \
+  xargs -r sudo sed -i \
+  's|https://mirrors.tuna.tsinghua.edu.cn/CRAN|https://cloud.r-project.org|g; s|http://mirrors.tuna.tsinghua.edu.cn/CRAN|https://cloud.r-project.org|g'
+
+# ------------------------------------------------------------
+# 4. Automatic WSL shell proxy for git, pip, R, Hugging Face, etc.
+#    If Clash port is open, proxy is ON automatically.
+#    If Clash port is closed, proxy is unset automatically.
+# ------------------------------------------------------------
+cat > ~/.wsl_proxy.sh <<'EOF'
+# ------------------------------------------------------------
+# Auto proxy for WSL + Clash
+# Default behavior:
+#   - if 127.0.0.1:7897 is reachable, proxy is enabled automatically
+#   - if not reachable, proxy variables are removed automatically
+# This affects normal shell commands: git, curl, pip, R, hf, etc.
+# apt is handled separately by /etc/apt/apt.conf.d/95proxy
+# ------------------------------------------------------------
+
+export WSL_PROXY_HOST=127.0.0.1
+export WSL_PROXY_PORT=7897
+export WSL_PROXY_URL=http://${WSL_PROXY_HOST}:${WSL_PROXY_PORT}
+export no_proxy=localhost,127.0.0.1,::1
+export NO_PROXY=localhost,127.0.0.1,::1
+
+_proxy_set() {
+  export http_proxy=${WSL_PROXY_URL}
+  export https_proxy=${WSL_PROXY_URL}
+  export all_proxy=${WSL_PROXY_URL}
+  export HTTP_PROXY=${WSL_PROXY_URL}
+  export HTTPS_PROXY=${WSL_PROXY_URL}
+  export ALL_PROXY=${WSL_PROXY_URL}
+}
+
+_proxy_unset() {
+  unset http_proxy https_proxy all_proxy
+  unset HTTP_PROXY HTTPS_PROXY ALL_PROXY
+}
+
+proxy_on() {
+  _proxy_set
+  echo "Proxy on: ${WSL_PROXY_URL}"
+}
+
+proxy_off() {
+  _proxy_unset
+  echo "Proxy off"
+}
+
+proxy_status() {
+  env | grep -Ei '^(http|https|all|no)_proxy=' | sort
+}
+
+wsl_proxy_auto() {
+  if timeout 1 bash -c ":</dev/tcp/${WSL_PROXY_HOST}/${WSL_PROXY_PORT}" 2>/dev/null; then
+    _proxy_set
+  else
+    _proxy_unset
+  fi
+}
+
+wsl_proxy_auto
+EOF
+
+grep -q "wsl_proxy.sh" ~/.bashrc || cat >> ~/.bashrc <<'EOF'
+
+# Auto proxy for WSL + Clash
+[ -f ~/.wsl_proxy.sh ] && . ~/.wsl_proxy.sh
+EOF
+
+source ~/.bashrc
+
+# ------------------------------------------------------------
+# 5. Test
+# ------------------------------------------------------------
+curl -I --connect-timeout 8 https://github.com
+curl -I --connect-timeout 8 https://r2u.stat.illinois.edu
+sudo apt clean
+sudo apt update
+```
+
+After this setup, normal use should be:
+
+```bash
+sudo apt update
+sudo apt install -y git curl build-essential
+pip install xxx
+git clone https://github.com/xxx/xxx.git
+```
+
+No `proxy_on` and no `sudo -E` should be needed for `apt`.
+
+---
+
+### 3.4 Why `sudo -E` was needed before
+
+`proxy_on` only exports proxy variables in the current user shell:
+
+```bash
+http_proxy=http://127.0.0.1:7897
+https_proxy=http://127.0.0.1:7897
+all_proxy=http://127.0.0.1:7897
+```
+
+However, `sudo` normally removes most user environment variables for safety. Therefore:
+
 ```bash
 sudo apt update
 ```
 
-### 3.2 codeX proxy setup
+may ignore the proxy variables, while:
+
+```bash
+sudo -E apt update
+```
+
+keeps them.
+
+The clean solution is **not** to remember `sudo -E`. The clean solution is to give apt its own proxy configuration:
+
+```text
+/etc/apt/apt.conf.d/95proxy
+```
+
+Then:
+
+```bash
+sudo apt update
+```
+
+works directly.
+
+---
+
+### 3.5 Quick diagnosis
+
+#### A. Check Windows Clash
+
+Run in Windows PowerShell:
+
+```powershell
+Test-NetConnection 127.0.0.1 -Port 7897
+netstat -ano | findstr :7897
+```
+
+#### B. Check WSL shell proxy
+
+Run in WSL:
+
+```bash
+proxy_status
+curl -I --connect-timeout 8 https://github.com
+```
+
+#### C. Check apt proxy
+
+Run in WSL:
+
+```bash
+cat /etc/apt/apt.conf.d/95proxy
+sudo apt update
+```
+
+#### D. If apt says `403 Forbidden [IP: 127.0.0.1 7897]`
+
+This usually means the proxy works, but the apt mirror rejects the request. Replace that mirror.
+
+Check:
+
+```bash
+grep -R "mirrors.tuna.tsinghua.edu.cn" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null
+```
+
+Replace TUNA sources:
+
+```bash
+sudo grep -rl "mirrors.tuna.tsinghua.edu.cn/ubuntu" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | \
+  xargs -r sudo sed -i \
+  's|http://mirrors.tuna.tsinghua.edu.cn/ubuntu|http://archive.ubuntu.com/ubuntu|g; s|https://mirrors.tuna.tsinghua.edu.cn/ubuntu|http://archive.ubuntu.com/ubuntu|g'
+
+sudo grep -rl "mirrors.tuna.tsinghua.edu.cn/CRAN" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | \
+  xargs -r sudo sed -i \
+  's|https://mirrors.tuna.tsinghua.edu.cn/CRAN|https://cloud.r-project.org|g; s|http://mirrors.tuna.tsinghua.edu.cn/CRAN|https://cloud.r-project.org|g'
+
+sudo apt clean
+sudo apt update
+```
+
+#### E. If everything suddenly stops working
+
+Restart Clash, then restart WSL:
+
+```powershell
+wsl --shutdown
+```
+
+Open WSL again and test:
+
+```bash
+proxy_status
+curl -I --connect-timeout 8 https://github.com
+sudo apt update
+```
+
+---
+
+### 3.6 Optional: remove the apt proxy
+
+Only do this if Clash is not needed anymore or if you are on a network where direct apt is stable.
+
+```bash
+sudo rm -f /etc/apt/apt.conf.d/95proxy
+sudo apt update
+```
+
+---
+
+### 3.7 codeX proxy setup
 
 If Windows Codex App shows `Reconnecting...`, `timeout waiting for child process to exit`, or `无法重新安装 Codex 依赖项`, first check whether Windows can reach OpenAI through Clash.
 
@@ -174,57 +460,6 @@ Optional notes:
 5. For debugging, switch Clash from Rule to Global mode in the Proxies page, then switch back after Codex works.
 ```
 
-### 3.3 Add manual proxy_on / proxy_off to ~/.bashrc
-
-Add only the functions below to the end of `~/.bashrc`. Do **not** put `export http_proxy=...` outside the function. Do **not** add a standalone `proxy_on` line.
-
-```bash
-cat >> ~/.bashrc <<'BASHRC_EOF'
-
-# ------------------------------------------------------------
-# Manual proxy control for WSL + Clash
-# Default: proxy is OFF.
-# Use proxy_on only when GitHub, Hugging Face, pip, or R downloads fail.
-# ------------------------------------------------------------
-proxy_on() {
-  export http_proxy=http://127.0.0.1:7897
-  export https_proxy=http://127.0.0.1:7897
-  export all_proxy=http://127.0.0.1:7897
-  export HTTP_PROXY=http://127.0.0.1:7897
-  export HTTPS_PROXY=http://127.0.0.1:7897
-  export ALL_PROXY=http://127.0.0.1:7897
-  echo "Proxy on: 127.0.0.1:7897"
-}
-
-proxy_off() {
-  unset http_proxy https_proxy all_proxy
-  unset HTTP_PROXY HTTPS_PROXY ALL_PROXY
-  echo "Proxy off"
-}
-BASHRC_EOF
-
-source ~/.bashrc
-```
-
-Use `proxy_on` when direct download fails for:
-
-```bash
-git clone https://github.com/xxx/xxx.git
-git clone https://huggingface.co/Qwen/Qwen3-8B
-pip install xxx
-pipx install "huggingface_hub[cli]"
-hf download Qwen/Qwen3-8B --local-dir /mnt/d/models/qwen/Qwen3-8B
-```
-
-Test Clash proxy manually:
-
-```bash
-proxy_on
-curl -I --connect-timeout 8 https://huggingface.co
-curl -I --connect-timeout 8 https://github.com
-proxy_off
-```
-
 ## 4. PyTorch and common AI packages
 
 Windows Powershell 上安装，可以不用conda
@@ -253,12 +488,11 @@ python -c "import torch; print(torch.cuda.is_available()); print(torch.__version
 
 ## 5. Hugging Face downloads
 
-For Hugging Face, direct connection may fail. Use `proxy_on` first.
+After the clean WSL proxy setup above, Hugging Face commands should work without manually typing `proxy_on`.
 
 Install the Hugging Face CLI with `pipx`:
 
 ```bash
-proxy_on
 sudo apt update
 sudo apt install -y pipx python3.12-venv git git-lfs
 pipx ensurepath
@@ -286,6 +520,13 @@ Optional Git LFS clone:
 ```bash
 git lfs install
 git clone https://huggingface.co/Qwen/Qwen3-8B
+```
+
+If Hugging Face still fails, check proxy status first:
+
+```bash
+proxy_status
+curl -I --connect-timeout 8 https://huggingface.co
 ```
 
 再不行，就用 scripts/f/00hf_download.py 
