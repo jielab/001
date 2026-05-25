@@ -323,45 +323,57 @@ sudo rm -f /etc/apt/apt.conf.d/95proxy
 sudo apt update
 ```
 
----
 
-### 3.6 codeX proxy setup
+### 3.6 Codex, Codex CLI, and Codex++ setup
 
-If Windows Codex App shows `Reconnecting...`, `timeout waiting for child process to exit`, or `无法重新安装 Codex 依赖项`, first check whether Windows can reach OpenAI through Clash.
+This section is for the Windows Codex desktop app, Codex CLI, and the unofficial Codex++ tweak system.
 
-Keep Clash running, and check that the local proxy port is open:
+#### 3.6.1 Install Codex desktop app on Windows
+
+If `Codex Installer.exe` opens Microsoft Store and the Store UI cannot load, do **not** keep clicking the installer. Use `winget` instead. This still installs the official Microsoft Store version, but avoids the broken Store GUI.
+
+Run in Windows PowerShell:
+
+```powershell
+winget source reset --force
+winget source update
+
+winget install --id 9PLM9XGG6VKS -s msstore --accept-source-agreements --accept-package-agreements
+```
+
+If reinstalling:
+
+```powershell
+winget uninstall --id 9PLM9XGG6VKS -s msstore
+
+winget source reset --force
+winget source update
+
+winget install --id 9PLM9XGG6VKS -s msstore --accept-source-agreements --accept-package-agreements
+```
+
+#### 3.6.2 Check OpenAI connection
+
+Keep Clash running. In Windows PowerShell:
 
 ```powershell
 Test-NetConnection 127.0.0.1 -Port 7897
-netstat -ano | findstr :7897
-```
-
-Test OpenAI through the Clash proxy explicitly:
-
-```powershell
 curl.exe -I -L -x http://127.0.0.1:7897 https://api.openai.com/v1/models
-curl.exe -I -L -x http://127.0.0.1:7897 https://chatgpt.com
 ```
 
-Expected results:
+Expected result:
 
 ```text
-api.openai.com/v1/models: HTTP/1.1 401 Unauthorized is OK.
-chatgpt.com: HTTP 403 Cloudflare challenge may appear in curl and is not the key problem.
+HTTP/1.1 401 Unauthorized
 ```
 
-If direct `curl` fails but `curl -x` works, set proxy variables for the current PowerShell session:
+`401 Unauthorized` is OK. It means the network is connected and the request reached OpenAI, but no API key was provided.
 
-```powershell
-$env:HTTP_PROXY="http://127.0.0.1:7897"
-$env:HTTPS_PROXY="http://127.0.0.1:7897"
-$env:ALL_PROXY="http://127.0.0.1:7897"
-$env:NO_PROXY="localhost,127.0.0.1,::1"
+Do not paste the returned HTTP headers back into PowerShell. Lines such as `HTTP/1.1 401 Unauthorized`, `Date: ...`, or `Content-Type: ...` are output, not commands.
 
-curl.exe -I -L https://api.openai.com/v1/models
-```
+#### 3.6.3 Make Codex use Clash
 
-If this returns `401 Unauthorized`, write the proxy variables permanently to the Windows user environment:
+Run once in Windows PowerShell:
 
 ```powershell
 setx HTTP_PROXY "http://127.0.0.1:7897"
@@ -370,29 +382,123 @@ setx ALL_PROXY "http://127.0.0.1:7897"
 setx NO_PROXY "localhost,127.0.0.1,::1"
 ```
 
-Then close all Codex processes, open a new PowerShell, and test again:
+Then close Codex and reopen it:
 
 ```powershell
-Get-Process | Where-Object {$_.ProcessName -match "codex|openai|chatgpt"} | Stop-Process -Force
+Get-Process | Where-Object {$_.ProcessName -match "codex|openai|chatgpt"} | Stop-Process -Force -ErrorAction SilentlyContinue
+```
+
+Open a new PowerShell and check:
+
+```powershell
+$env:HTTP_PROXY
+$env:HTTPS_PROXY
 curl.exe -I -L https://api.openai.com/v1/models
 ```
 
-After `curl` returns `401 Unauthorized`, reopen Windows Codex App and run:
+Expected:
 
 ```text
-Settings -> Diagnose
-Settings -> Reinstall Codex dependencies
+http://127.0.0.1:7897
+http://127.0.0.1:7897
+HTTP/1.1 401 Unauthorized
 ```
 
-Optional notes:
+If Microsoft Store itself cannot load, do **not** set WinHTTP proxy for Store. Reset it:
+
+```powershell
+netsh winhttp reset proxy
+```
+
+#### 3.6.4 Optional: install Codex CLI
+
+Codex CLI is the terminal version of Codex. It can be installed in Windows PowerShell:
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://chatgpt.com/codex/install.ps1 | iex"
+```
+
+Or with npm:
+
+```powershell
+npm i -g @openai/codex
+```
+
+Run:
+
+```powershell
+codex
+```
+
+Upgrade:
+
+```powershell
+npm i -g @openai/codex@latest
+```
+
+#### 3.6.5 Optional: install Codex++ on Windows
+
+Codex++ is an **unofficial** tweak system for the Codex desktop app. It patches a local managed copy of the Codex app and adds a tweak manager. Use it only if you understand that it modifies the local Codex app.
+
+Prerequisite: install the official Codex desktop app first.
+
+Run in Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/b-nnett/codex-plusplus/main/install.ps1 | iex
+```
+
+After installation, launch **Codex++** from the Start Menu or Desktop. Do **not** launch the normal Microsoft Store Codex shortcut, because that opens the unpatched app.
+
+Common commands:
+
+```powershell
+codexplusplus status
+codexplusplus doctor
+codexplusplus repair
+codexplusplus update
+```
+
+If Codex updates and Codex++ stops working:
+
+```powershell
+codexplusplus repair
+```
+
+To uninstall Codex++ and revert:
+
+```powershell
+codexplusplus uninstall
+```
+
+Codex++ user files are usually stored here:
 
 ```text
-1. PowerShell setx does not affect already-open Codex App or PowerShell windows.
-2. Keep Clash running before opening Codex App.
-3. netsh winhttp set proxy needs administrator PowerShell, but Codex may still rely on HTTP_PROXY/HTTPS_PROXY instead.
-4. If Windows networking becomes abnormal, remove the WinHTTP proxy with: netsh winhttp reset proxy
-5. For debugging, switch Clash from Rule to Global mode in the Proxies page, then switch back after Codex works.
+%APPDATA%\codex-plusplus\
+%LOCALAPPDATA%\codex-plusplus\
 ```
+
+#### 3.6.6 Minimal troubleshooting
+
+```powershell
+# OpenAI API network test; 401 means OK
+curl.exe -I -L -x http://127.0.0.1:7897 https://api.openai.com/v1/models
+
+# Kill and reopen Codex
+Get-Process | Where-Object {$_.ProcessName -match "codex|openai|chatgpt"} | Stop-Process -Force -ErrorAction SilentlyContinue
+
+# Reset broken Microsoft Store source
+winget source reset --force
+winget source update
+
+# Reinstall official Codex app
+winget install --id 9PLM9XGG6VKS -s msstore --accept-source-agreements --accept-package-agreements
+
+# Repair Codex++
+codexplusplus repair
+```
+
+---
 
 ## 4. PyTorch and common AI packages
 
@@ -419,6 +525,7 @@ Check GPU availability:
 ```bash
 python -c "import torch; print(torch.cuda.is_available()); print(torch.__version__); print(torch.version.cuda); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU only')"
 ```
+---
 
 ## 5. Hugging Face downloads
 
@@ -464,7 +571,7 @@ curl -I --connect-timeout 8 https://huggingface.co
 ```
 
 再不行，就用 scripts/f/00hf_download.py 
-
+---
 
 ## 6. Background downloads
 
