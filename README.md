@@ -15,14 +15,16 @@
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
 </p>
 
-## 1. GWAS全基因组关联研究
+
+
+## 1. GWAS 全基因组关联研究
 
 ![GWAS](./images/GWAS.jpg)
 
-Genome-wide association studies identify statistical associations between genetic variants and traits. In practice, the most important first step is not plotting, but making sure the summary statistics are clean, consistently named, genome-build-aware, and correctly indexed.
 
 **Start here**
 
+- [GWAS Catalog](https://www.ebi.ac.uk/gwas): useful for finding the GWAS evidence behind many traits.
 - [GWAS summary statistics QC checklist](./pages/GWAS.post.md)
 - [Genome-build liftOver for GWAS/COJO tables and VCF files](./pages/liftOver.md)
 - [GWAS signal annotation resources](./pages/note_annotate.md)
@@ -34,24 +36,26 @@ Genome-wide association studies identify statistical associations between geneti
 - [PheWeb2](https://github.com/GaglianoTaliun-Lab/PheWeb2): a newer implementation for interactive genetic association result browsing.
 - [LocusZoom](http://locuszoom.org/): regional association visualization around GWAS loci.
 
-**Recommended reading**
+**Recommended reading** 🚩☭
 
 - Tam et al. *Nature Reviews Methods Primers* 2021. [Genome-wide association studies](https://www.nature.com/articles/s43586-021-00056-9)
 - Chinese tutorial resource: [gwaslab.org](https://gwaslab.org/)
-- [2026: NC. Multi-ancestry GWAS of age-related hearing loss identifies 140 loci and key cellular mechanisms]()
-- [2026. CBio. Transformer-based InsightGWAS improves GERD genetic discovery via pretraining on GWAS for major depressive disorder]()
-- [2026. NG. Empirically determined baseline masking strategies and other considerations for gene-level burden tests]()
+- 2026-06. Yiming Bian & <b>Joshua M. Akey</b>. NRG. [Genetic analysis of imaging-derived phenotypes](https://www.nature.com/articles/s41576-026-00989-5)
+- 2026-01. CBio. [Transformer-based InsightGWAS improves GERD genetic discovery via pretraining on GWAS for major depressive disorder](https://www.nature.com/articles/s42003-025-09177-3)
+- 2026-05. NG. [Empirically determined baseline masking strategies and other considerations for gene-level burden tests](https://www.nature.com/articles/s41588-026-02597-9)
+- 2026-06. NHB. [Genome-wide meta-analysis of quantitatively measured generalized anxiety symptoms in individuals of European ancestry](https://www.nature.com/articles/s41562-026-02476-7).
 
 <br>
 <p align="center">
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
 </p>
 
-## 2. MR孟德尔随机化
+
+
+## 2. MR 孟德尔随机化
 
 ![MR](./images/MR.jpg)
 
-Mendelian randomization uses genetic variants as instrumental variables to estimate whether an exposure may have a causal effect on an outcome. The core workflow is simple, but the details matter: instrument strength, allele harmonization, LD clumping, sample overlap, MHC/HLA regions, and pleiotropy checks can all change the interpretation.
 
 **Start here**
 
@@ -65,56 +69,76 @@ Mendelian randomization uses genetic variants as instrumental variables to estim
 
 **Recommended reading**
 
-- Sanderson et al. *Nature Reviews Methods Primers* 2022. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
+- 2022. Nature Reviews Methods Primers. [Mendelian randomization](https://www.nature.com/articles/s43586-021-00092-5)
+- 2026. EHJ. [GLP-1R agonists and heart failure: novel beneficial effects suggested by Mendelian randomization](https://academic.oup.com/eurheartj/article-abstract/47/19/2308/8444645?redirectedFrom=fulltext)
+
 
 <br>
 <p align="center">
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
 </p>
 
-## 3. PRS/ProtRS组学风险预测
+
+
+## 3. PRS | PGS | ProtRS 风险预测
 
 ![PRS](./images/PRS.jpg)
 
-Polygenic risk scores summarize many genetic effects into an individual-level score. A published PRS usually has two layers: a **reference scoring file** containing SNPs and weights, and an **individual-level score** calculated by applying those weights to genotype data. The same idea can be extended to protein-based risk scores, where protein abundances or genetically predicted proteins are used for risk prediction.
 
 **Start here**
 
 - [PRS Catalog](https://www.pgscatalog.org/): public repository of published polygenic score scoring files.
-- [GWAS Catalog](https://www.ebi.ac.uk/gwas): useful for finding the GWAS evidence behind many traits.
+- 2020. NP. <b>Shing Wan Choi</b> & Paul F. O’Reilly. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
 
 
+**Recommended reading** 🚩☭
 
-**Recommended reading**
-
-- Choi et al. *Nature Protocols* 2020. [Tutorial: a guide to performing polygenic risk score analyses](https://www.nature.com/articles/s41596-020-0353-1)
-- * ... Pradeep Ratarajan, Aniruddh P. Patel. *Nature Protocols* 2026. [Development and Validation of a Clinical Polygenic Risk Report in U.S.-Based Health Systems for 8 Cardiovascular Conditions](https://www.jacc.org/doi/10.1016/j.jacc.2026.03.035)
-- [2024 NG. Unsupervised representation learning on high-dimensional clinical data improves genomic discovery and prediction]()
-- [2026: NC. Integrating common and rare variants improves polygenic risk prediction across diverse populations]()
-- [2026. MedRxiv. Large-scale evaluation of proteomic and polygenic risk scores reveals complementary contributions to incident disease prediction]()
-- [2026. NM. Circulating metabolites, genetics and lifestyle factors in relation to future risk of type 2 diabetes]()
+- 2024. NG. <b>谷歌REGLE团队</b>. [Unsupervised representation learning on high-dimensional clinical data improves genomic discovery and prediction](https://www.nature.com/articles/s41588-024-01831-6)
+- 2026. NP. <b>Pradeep Ratarajan</b> [Development and Validation of a Clinical Polygenic Risk Report in U.S.-Based Health Systems for 8 Cardiovascular Conditions](https://www.jacc.org/doi/10.1016/j.jacc.2026.03.035)
+- 2026. NC. [Integrating common and rare variants improves polygenic risk prediction across diverse populations](https://www.nature.com/articles/s41467-026-72185-2)
+- 2026. MedRxiv. [Large-scale evaluation of proteomic and polygenic risk scores reveals complementary contributions to incident disease prediction](https://pubmed.ncbi.nlm.nih.gov/40672481/)
+- 2026. NM. [Circulating metabolites, genetics and lifestyle factors in relation to future risk of type 2 diabetes](https://www.nature.com/articles/s41591-025-04105-8)
+- 2026. NG. [Genetic association and machine learning improve the prediction of type 1 diabetes risk](https://www.nature.com/articles/s41588-026-02578-y)
 
 <br>
 <p align="center">
   <img src="./images/dash_line.gif" alt="animated dashed divider" width="100%">
 </p>
 
-## 4. AI人工智能
 
-[![AI](./images/AI.png)](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
 
-AI tools are useful for text classification, phenotype extraction, local model deployment, and code-assisted analysis. For biomedical data, the practical questions are usually: how to install the environment, how to run models locally, and how to connect model outputs with downstream statistical analysis.
+## 4. 唐诗宋词：好文阅读 & 分析复现
 
-**Start here**
+2026. Nature. Expanding the human proteome with microproteins and peptideins
+2026-06. NM. Automated reanalysis of genomic data for rare disease diagnostics at scale
+2025. NC. 南科大冯玉亮 Shared genetic architecture contributes to risk of major cardiovascular diseases.
+2026. NG. Pleiotropic shared heritability quantifies the shared genetic variance of common diseases.
+2026-05. Nature. Distinct genetic architecture in the tails of complex traits. 
+2026-05. NG. Exome-wide association study of blood lipids in 1,158,017 individuals from diverse populations. 
+2025. NM. Integrating the environmental and genetic architectures of aging and mortality.
+2025. NC. Modeling the genomic architecture of adiposity and anthropometrics across the lifespan
+2026-05. NM. Decoding sequence determinants of gene expression in diverse cellular and disease states
+2026-06. NM. Biological aging and generational shifts in early-onset cancer risk.
+2026-05. Nature. Sleep chart of biological ageing clocks in middle and late life.
+2026-06. CVDiab. Associations of cumulative exposure and dynamictrajectories of the combined atherogenic and frailtyindex with incident cardiometabolic multimorbidity:a longitudinal analysis based on the China Healthand Retirement Longitudinal Study (CHARLS)
+2026. NG. Genome-wide associations of structural variants with human traits through imputation from long-read assemblies
+2025. eLife. Imputation of structural variants using a multi-ancestry long-read sequencing panel enables identification of disease associations.
+Decoding sequence determinants of gene expression indiverse cellular and disease states
 
-- [Windows/WSL, Python, PyTorch and local Transformer setup](./pages/note_OS.md)
-- [VCF-to-protein and AlphaFold-related notes](./pages/vcf2prot.md)
-
-**揭秘基因组：古人类基因；病毒基因； STL**
+UKB复现文章
+Decoding sequence determinants of gene expression indiverse cellular and disease states
+Plasma proteomics signatures of cellular aging predict human disease
+Harnessing Large-Scale Multi-Omics Data for RiskPrediction and Deep Phenotyping of Valvular HeartDiseases in the General Population
+Plasma proteomics identifies proteins and pathways associated with incident migraine in 50,668 adults
+古人类基因，古病毒基因
 - [2025. Nature. Site-saturation mutagenesis of 500 human protein domains]()
 - [2025. Nature. The role of metabolism in shaping enzyme structures over 400 million years]()
 - [2026. Nature. EBV strain interacts with host HLA to drive nasopharyngeal carcinoma risk](https://www.nature.com/articles/s41586-026-10416-8)
 - [2026. Nature. Ancient DNA reveals pervasive directional selection across West Eurasia](https://www.nature.com/articles/s41586-026-10358-1)
+
+protein structure
+- [VCF-to-protein and AlphaFold-related notes](./pages/vcf2prot.md)
+
 
 <br>
 <p align="center">
