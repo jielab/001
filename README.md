@@ -124,10 +124,6 @@
 - **2026-05** · *NG* · [Exome-wide association study of blood lipids in 1,158,017 individuals from diverse populations](https://www.nature.com/articles/s41588-026-02613-y)
 - **2026-06** · *NM* · [Automated reanalysis of genomic data for rare disease diagnostics at scale](https://www.nature.com/articles/s41591-026-04477-5)
 
-🐜🐘 小文章，大分析；大文章，小分析
-- **8个图，8分杂志：2026-04** · *Journal of Headache and Pain  Article* · [Plasma proteomics identifies proteins and pathways associated with incident migraine in 50,668 adults] (https://link.springer.com/article/10.1186/s10194-026-02345-8)
-- **8个图，8分杂志：2026-04**  
-
 🧱⛏️ 下列文章由 ukb/0demo.sh[R] 代码部分复现：
 1 **2025-02** · *NM* · [Integrating the environmental and genetic architectures of aging and mortality](https://www.nature.com/articles/s41591-024-03483-9)
 2 **2025-08** · *NC* · [Modeling the genomic architecture of adiposity and anthropometrics across the lifespan](https://www.nature.com/articles/s41467-025-62730-w)
@@ -140,6 +136,9 @@
 9 **2026-06** · *NM* · [Biological aging and generational shifts in early-onset cancer risk](https://www.nature.com/articles/s41591-026-04448-w)
 10 **2026-06** · *Adv Sci* · [Harnessing large-scale multi-omics data for risk prediction and deep phenotyping of valvular heart diseases in the general population](https://advanced.onlinelibrary.wiley.com/doi/10.1002/advs.76345)
 
+🐜🐘 小文章，大分析；大文章，小分析
+- **8个图，8分杂志：2026-04** · *Journal of Headache and Pain Article* · [Plasma proteomics identifies proteins and pathways associated with incident migraine in 50,668 adults] (https://link.springer.com/article/10.1186/s10194-026-02345-8)
+- **仅仅一个cis-MR：2026-04** 葛军波院士 *European Heart Journal* · [GLP-1R agonists and heart failure: novel beneficial effects suggested by Mendelian randomization]()
 
 <br>
 <p align="center">
