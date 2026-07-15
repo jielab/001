@@ -110,27 +110,35 @@
 
 
 
-## 4. 唐诗宋词：好文阅读 & 分析复现
+## 4. 唐诗宋词
 
-- 🏛🌄 **2025-01** · *Nature* · [Site-saturation mutagenesis of 500 human protein domains](https://www.nature.com/articles/s41586-024-08370-4)
-- 🧱⛏️ **2025-02** · *NM* · [Integrating the environmental and genetic architectures of aging and mortality](https://www.nature.com/articles/s41591-024-03483-9)
-- 🏛🌄 **2025-07** · *Nature* · [The role of metabolism in shaping enzyme structures over 400 million years](https://www.nature.com/articles/s41586-025-09205-6)
-- 🧱⛏️ **2025-08** · *NC* · [Modeling the genomic architecture of adiposity and anthropometrics across the lifespan](https://www.nature.com/articles/s41467-025-62730-w)
-- 🧱⛏️ **2025-09** · *NC* · [Shared genetic architecture contributes to risk of major cardiovascular diseases](https://www.nature.com/articles/s41467-025-62419-0)
-- 🏛🌄 **2026-04** · *Nature* · [Ancient DNA reveals pervasive directional selection across West Eurasia](https://www.nature.com/articles/s41586-026-10358-1)
-- 🏛🌄 **2026-04** · *Nature* · [EBV strain interacts with host HLA to drive nasopharyngeal carcinoma risk](https://www.nature.com/articles/s41586-026-10416-8)
-- 🏛🌄 **2026-05** · *Nature* · [Expanding the human proteome with microproteins and peptideins](https://www.nature.com/articles/s41586-026-10459-x)
-- 🧱⛏️ **2026-05** · *Nature* · [Sleep chart of biological ageing clocks in middle and late life](https://www.nature.com/articles/s41586-026-10524-5)
-- 📖🍵 **2026-05** · *NG* · [Genome-wide associations of structural variants with human traits through imputation from long-read assemblies](https://www.nature.com/articles/s41588-026-02612-z)
-- 📖🍵 **2026-05** · *NG* · [Exome-wide association study of blood lipids in 1,158,017 individuals from diverse populations](https://www.nature.com/articles/s41588-026-02613-y)
-- 🧱⛏️ **2026-05** · *NMeth* · [Decoding sequence determinants of gene expression in diverse cellular and disease states](https://www.nature.com/articles/s41592-026-03102-0)
-- 🧱⛏️ **2026-05** · *Nature* · [Distinct genetic architecture in the tails of complex traits](https://www.nature.com/articles/s41586-026-10516-5)
-- 🧱⛏️ **2026-06** · *NG* · [Pleiotropic shared heritability quantifies the shared genetic variance of common diseases](https://www.nature.com/articles/s41588-026-02607-w)
-- 🧱⛏️ **2026-06** · *NM* · [Plasma proteomic signatures of cellular aging predict human disease](https://www.nature.com/articles/s41591-026-04446-y) 
-- 🧱⛏️ **2026-06** · *NM* · [Biological aging and generational shifts in early-onset cancer risk](https://www.nature.com/articles/s41591-026-04448-w)
-- 📖🍵 **2026-06** · *NM* · [Automated reanalysis of genomic data for rare disease diagnostics at scale](https://www.nature.com/articles/s41591-026-04477-5)
-- 🧱🚩 **2026-06** · *CvDiab* · [Associations of cumulative exposure and dynamic trajectories of the combined atherogenic and frailty index with incident cardiometabolic multimorbidity: a longitudinal analysis based on the China Health and Retirement Longitudinal Study (CHARLS)](https://link.springer.com/article/10.1186/s12933-026-03235-8)
-- 🧱⛏ **2026-06** · *Adv Sci* · [Harnessing large-scale multi-omics data for risk prediction and deep phenotyping of valvular heart diseases in the general population](https://advanced.onlinelibrary.wiley.com/doi/10.1002/advs.76345)
+🏛🌄 
+- **2025-01** · *Nature* · [Site-saturation mutagenesis of 500 human protein domains](https://www.nature.com/articles/s41586-024-08370-4)
+- **2025-07** · *Nature* · [The role of metabolism in shaping enzyme structures over 400 million years](https://www.nature.com/articles/s41586-025-09205-6)
+- **2026-04** · *Nature* · [Ancient DNA reveals pervasive directional selection across West Eurasia](https://www.nature.com/articles/s41586-026-10358-1)
+- **2026-04** · *Nature* · [EBV strain interacts with host HLA to drive nasopharyngeal carcinoma risk](https://www.nature.com/articles/s41586-026-10416-8)
+- **2026-05** · *Nature* · [Expanding the human proteome with microproteins and peptideins](https://www.nature.com/articles/s41586-026-10459-x)
+
+📖🍵 
+- **2026-05** · *NG* · [Genome-wide associations of structural variants with human traits through imputation from long-read assemblies](https://www.nature.com/articles/s41588-026-02612-z)
+- **2026-05** · *NG* · [Exome-wide association study of blood lipids in 1,158,017 individuals from diverse populations](https://www.nature.com/articles/s41588-026-02613-y)
+- **2026-06** · *NM* · [Automated reanalysis of genomic data for rare disease diagnostics at scale](https://www.nature.com/articles/s41591-026-04477-5)
+
+🐜🐘 小文章，大分析；大文章，小分析
+- **8个图，8分杂志：2026-04** · *Journal of Headache and Pain  Article* · [Plasma proteomics identifies proteins and pathways associated with incident migraine in 50,668 adults] (https://link.springer.com/article/10.1186/s10194-026-02345-8)
+- **8个图，8分杂志：2026-04**  
+
+🧱⛏️ 下列文章由 ukb/0demo.sh[R] 代码部分复现：
+1 **2025-02** · *NM* · [Integrating the environmental and genetic architectures of aging and mortality](https://www.nature.com/articles/s41591-024-03483-9)
+2 **2025-08** · *NC* · [Modeling the genomic architecture of adiposity and anthropometrics across the lifespan](https://www.nature.com/articles/s41467-025-62730-w)
+3 **2025-09** · *NC* · [Shared genetic architecture contributes to risk of major cardiovascular diseases](https://www.nature.com/articles/s41467-025-62419-0)
+4 **2026-05** · *Nature* · [Sleep chart of biological ageing clocks in middle and late life](https://www.nature.com/articles/s41586-026-10524-5)
+5 **2026-05** · *NMeth* · [Decoding sequence determinants of gene expression in diverse cellular and disease states](https://www.nature.com/articles/s41592-026-03102-0)
+6 **2026-05** · *Nature* · [Distinct genetic architecture in the tails of complex traits](https://www.nature.com/articles/s41586-026-10516-5)
+7 **2026-06** · *NG* · [Pleiotropic shared heritability quantifies the shared genetic variance of common diseases](https://www.nature.com/articles/s41588-026-02607-w)
+8 **2026-06** · *NM* · [Plasma proteomic signatures of cellular aging predict human disease](https://www.nature.com/articles/s41591-026-04446-y) 
+9 **2026-06** · *NM* · [Biological aging and generational shifts in early-onset cancer risk](https://www.nature.com/articles/s41591-026-04448-w)
+10 **2026-06** · *Adv Sci* · [Harnessing large-scale multi-omics data for risk prediction and deep phenotyping of valvular heart diseases in the general population](https://advanced.onlinelibrary.wiley.com/doi/10.1002/advs.76345)
 
 
 <br>
