@@ -46,7 +46,7 @@
 - **2026**. *NG*. [Empirically determined baseline masking strategies and other considerations for gene-level burden tests](https://www.nature.com/articles/s41588-026-02597-9)
 - **2026**. *NHB*. [Genome-wide meta-analysis of quantitatively measured generalized anxiety symptoms in individuals of European ancestry](https://www.nature.com/articles/s41562-026-02476-7).
 - **2026**. *NRG*. Yiming Bian & <b>Joshua M. Akey</b>. [Genetic analysis of imaging-derived phenotypes](https://www.nature.com/articles/s41576-026-00989-5)
-
+- **2027**. *❓*. Large-scale meta-analysis of over one million individuals reveals the geneticarchitecture of 127 complex traits in East Asian populations
 
 <br>
 <p align="center">
@@ -118,6 +118,8 @@
 - **2026-04** · *Nature* · [Ancient DNA reveals pervasive directional selection across West Eurasia](https://www.nature.com/articles/s41586-026-10358-1)
 - **2026-04** · *Nature* · [EBV strain interacts with host HLA to drive nasopharyngeal carcinoma risk](https://www.nature.com/articles/s41586-026-10416-8)
 - **2026-05** · *Nature* · [Expanding the human proteome with microproteins and peptideins](https://www.nature.com/articles/s41586-026-10459-x)
+- **2026-05** · *Nature* · [Universal transcriptomic hallmarks of mammalian ageing and mortality](https://www.nature.com/articles/s41586-026-10542-3)
+- **2027-??** · *❓* · The Encyclopedia of DNA Elements
 
 📖🍵 
 - **2026-05** · *NG* · [Genome-wide associations of structural variants with human traits through imputation from long-read assemblies](https://www.nature.com/articles/s41588-026-02612-z)
