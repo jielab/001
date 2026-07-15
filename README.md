@@ -4,8 +4,10 @@
 
 
 ## 0. Data resources
-- [R setup and package installation notes](./pages/note_R.md)
+
 - [Operating system and WSL notes](./pages/note_OS.md)
+- [R setup and package installation notes](./pages/note_R.md)
+- [VCF-to-protein and AlphaFold-related notes](./pages/vcf2prot.md)
 - [HapMap3 genotype data](https://www.broadinstitute.org/medical-and-population-genetics/hapmap-3): a compact SNP set often used as an LD reference panel.
 - [1000 Genomes Project](https://www.internationalgenome.org/data): a widely used reference resource for imputation, LD calculation, and ancestry-aware analyses.
 - [UK Biobank Research Analysis Platform](https://dnanexus.gitbook.io/uk-biobank-rap): the recommended cloud environment for large-scale UK Biobank analyses.
@@ -111,7 +113,7 @@
 
 2026. Nature. Expanding the human proteome with microproteins and peptideins
 2026-06. NM. Automated reanalysis of genomic data for rare disease diagnostics at scale
-2025. NC. 南科大冯玉亮 Shared genetic architecture contributes to risk of major cardiovascular diseases.
+2025. NC. Shared genetic architecture contributes to risk of major cardiovascular diseases.
 2026. NG. Pleiotropic shared heritability quantifies the shared genetic variance of common diseases.
 2026-05. Nature. Distinct genetic architecture in the tails of complex traits. 
 2026-05. NG. Exome-wide association study of blood lipids in 1,158,017 individuals from diverse populations. 
@@ -124,20 +126,14 @@
 2026. NG. Genome-wide associations of structural variants with human traits through imputation from long-read assemblies
 2025. eLife. Imputation of structural variants using a multi-ancestry long-read sequencing panel enables identification of disease associations.
 Decoding sequence determinants of gene expression indiverse cellular and disease states
-
-UKB复现文章
 Decoding sequence determinants of gene expression indiverse cellular and disease states
 Plasma proteomics signatures of cellular aging predict human disease
 Harnessing Large-Scale Multi-Omics Data for RiskPrediction and Deep Phenotyping of Valvular HeartDiseases in the General Population
 Plasma proteomics identifies proteins and pathways associated with incident migraine in 50,668 adults
-古人类基因，古病毒基因
 - [2025. Nature. Site-saturation mutagenesis of 500 human protein domains]()
 - [2025. Nature. The role of metabolism in shaping enzyme structures over 400 million years]()
 - [2026. Nature. EBV strain interacts with host HLA to drive nasopharyngeal carcinoma risk](https://www.nature.com/articles/s41586-026-10416-8)
 - [2026. Nature. Ancient DNA reveals pervasive directional selection across West Eurasia](https://www.nature.com/articles/s41586-026-10358-1)
-
-protein structure
-- [VCF-to-protein and AlphaFold-related notes](./pages/vcf2prot.md)
 
 
 <br>
