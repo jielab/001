@@ -125,16 +125,16 @@
 - **2026-06** · *NM* · [Automated reanalysis of genomic data for rare disease diagnostics at scale](https://www.nature.com/articles/s41591-026-04477-5)
 
 🧱⛏️ 下列文章由 ukb/0demo.sh[R] 代码部分复现：
-- 01 **2025-02** · *NM* · [Integrating the environmental and genetic architectures of aging and mortality](https://www.nature.com/articles/s41591-024-03483-9)
-- 02 **2025-08** · *NC* · [Modeling the genomic architecture of adiposity and anthropometrics across the lifespan](https://www.nature.com/articles/s41467-025-62730-w)
-- 03 **2025-09** · *NC* · [Shared genetic architecture contributes to risk of major cardiovascular diseases](https://www.nature.com/articles/s41467-025-62419-0)
-- 04 **2026-05** · *Nature* · [Sleep chart of biological ageing clocks in middle and late life](https://www.nature.com/articles/s41586-026-10524-5)
-- 05 **2026-05** · *NMeth* · [Decoding sequence determinants of gene expression in diverse cellular and disease states](https://www.nature.com/articles/s41592-026-03102-0)
-- 06 **2026-05** · *Nature* · [Distinct genetic architecture in the tails of complex traits](https://www.nature.com/articles/s41586-026-10516-5)
-- 07 **2026-06** · *NG* · [Pleiotropic shared heritability quantifies the shared genetic variance of common diseases](https://www.nature.com/articles/s41588-026-02607-w)
-- 08 **2026-06** · *NM* · [Plasma proteomic signatures of cellular aging predict human disease](https://www.nature.com/articles/s41591-026-04446-y) 
-- 09 **2026-06** · *NM* · [Biological aging and generational shifts in early-onset cancer risk](https://www.nature.com/articles/s41591-026-04448-w)
-- 10 **2026-06** · *Adv Sci* · [Harnessing large-scale multi-omics data for risk prediction and deep phenotyping of valvular heart diseases in the general population](https://advanced.onlinelibrary.wiley.com/doi/10.1002/advs.76345)
+- 01) **2025-02** · *NM* · [Integrating the environmental and genetic architectures of aging and mortality](https://www.nature.com/articles/s41591-024-03483-9)
+- 02) **2025-08** · *NC* · [Modeling the genomic architecture of adiposity and anthropometrics across the lifespan](https://www.nature.com/articles/s41467-025-62730-w)
+- 03) **2025-09** · *NC* · [Shared genetic architecture contributes to risk of major cardiovascular diseases](https://www.nature.com/articles/s41467-025-62419-0)
+- 04) **2026-05** · *Nature* · [Sleep chart of biological ageing clocks in middle and late life](https://www.nature.com/articles/s41586-026-10524-5)
+- 05) **2026-05** · *NMeth* · [Decoding sequence determinants of gene expression in diverse cellular and disease states](https://www.nature.com/articles/s41592-026-03102-0)
+- 06) **2026-05** · *Nature* · [Distinct genetic architecture in the tails of complex traits](https://www.nature.com/articles/s41586-026-10516-5)
+- 07) **2026-06** · *NG* · [Pleiotropic shared heritability quantifies the shared genetic variance of common diseases](https://www.nature.com/articles/s41588-026-02607-w)
+- 08) **2026-06** · *NM* · [Plasma proteomic signatures of cellular aging predict human disease](https://www.nature.com/articles/s41591-026-04446-y) 
+- 09) **2026-06** · *NM* · [Biological aging and generational shifts in early-onset cancer risk](https://www.nature.com/articles/s41591-026-04448-w)
+- 10) **2026-06** · *Adv Sci* · [Harnessing large-scale multi-omics data for risk prediction and deep phenotyping of valvular heart diseases in the general population](https://advanced.onlinelibrary.wiley.com/doi/10.1002/advs.76345)
 
 🐜🐘 小文章，大分析；大文章，小分析
 - **8个图，8分杂志：2026-04** · *Journal of Headache and Pain Article* · [Plasma proteomics identifies proteins and pathways associated with incident migraine in 50,668 adults] (https://link.springer.com/article/10.1186/s10194-026-02345-8)
