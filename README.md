@@ -138,7 +138,7 @@
 
 🐜🐘 小文章，大分析；大文章，小分析
 - **8个图，8分杂志：2026-04** · *Journal of Headache and Pain Article* · [Plasma proteomics identifies proteins and pathways associated with incident migraine in 50,668 adults] (https://link.springer.com/article/10.1186/s10194-026-02345-8)
-- **仅仅一个cis-MR：2026-04** 葛军波院士 *European Heart Journal* · [GLP-1R agonists and heart failure: novel beneficial effects suggested by Mendelian randomization]()
+- **cis-MR🚀45分：2026-04** 葛军波院士 *European Heart Journal* · [GLP-1R agonists and heart failure: novel beneficial effects suggested by Mendelian randomization]()
 
 <br>
 <p align="center">
