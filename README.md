@@ -112,7 +112,8 @@
 
 ## 4. 唐诗宋词
 
-🏛🌄 
+🏛🌄
+- **2025-01** · *Nature* · [An encyclopedia of human enhancer–gene regulatory interactions](https://www.nature.com/articles/s41586-026-10781-4) 
 - **2025-01** · *Nature* · [Site-saturation mutagenesis of 500 human protein domains](https://www.nature.com/articles/s41586-024-08370-4)
 - **2025-07** · *Nature* · [The role of metabolism in shaping enzyme structures over 400 million years](https://www.nature.com/articles/s41586-025-09205-6)
 - **2026-04** · *Nature* · [Ancient DNA reveals pervasive directional selection across West Eurasia](https://www.nature.com/articles/s41586-026-10358-1)
