@@ -121,6 +121,7 @@
 - **2026-05** · *Nature* · [Distinct genetic architecture in the tails of complex traits](https://www.nature.com/articles/s41586-026-10516-5)
 - **2026-04** · *Nature* · [Ancient DNA reveals pervasive directional selection across West Eurasia](https://www.nature.com/articles/s41586-026-10358-1)
 - **2026-04** · *Nature* · [EBV strain interacts with host HLA to drive nasopharyngeal carcinoma risk](https://www.nature.com/articles/s41586-026-10416-8)
+- **2026-03** · *Nature* · Po-Ru Loh [The DNA virome varies with human genes and environments](https://www.nature.com/articles/s41586-026-10288-y)
 - **2026-02** · *Nature* · [An agentic system for rare disease diagnosis with traceable reasoning](https://www.nature.com/articles/s41586-025-10097-9)
 - **2026-01** · *Nature* · [A cross-population compendium of gene–environment interactions](https://www.nature.com/articles/s41586-025-10054-6)
 - **2025-12** · *Nature* · [Mapping the genetic landscape across 14 psychiatric disorders](https://www.nature.com/articles/s41586-025-09820-3)
