@@ -113,12 +113,14 @@
 
 🏛🌄
 - **2027-XX** · *Nature* · [HPRC2: A human pangenome reference with near-complete coverage of common genetic variation]()
-- **2026-07** · *Nature* · Pradeep等人. [A Bayesian framework for longitudinal EHR and genetic discovery](https://www.nature.com/articles/s41586-026-10780-5)
+- **2026-08** · *Nature* · 📍[Cell-type-specific eQTLs underlie the genetic architecture of complex traits](https://www.nature.com/articles/s41586-026-10577-6)
+- **2026-08** · *Science* · [Autism mutations rewire protein interaction networks to drive neurodevelopmental pathology](https://www.science.org/doi/10.1126/science.ady4523)
+- **2026-07** · *Nature* · Pradeep. [A Bayesian framework for longitudinal EHR and genetic discovery](https://www.nature.com/articles/s41586-026-10780-5)
 - **2026-07** · *Nature* · [An encyclopedia of human enhancer–gene regulatory interactions](https://www.nature.com/articles/s41586-026-10781-4) 
 - **2026-05** · *Nature* · [Expanding the human proteome with microproteins and peptideins](https://www.nature.com/articles/s41586-026-10459-x)
 - **2026-05** · *Nature* · [Universal transcriptomic hallmarks of mammalian ageing and mortality](https://www.nature.com/articles/s41586-026-10542-3)
 - **2026-05** · *NMeth* · [Decoding sequence determinants of gene expression in diverse cellular and disease states](https://www.nature.com/articles/s41592-026-03102-0)
-- **2026-05** · *Nature* · [Distinct genetic architecture in the tails of complex traits](https://www.nature.com/articles/s41586-026-10516-5)
+- **2026-05** · *Nature* · 📍[Distinct genetic architecture in the tails of complex traits](https://www.nature.com/articles/s41586-026-10516-5)
 - **2026-04** · *Nature* · [Ancient DNA reveals pervasive directional selection across West Eurasia](https://www.nature.com/articles/s41586-026-10358-1)
 - **2026-04** · *Nature* · [EBV strain interacts with host HLA to drive nasopharyngeal carcinoma risk](https://www.nature.com/articles/s41586-026-10416-8)
 - **2026-03** · *Nature* · Po-Ru Loh [The DNA virome varies with human genes and environments](https://www.nature.com/articles/s41586-026-10288-y)
@@ -129,20 +131,17 @@
 - **2025-01** · *Nature* · [Site-saturation mutagenesis of 500 human protein domains](https://www.nature.com/articles/s41586-024-08370-4)
 
 📖🍵 
-- **2026-06** · 葛军波院士. Cardiovascular Research. [Global prevalence of pan-vascular diseases: a trend and health inequality analyses](https://academic.oup.com/cardiovascres/advance-article-abstract/doi/10.1093/cvr/cvag133/8713797?redirectedFrom=fulltext) 
-- **2026-06** · 哈医. [Do Genetic Variants Directly Shape Population-Level Schizophrenia Burden? A Global Genomic Analysis](https://www.sciencedirect.com/science/article/pii/S2667174326000406?via%3Dihub)
 - **2026-06** · *NM* · [Automated reanalysis of genomic data for rare disease diagnostics at scale](https://www.nature.com/articles/s41591-026-04477-5)
 - **2026-05** · *NG* · [Genome-wide associations of structural variants with human traits through imputation from long-read assemblies](https://www.nature.com/articles/s41588-026-02612-z)
 - **2026-05** · *NG* · [Exome-wide association study of blood lipids in 1,158,017 individuals from diverse populations](https://www.nature.com/articles/s41588-026-02613-y)
-- 🌏 2026. The disease burden attributable to tobacco use in China and its provinces from 1990-2023: an analysis from the Global Burden of Disease Study 2023 (PMID: NA; DOI: 10.1016/j.mmr.2026.100041)
-- 🌏 2026. Global, regional and national burden of ischemic heart disease attributable to suboptimal diet, 1990-2023: a Global Burden of Disease study (PMID: 41912805)
 
 
 🐜🐘 小【大】文章，大【小】分析
 - **8个图，8分杂志：2026-04** · *Journal of Headache and Pain Article* · [Plasma proteomics identifies proteins and pathways associated with incident migraine in 50,668 adults] (https://link.springer.com/article/10.1186/s10194-026-02345-8)
-- **cis-MR🚀45分：2026-04** 葛军波院士 *European Heart Journal* · [GLP-1R agonists and heart failure: novel beneficial effects suggested by Mendelian randomization]()
+- **1个cis-MR，45分：2026-04** 葛军波院士 *European Heart Journal* · [GLP-1R agonists and heart failure: novel beneficial effects suggested by Mendelian randomization]()
 
 🧱☭
+- 2026 NC. 📍[Citywide indoor air sampling mirrors wastewater and clinical case surveillance of respiratory viruses](https://www.nature.com/articles/s41467-026-72919-2)
 - 2026 Nature. [Sleep chart of biological ageing clocks in middle and late life](https://www.nature.com/articles/s41586-026-10524-5)<br>
 	✳ Nature重磅: 最抗衰的睡眠时长是6.4-7.8小时, 睡多睡少都催人老。
 - 2026 NG. [Pleiotropic shared heritability quantifies the shared genetic variance of common diseases](https://www.nature.com/articles/s41588-026-02607-w)<br>
