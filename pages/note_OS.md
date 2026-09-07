@@ -17,7 +17,7 @@ git rev-list --count HEAD # 🏮1
 # git config --global user.email "jielab@users.noreply.github.com"
 # gh auth login
 # gh auth setup-git
-git remote add origin https://github.com/jielab/scripts.git
+git remote add origin https://github.com/jielab/analysis.git
 git push -u --force origin main
 
 # WSL installation and status
