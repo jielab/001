@@ -75,62 +75,105 @@ bjobs -wu sph-huangj | awk 'NR>1 {print $6}' | awk -F "*" '{print $NF}' | tr '\n
 
 ## 3. Clean Windows/WSL network setup
 
-### 3.1 本次成功记录（2026-10-01）
+### 3.1 本机当前配置与职责（2026-10-01 核对）
 
-出国期间卸载 Clash 并移除代理设置；回来后改用 ikuuu。网页版 ChatGPT 正常，但 Windows 桌面应用登录报错：
+本机代理客户端 ikuuu 使用 HTTP 代理 `http://127.0.0.1:7897`。保持客户端正常连接；调整 WSL 下载工具不需要修改 VPN、Windows 系统代理或重启桌面应用。
 
-```text
-token_exchange_failed
-Token exchange failed: error sending request for url (https://auth.openai.com/oauth/token)
+| 层级 | 配置位置 | 本机状态 / 作用 |
+| --- | --- | --- |
+| Windows 代理客户端 | ikuuu → 我的 → 常规 → 端口 | `7897`，提供本地 HTTP 代理 |
+| WSL 网络 | `C:\Users\jiehu\.wslconfig` | `networkingMode=mirrored`、`dnsTunneling=true`、`autoProxy=true`，另有 `memory=72GB` |
+| Windows Codex 桌面 | `C:\Users\jiehu\.codex\.env` | 保留现有配置；与 WSL shell 配置分开管理 |
+| WSL 交互式命令 | `~/.bashrc` 加载 `~/.wsl_proxy.sh` | 统一使用 `7897`；提供 `proxy_on`、`proxy_off`、`proxy_status` |
+| WSL aria2 | `~/.aria2/aria2.conf` | 默认使用 `7897`，关闭自动改名；无需 shell alias |
+| WSL apt | `/etc/apt/apt.conf.d/95proxy` | 已配置 `7897`，保留现有重试、超时及 IPv4 设置 |
+
+这里记录的是当前实测配置。旧记录中的 `autoProxy=false` 不是本机现状，不要照旧笔记覆盖 `.wslconfig`。本次只修改 WSL 用户配置，没有执行 `wsl --shutdown`。
+
+### 3.2 WSL shell：只保留一套代理函数
+
+`~/.bashrc` 只保留以下加载入口，删除其中重复定义的代理函数。代理端口统一在 `~/.wsl_proxy.sh` 管理。
+
+```bash
+# Auto proxy for WSL + Clash
+[ -f ~/.wsl_proxy.sh ] && . ~/.wsl_proxy.sh
 ```
 
-本次排查与结果：
+`~/.wsl_proxy.sh` 的当前实现：
 
-1. 将 ikuuu 本地端口从 `7890` 改为原来的 `7897`，断开后重新连接；仅改端口后仍然报错。
-2. 通过显式代理 `http://127.0.0.1:7897` 测试认证端点，收到 `200 Connection established`，随后收到 `405 Method Not Allowed`，确认这条代理路径能完成 HTTPS 请求。
-3. 检查 Windows 的 Process/User/Machine 环境变量：未发现 HTTP_PROXY、HTTPS_PROXY、ALL_PROXY、NO_PROXY、SSL_CERT_FILE、CODEX_CA_CERTIFICATE、CODEX_HOME；当时也没有 `%USERPROFILE%\.codex\.env`。
-4. 创建 Windows 的 `%USERPROFILE%\.codex\.env`，明确指定代理和 localhost 例外；完全退出并重新打开桌面应用后，登录成功。
+```bash
+export WSL_PROXY_HOST=127.0.0.1
+export WSL_PROXY_PORT=7897
+export WSL_PROXY_URL=http://${WSL_PROXY_HOST}:${WSL_PROXY_PORT}
+export no_proxy=localhost,127.0.0.1,::1
+export NO_PROXY=$no_proxy
 
-**最有力的修复线索是第 4 步：为 Codex 明确配置代理并重启应用。没有做逐项回退实验，不能断言单个设置是唯一原因。此次没有通过修改 WSL 的 `.bashrc` 修复桌面登录。**
+_proxy_set() {
+  export http_proxy=$WSL_PROXY_URL https_proxy=$WSL_PROXY_URL all_proxy=$WSL_PROXY_URL
+  export HTTP_PROXY=$WSL_PROXY_URL HTTPS_PROXY=$WSL_PROXY_URL ALL_PROXY=$WSL_PROXY_URL
+}
 
-### 3.2 代理客户端：统一使用 7897
+_proxy_unset() {
+  unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
+}
 
-ikuuu：**我的 → 常规 → 端口 → `7897`**，保存后断开并重新连接。
+proxy_on() { _proxy_set; echo "Proxy on: $WSL_PROXY_URL"; }
+proxy_off() { _proxy_unset; echo "Proxy off"; }
+proxy_status() { env | grep -Ei '^(http|https|all|no)_proxy=' | sort; }
 
-本次排查使用 **TUN + 全局**。这是成功过程中的配置记录，不代表两者永远必需：
+wsl_proxy_auto() {
+  if timeout 1 bash -c ":</dev/tcp/${WSL_PROXY_HOST}/${WSL_PROXY_PORT}" 2>/dev/null; then
+    _proxy_set
+  else
+    _proxy_unset
+  fi
+}
 
-- **全局 / 规则**：决定流量如何分流。规则正确时也可以使用规则模式；排查时先保持已验证的模式。
-- **TUN / 系统代理**：决定流量如何被接管，与全局/规则是不同的设置。
-- 换回 Clash 或其他客户端时，确认其 HTTP 或混合代理端口仍是 `7897`；不要仅凭客户端名称假定端口相同。
-
-在 **Windows PowerShell** 验证：
-
-```powershell
-Test-NetConnection 127.0.0.1 -Port 7897
-curl.exe --proxy http://127.0.0.1:7897 --noproxy localhost,127.0.0.1 -I --connect-timeout 10 --max-time 20 https://auth.openai.com/oauth/token
+wsl_proxy_auto
 ```
 
-`TcpTestSucceeded : True` 只说明本地端口可连接。curl 在代理的 `200 Connection established` 之后返回 `405 Method Not Allowed`，说明认证端点已响应 HEAD 请求；不代表实际 OAuth POST 登录必然成功。
+新交互式终端自动加载。已有终端运行下面的命令即可更新代理，避免重新执行 `.bashrc` 中其他环境初始化：
 
-### 3.3 Windows ChatGPT / Codex 桌面版：明确指定代理
-
-**文件位于 Windows 用户目录，不是 WSL 的 Linux 用户目录：**
-
-```text
-C:\Users\jiehu\.codex\.env
+```bash
+source ~/.wsl_proxy.sh
+proxy_status
+curl -I --connect-timeout 8 --max-time 20 https://github.com
 ```
 
-其他 Windows 用户对应 `%USERPROFILE%\.codex\.env`。若自行设置过 `CODEX_HOME`，应检查实际配置目录。
+自动检查只判断本地端口能否连接，不代表代理节点或远端服务一定正常。运行中的程序不会自动获得新环境变量；更改后需要重新启动对应命令。`proxy_off` 只影响当前 shell 及随后启动的子进程。
 
-在 **Windows PowerShell** 打开配置文件：
+### 3.3 aria2：把通用默认值写入专用配置
 
-```powershell
-$codexDir = Join-Path $env:USERPROFILE '.codex'
-New-Item -ItemType Directory -Force -Path $codexDir | Out-Null
-notepad.exe (Join-Path $codexDir '.env')
+aria2 不需要每次输入代理和自动改名参数。WSL 用户 `huangj` 的默认配置位于 `/home/huangj/.aria2/aria2.conf`：
+
+```ini
+all-proxy=http://127.0.0.1:7897
+no-proxy=localhost,127.0.0.1,::1
+auto-file-renaming=false
 ```
 
-写入以下三行并保存；文件已经存在时，只更新同名配置，保留其他内容，避免重复条目。确认文件名是 `.env`，不是 `.env.txt`。
+原来 shell 配置仍检测旧端口 `7890`，检测失败便清除了代理变量，aria2 因而直连 EBI，反复出现 `SSL/TLS handshake failure: Error in the pull function`。2026-10-01 实测：直连超时，使用 `7897` 代理时 aria2 可用性检查成功，Range 请求收到 HTTP 206 和 1024 字节数据。
+
+修复后，即使清除所有 HTTP/HTTPS/ALL 代理环境变量，aria2 仍能通过自身默认配置完成可用性检查。后台任务同样可以使用此配置；使用其他 Linux 用户、`sudo`、`--no-conf` 或显式指定另一个 `--conf-path` 时，要另行确认读取的配置。
+
+日常下载直接运行：
+
+```bash
+cd /mnt/g/metag
+aria2c -i emp.url -d emp/ -x 4 -s 4 -j 2 -c \
+  --max-tries=20 --retry-wait=10 \
+  --log=emp-download.log --log-level=notice
+```
+
+`-c` 续传；保留 `.aria2` 文件。关闭自动改名可以避免产生 `.1` 等额外文件，但不等于校验已有文件完整性。并发数、日志和重试参数按任务设置。命令行参数可以覆盖默认配置，具体见 [aria2 官方手册](https://aria2.github.io/manual/en/html/aria2c.html)。
+
+修改配置不影响已经运行的 aria2。需要生效时，在原下载终端按 Ctrl+C，等待退出，再重新运行下载命令，避免两个进程同时写同一目录。
+
+### 3.4 Windows 桌面连接：保留已经成功的配置
+
+此前本机 Codex 桌面登录排查中，为 `%USERPROFILE%\.codex\.env` 明确配置代理并完全退出、重新打开应用后，登录成功。没有做逐项回退实验，因此不能认定某一项是唯一原因，也不能将 Codex 的配置文件当成所有 ChatGPT 应用通用的配置入口。
+
+当时使用的代理项如下（文件如有其他内容，应保留）：
 
 ```dotenv
 HTTP_PROXY=http://127.0.0.1:7897
@@ -138,95 +181,44 @@ HTTPS_PROXY=http://127.0.0.1:7897
 NO_PROXY=localhost,127.0.0.1,::1
 ```
 
-`HTTPS_PROXY` 的值仍以 `http://` 开头：这里指定的是本地 HTTP 代理，HTTPS 请求通过它建立隧道。
+`HTTPS_PROXY` 使用 `http://` 是因为本地服务是 HTTP 代理，HTTPS 流量通过 CONNECT 隧道传输。Windows 桌面应用与 WSL 的 `.bashrc` 分开管理；修复 aria2 不需要编辑这个文件、Windows 环境变量或证书设置。
 
-保存后：
+此前浏览器正常并不能证明桌面登录请求也通过同一条代理路径。排查时收到 `200 Connection established` 后还需要检查实际端点响应；`405 Method Not Allowed` 只说明该端点拒绝相应请求方法，不能单独证明登录成功。
 
-1. 完全退出 ChatGPT / Codex 桌面应用；任务管理器中确认没有残留的 `ChatGPT.exe`、`Codex.exe` 或 `codex.exe`。先保存正在进行的工作。
-2. 保持代理客户端连接，端口为 `7897`。
-3. 重新打开桌面应用，重新点击“继续登录”，不要刷新旧的错误页面。
+### 3.5 排查和切换网络环境
 
-**浏览器能访问 ChatGPT，不等于桌面应用的认证请求走了同一条网络路径。Windows 桌面应用通常不会读取 WSL 的 `.bashrc`。**
-
-参考：[本次采用的 GitHub 排查线索：openai/codex #26764](https://github.com/openai/codex/issues/26764)。其中包含不同原因的用户报告；本节以本机实际成功过程为准。
-
-### 3.4 WSL2 网络与命令行代理（独立配置）
-
-以下保留原有 WSL 方案，供 Git、pip、R、Hugging Face 和 apt 使用；本次桌面登录修复没有重新验证这些 WSL 步骤。
-
-在 Windows 的 `%USERPROFILE%\.wslconfig` 中合并以下设置；若已有 `[wsl2]`，修改对应项目，不要重复创建同名段落或覆盖其他设置：
-
-```ini
-[wsl2]
-networkingMode=mirrored
-dnsTunneling=true
-autoProxy=false
-```
-
-该方案依赖支持 mirrored networking 的 Windows/WSL 版本。保存 WSL 内正在运行的工作后，在 **Windows PowerShell** 执行：
-
-```powershell
-wsl --shutdown
-```
-
-重新打开 WSL。在 **WSL 的 `~/.bashrc`** 中更新或加入以下内容，不要保留其他指向旧端口的重复代理设置：
+先确认出错的是哪一层，再调整对应配置：
 
 ```bash
-export http_proxy=http://127.0.0.1:7897
-export https_proxy=$http_proxy
-export all_proxy=$http_proxy
-export no_proxy=localhost,127.0.0.1,::1
+# WSL shell 当前代理
+proxy_status
+
+# 显式测试本地代理到远端的 HTTPS 路径
+curl -I --proxy http://127.0.0.1:7897 \
+  --connect-timeout 8 --max-time 20 https://github.com
+
+# aria2 默认配置与下载错误
+cat ~/.aria2/aria2.conf
+tail -n 40 /mnt/g/metag/emp-download.log
 ```
 
-在 **WSL** 生效并测试：
+本地端口连接失败时查代理客户端；端口可连接但远端请求失败时查节点、路由或远端返回。aria2 有进程但没有新增文件时，先看日志和传输速度；它可能在续传，也可能在报错。
 
-```bash
-source ~/.bashrc
-curl -I --connect-timeout 8 --max-time 20 https://github.com
-```
+出国或不再使用代理时，按需要分别停用：
 
-apt 使用独立配置，在 **WSL** 执行：
-
-```bash
-sudo tee /etc/apt/apt.conf.d/95proxy >/dev/null <<'EOF'
-Acquire::http::Proxy "http://127.0.0.1:7897";
-Acquire::https::Proxy "http://127.0.0.1:7897";
-EOF
-sudo apt update
-```
-
-### 3.5 出国不需要代理时，以及下次换客户端时
-
-**固定代理仍指向本机端口时，关闭或卸载代理客户端会使依赖它的程序无法联网。切换网络环境时，要同步停用或恢复对应配置。**
-
-| 使用位置 | 需要检查的配置 |
+| 使用位置 | 停用方法 |
 | --- | --- |
-| Windows ChatGPT / Codex | `%USERPROFILE%\.codex\.env` 中的 HTTP_PROXY、HTTPS_PROXY；若另有 ALL_PROXY 也要检查 |
-| WSL 常用命令 | `~/.bashrc` 中的代理 export，以及其他启动文件中自定义的代理设置 |
-| WSL apt | `/etc/apt/apt.conf.d/95proxy` |
-| Windows 系统代理 | 设置 → 网络和 Internet → 代理；检查是否还指向已关闭的本地端口 |
+| WSL shell | 当前终端执行 `proxy_off`；若希望新终端也不自动启用，注释 `.bashrc` 的 helper 加载行 |
+| aria2 | 注释 `~/.aria2/aria2.conf` 的 `all-proxy` 行；同时确认 shell 代理变量已清除 |
+| apt | 将 `95proxy` 移到 `/etc/apt/apt.conf.d/` 之外保存，例如 `/etc/apt/95proxy.disabled` |
+| Windows Codex | 仅在确实要切换桌面连接时，注释 `.codex\.env` 中代理项，保留其他内容，然后重启应用 |
+| Windows 系统代理 / VPN | 仅在需要切换这一层时调整客户端或系统设置 |
 
-不需要代理时：
+aria2 的固定代理独立于 shell，`proxy_off` 不会取消它。单次临时直连可在 `proxy_off` 后使用 `aria2c --all-proxy="" ...`。关闭客户端不会自动删除 aria2 或 apt 的固定代理。
 
-- Windows Codex：将 `.env` 中的 `HTTP_PROXY`、`HTTPS_PROXY`（以及另行设置的 `ALL_PROXY`）行前加 `#` 注释，保留其他内容；完全退出并重新打开应用。
-- WSL：注释 `.bashrc` 中的代理 export，再在当前终端运行下面的 unset；仅修改文件不会清除当前终端已经存在的变量。
-
-```bash
-unset http_proxy https_proxy all_proxy no_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY
-```
-
-- apt：将 `95proxy` 备份到 `/etc/apt/apt.conf.d/` 之外，例如：
-
-```bash
-sudo mv /etc/apt/apt.conf.d/95proxy /etc/apt/95proxy.disabled
-```
-
-重新需要代理时：先启动代理客户端并确认 `7897` 可用，再恢复 `.env` 和 `.bashrc` 中的代理行；运行 `source ~/.bashrc`，将 apt 配置移回原处，并重启桌面应用。
-
-若仍报错，先重复 3.2 的显式代理测试：本地端口连接失败时查客户端；收到端点响应但桌面应用仍失败时查 `.codex\.env`、环境变量及应用日志。不要把所有 `token_exchange_failed` 都当成同一个原因；若详情明确出现 `403 Country, region, or territory not supported`，那与本次“请求发送失败”是不同的返回结果。
+恢复时先确认客户端 `7897` 可用，再恢复需要的配置。换端口时同步检查上述表格，尤其是 `~/.wsl_proxy.sh`、`~/.aria2/aria2.conf` 和 apt 配置；不要残留 `7890`。只有实际修改 WSL 网络配置时才考虑 `wsl --shutdown`，先保存 WSL 内正在运行的工作。
 
 ---
-
 
 ## 4. PyTorch and common AI packages
 
