@@ -7,7 +7,10 @@
 # Restart Outlook
 taskkill /f /im outlook.exe
 start outlook
+```
 
+```
+aria2c -c -i ckb.url -d raw/ -x 4 -s 4 -j 2
 rm -rf .git
 git init -b main
 git add -A
@@ -75,20 +78,37 @@ bjobs -wu sph-huangj | awk 'NR>1 {print $6}' | awk -F "*" '{print $NF}' | tr '\n
 
 ## 3. Clean Windows/WSL network setup
 
-### 3.1 本机当前配置与职责（2026-10-01 核对）
+### 3.1 配置位置与统一端口
 
-本机代理客户端 ikuuu 使用 HTTP 代理 `http://127.0.0.1:7897`。保持客户端正常连接；调整 WSL 下载工具不需要修改 VPN、Windows 系统代理或重启桌面应用。
+本机代理客户端 ikuuu 使用 HTTP 代理 `http://127.0.0.1:7897`。
 
-| 层级 | 配置位置 | 本机状态 / 作用 |
+| 使用位置 | 配置入口 | 关键设置 |
 | --- | --- | --- |
 | Windows 代理客户端 | ikuuu → 我的 → 常规 → 端口 | `7897`，提供本地 HTTP 代理 |
 | WSL 网络 | `C:\Users\jiehu\.wslconfig` | `networkingMode=mirrored`、`dnsTunneling=true`、`autoProxy=true`，另有 `memory=72GB` |
-| Windows Codex 桌面 | `C:\Users\jiehu\.codex\.env` | 保留现有配置；与 WSL shell 配置分开管理 |
+| Windows Codex 桌面 | `C:\Users\jiehu\.codex\.env` | HTTP/HTTPS 代理；与 WSL shell 分开管理 |
 | WSL 交互式命令 | `~/.bashrc` 加载 `~/.wsl_proxy.sh` | 统一使用 `7897`；提供 `proxy_on`、`proxy_off`、`proxy_status` |
 | WSL aria2 | `~/.aria2/aria2.conf` | 默认使用 `7897`，关闭自动改名；无需 shell alias |
-| WSL apt | `/etc/apt/apt.conf.d/95proxy` | 已配置 `7897`，保留现有重试、超时及 IPv4 设置 |
+| WSL apt | `/etc/apt/apt.conf.d/95proxy` | HTTP/HTTPS 代理使用 `7897` |
 
-这里记录的是当前实测配置。旧记录中的 `autoProxy=false` 不是本机现状，不要照旧笔记覆盖 `.wslconfig`。本次只修改 WSL 用户配置，没有执行 `wsl --shutdown`。
+先启动 Windows 代理客户端，确认 HTTP 代理端口为 `7897`。
+
+在 Windows 编辑 `C:\Users\jiehu\.wslconfig`，将以下设置合并到同一个 `[wsl2]` 段，保留其他需要的设置：
+
+```ini
+[wsl2]
+networkingMode=mirrored
+dnsTunneling=true
+autoProxy=true
+```
+
+保存 WSL 内的工作，然后在 PowerShell 执行以下命令，再打开 WSL：
+
+```powershell
+wsl --shutdown
+```
+
+镜像网络模式下，WSL 使用 `127.0.0.1:7897` 访问 Windows 代理。
 
 ### 3.2 WSL shell：只保留一套代理函数
 
@@ -99,7 +119,7 @@ bjobs -wu sph-huangj | awk 'NR>1 {print $6}' | awk -F "*" '{print $NF}' | tr '\n
 [ -f ~/.wsl_proxy.sh ] && . ~/.wsl_proxy.sh
 ```
 
-`~/.wsl_proxy.sh` 的当前实现：
+创建或编辑 `~/.wsl_proxy.sh`，写入：
 
 ```bash
 export WSL_PROXY_HOST=127.0.0.1
@@ -132,7 +152,7 @@ wsl_proxy_auto() {
 wsl_proxy_auto
 ```
 
-新交互式终端自动加载。已有终端运行下面的命令即可更新代理，避免重新执行 `.bashrc` 中其他环境初始化：
+新交互式终端自动加载。在已打开的终端执行：
 
 ```bash
 source ~/.wsl_proxy.sh
@@ -152,9 +172,9 @@ no-proxy=localhost,127.0.0.1,::1
 auto-file-renaming=false
 ```
 
-原来 shell 配置仍检测旧端口 `7890`，检测失败便清除了代理变量，aria2 因而直连 EBI，反复出现 `SSL/TLS handshake failure: Error in the pull function`。2026-10-01 实测：直连超时，使用 `7897` 代理时 aria2 可用性检查成功，Range 请求收到 HTTP 206 和 1024 字节数据。
+先执行 `mkdir -p ~/.aria2`，再编辑 `~/.aria2/aria2.conf`，合并上述设置。
 
-修复后，即使清除所有 HTTP/HTTPS/ALL 代理环境变量，aria2 仍能通过自身默认配置完成可用性检查。后台任务同样可以使用此配置；使用其他 Linux 用户、`sudo`、`--no-conf` 或显式指定另一个 `--conf-path` 时，要另行确认读取的配置。
+aria2 的固定代理独立于 shell 环境变量，后台任务也可读取该配置。使用其他 Linux 用户、`sudo`、`--no-conf` 或另一个 `--conf-path` 时，需要确认配置路径。
 
 日常下载直接运行：
 
@@ -169,11 +189,18 @@ aria2c -i emp.url -d emp/ -x 4 -s 4 -j 2 -c \
 
 修改配置不影响已经运行的 aria2。需要生效时，在原下载终端按 Ctrl+C，等待退出，再重新运行下载命令，避免两个进程同时写同一目录。
 
-### 3.4 Windows 桌面连接：保留已经成功的配置
+### 3.4 apt 与 Windows Codex
 
-此前本机 Codex 桌面登录排查中，为 `%USERPROFILE%\.codex\.env` 明确配置代理并完全退出、重新打开应用后，登录成功。没有做逐项回退实验，因此不能认定某一项是唯一原因，也不能将 Codex 的配置文件当成所有 ChatGPT 应用通用的配置入口。
+在 WSL 编辑 `/etc/apt/apt.conf.d/95proxy`（需要 `sudo`），合并以下设置，保留需要的重试、超时及 IPv4 设置：
 
-当时使用的代理项如下（文件如有其他内容，应保留）：
+```text
+Acquire::http::Proxy "http://127.0.0.1:7897";
+Acquire::https::Proxy "http://127.0.0.1:7897";
+```
+
+执行 `sudo apt update` 验证连接。apt 的固定代理不受 `proxy_off` 控制。
+
+本机 Windows Codex 的代理配置位于 `%USERPROFILE%\.codex\.env`。需要使用代理时，合并以下项，保留文件中的其他内容，然后完全退出并重新打开 Codex：
 
 ```dotenv
 HTTP_PROXY=http://127.0.0.1:7897
@@ -181,16 +208,14 @@ HTTPS_PROXY=http://127.0.0.1:7897
 NO_PROXY=localhost,127.0.0.1,::1
 ```
 
-`HTTPS_PROXY` 使用 `http://` 是因为本地服务是 HTTP 代理，HTTPS 流量通过 CONNECT 隧道传输。Windows 桌面应用与 WSL 的 `.bashrc` 分开管理；修复 aria2 不需要编辑这个文件、Windows 环境变量或证书设置。
-
-此前浏览器正常并不能证明桌面登录请求也通过同一条代理路径。排查时收到 `200 Connection established` 后还需要检查实际端点响应；`405 Method Not Allowed` 只说明该端点拒绝相应请求方法，不能单独证明登录成功。
+`HTTPS_PROXY` 使用 `http://`，因为本地服务是 HTTP 代理，HTTPS 流量通过 CONNECT 隧道传输。Windows Codex 与 WSL shell 分别配置。
 
 ### 3.5 排查和切换网络环境
 
 先确认出错的是哪一层，再调整对应配置：
 
 ```bash
-# WSL shell 当前代理
+# WSL shell 代理变量
 proxy_status
 
 # 显式测试本地代理到远端的 HTTPS 路径
@@ -216,7 +241,7 @@ tail -n 40 /mnt/g/metag/emp-download.log
 
 aria2 的固定代理独立于 shell，`proxy_off` 不会取消它。单次临时直连可在 `proxy_off` 后使用 `aria2c --all-proxy="" ...`。关闭客户端不会自动删除 aria2 或 apt 的固定代理。
 
-恢复时先确认客户端 `7897` 可用，再恢复需要的配置。换端口时同步检查上述表格，尤其是 `~/.wsl_proxy.sh`、`~/.aria2/aria2.conf` 和 apt 配置；不要残留 `7890`。只有实际修改 WSL 网络配置时才考虑 `wsl --shutdown`，先保存 WSL 内正在运行的工作。
+恢复时先确认客户端 `7897` 可用，再恢复需要的配置。换端口时同步检查上述表格，尤其是 `~/.wsl_proxy.sh`、`~/.aria2/aria2.conf` 和 apt 配置；确保各处端口一致。只有实际修改 WSL 网络配置时才考虑 `wsl --shutdown`，先保存 WSL 内正在运行的工作。
 
 ---
 
