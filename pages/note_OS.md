@@ -7,10 +7,12 @@
 # Restart Outlook
 taskkill /f /im outlook.exe
 start outlook
+
+sudo mkdir -p /mnt/h; sudo mount -t drvfs H: /mnt/h
+aria2c -c -i ckb.url -d raw/ -x 4 -s 4 -j 2
 ```
 
 ```
-aria2c -c -i ckb.url -d raw/ -x 4 -s 4 -j 2
 rm -rf .git
 git init -b main
 git add -A
