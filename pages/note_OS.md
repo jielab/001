@@ -9,7 +9,9 @@ taskkill /f /im outlook.exe
 start outlook
 
 sudo mkdir -p /mnt/h; sudo mount -t drvfs H: /mnt/h
-aria2c -c -i ckb.url -d raw/ -x 4 -s 4 -j 4
+aria2c -c -i ckb.url -d raw/ -x 4 -s 4 -j 4 \
+  --auto-file-renaming=false --allow-overwrite=false --always-resume=true --connect-timeout=30 \
+  --timeout=120 --max-tries=20 --retry-wait=30 --auto-save-interval=30 --file-allocation=none
 ```
 
 ```
