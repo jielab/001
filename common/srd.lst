@@ -1,6 +1,6 @@
 1074|1075	cvd_cad
 1076	cvd_hfail
-1471|1472	cvd_afib
+1471|1483	cvd_afib
 1079|1588	cvd_cmyo
 1490	cvd_aosten
 1081|1082|1086|1491|1583	stroke
@@ -14,3 +14,4 @@
 1067|1087	cvd_pad
 1220|1222|1223	dm
 1223	t2dm
+1075	mi
