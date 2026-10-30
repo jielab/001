@@ -1,7 +1,6 @@
 # 🚩**GWAS** 🛞 **MR** 🛞 **P[ro]RS** 🛞 🧬 
 ![jielab](./images/banner.png)
 <br><br>
-https://www.openbioinformatics.org/annovar/download/hg38_allofus.txt.gz
 
 ## 0. Data resources
 
