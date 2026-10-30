@@ -1,0 +1,5 @@
+p40000	date_death	all
+p40001	death_icd10	all
+p40002	death_icd10sec	all
+p40007	age_death	all
+p40010	death_cause	all

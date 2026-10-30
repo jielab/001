@@ -1,0 +1,473 @@
+p31	sex	i0		
+p21002	weight	i0		
+p1289	touch.veg_cooked	i0		
+p1299	touch.veg_raw	i0		
+p1309	touch.fruit_fresh	i0		
+p1319	touch.fruit_dried	i0		
+p1329	touch.fish_oily	i0		
+p1339	touch.fish_other	i0		
+p1349	touch.meat_processed	i0		
+p1359	touch.poultry	i0		
+p1369	touch.beef	i0		
+p1379	touch.lamb	i0		
+p1389	touch.pork	i0		
+p1408	touch.cheese	i0		
+p1418	touch.type_milk	i0		
+p1428	touch.type_spread	i0		
+p1438	touch.bread	i0		
+p1448	touch.type_bread	i0		
+p1458	touch.cereal	i0		
+p1468	touch.type_cereal	i0		
+p1488	touch.tea	i0		
+p1498	touch.coffee	i0		
+p1508	touch.type_coffee	all		
+p1528	touch.water	i0		
+p1548	touch.vari	all		
+p2654	touch.type_butter	i0		
+p6144	touch.never_eat	i0		
+p30530	sodium_urine	all		
+p100026	webq.unreliable	all	#Daily dietary data not credible
+p26030	p26030	all	100117	#Alcohol
+p26038	p26038	all	100117	#Alpha-carotene
+p26010	p26010	all	100117	#Animal fat
+p26007	p26007	all	100117	#Animal protein
+p26040	p26040	all	100117	#Beta cryptoxanthin
+p26039	p26039	all	100117	#Beta-carotene
+p26041	p26041	all	100117	#Biotin
+p26018	p26018	all	100117	#Calcium
+p26013	p26013	all	100117	#Carbohydrate
+p26042	p26042	all	100117	#Chloride
+p26037	p26037	all	100117	#Cholesterol
+p26043	p26043	all	100117	#Copper
+p26002	p26002	all	100117	#Energy
+p26004	energy_density	all	100117	#Energy density
+p26003	p26003	all	100117	#Energy from beverages
+p26017	p26017	all	100117	#Englyst fibre
+p26008	p26008	all	100117	#Fat
+p26022	p26022	all	100117	#Folate
+p26012	p26012	all	100117	#Free sugar
+p26044	p26044	all	100117	#Fructose
+p26045	p26045	all	100117	#Glucose
+p26046	p26046	all	100117	#Haem iron
+p26050	p26050	all	100117	#Intrinsic and milk sugars
+p26047	p26047	all	100117	#Iodine
+p26019	p26019	all	100117	#Iron
+p26048	p26048	all	100117	#Lactose
+p26025	p26025	all	100117	#Magnesium
+p26049	p26049	all	100117	#Maltose
+p26051	p26051	all	100117	#Manganese
+p26032	p26032	all	100117	#Monounsaturated fatty acids
+p26054	p26054	all	100117	#Niacin equivalent
+p26053	p26053	all	100117	#Non-haem iron
+p26055	p26055	all	100117	#Non-milk extrinsic sugars
+p26056	p26056	all	100117	#Other Sugars
+p26057	p26057	all	100117	#Pantothenic acid
+p26036	p26036	all	100117	#Phosphorus
+p26024	p26024	all	100117	#Potassium
+p26005	p26005	all	100117	#Protein
+p26026	p26026	all	100117	#Retinol
+p26035	p26035	all	100117	#Riboflavin
+p26014	p26014	all	100117	#Saturated fatty acids
+p26058	p26058	all	100117	#Selenium
+p26052	p26052	all	100117	#Sodium
+p26031	p26031	all	100117	#Starch
+p26059	p26059	all	100117	#Sucrose
+p26034	p26034	all	100117	#Thiamin
+p26027	p26027	all	100117	#Total carotene
+p26060	p26060	all	100117	#Total nitrogen
+p26011	p26011	all	100117	#Total sugars
+p26000	p26000	all	100117	#Total weight of all foods and beverages
+p26001	p26001	all	100117	#Total weight of beverages only
+p26155	p26155	all	100117	#Trans fatty acids
+p26009	p26009	all	100117	#Vegetable fat
+p26006	p26006	all	100117	#Vegetable protein
+p26061	p26061	all	100117	#Vitamin A retinol equivalents
+p26021	p26021	all	100117	#Vitamin B12
+p26020	p26020	all	100117	#Vitamin B6
+p26023	p26023	all	100117	#Vitamin C
+p26029	p26029	all	100117	#Vitamin D
+p26028	p26028	all	100117	#Vitamin E
+p26033	p26033	all	100117	#Zinc
+p26015	p26015	all	100117	#n-3 fatty acids
+p26016	p26016	all	100117	#n-6 fatty acids
+p26064	p26064	all	100118	#Added sugars and preserves
+p26065	p26065	all	100118	#Allium vegetables
+p26062	p26062	all	100118	#Animal fat spread lower fat
+p26063	p26063	all	100118	#Animal fat spread normal
+p26089	p26089	all	100118	#Apples and pears
+p26066	p26066	all	100118	#Beef
+p26067	p26067	all	100118	#Beer and cider
+p26090	p26090	all	100118	#Berries
+p26075	p26075	all	100118	#Biscuit cereal
+p26068	p26068	all	100118	#Biscuits
+p26076	p26076	all	100118	#Bran cereal
+p26069	p26069	all	100118	#Breaded/battered chicken
+p26070	p26070	all	100118	#Breaded/battered fish
+p26080	p26080	all	100118	#Chocolate confectionery
+p26091	p26091	all	100118	#Citrus
+p26081	p26081	all	100118	#Coffee, caffeinated
+p26082	p26082	all	100118	#Coffee, decaffeinated
+p26154	p26154	all	100118	#Cream
+p26092	p26092	all	100118	#Dried fruit
+p26088	p26088	all	100118	#Egg and egg dishes
+p26151	p26151	all	100118	#Fortified wine
+p26119	p26119	all	100118	#Fried/roast potatoes
+p26095	p26095	all	100118	#Fruit juice
+p26096	p26096	all	100118	#Full fat yogurt
+p26097	p26097	all	100118	#Grain dishes - added fat
+p26098	p26098	all	100118	#Green leafy/cabbages
+p26099	p26099	all	100118	#High fat cheese
+p26100	p26100	all	100118	#Lamb
+p26101	p26101	all	100118	#Legumes and pulses
+p26102	p26102	all	100118	#Low fat yogurt
+p26126	p26126	all	100118	#Low/non sugar sugar-sweetened beverages
+p26120	p26120	all	100118	#Mashed potatoes
+p26137	p26137	all	100118	#Meat substitutes - soy
+p26145	p26145	all	100118	#Meat substitutes - vegetarian
+p26103	p26103	all	100118	#Medium and low fat cheese
+p26087	p26087	all	100118	#Milk-based and powdered drinks
+p26084	p26084	all	100118	#Milk-dairy desserts
+p26071	p26071	all	100118	#Mixed bread (50/50), brown and seeded
+p26105	p26105	all	100118	#Muesli
+p26106	p26106	all	100118	#Nut-based spreads
+p26077	p26077	all	100118	#Oat cereal (non sugar)
+p26078	p26078	all	100118	#Oat cereal (sugar)
+p26109	p26109	all	100118	#Oily fish
+p26110	p26110	all	100118	#Olive oil (drizzling/dunking)
+p26072	p26072	all	100118	#Other bread
+p26079	p26079	all	100118	#Other cereal (sugar)
+p26085	p26085	all	100118	#Other desserts and cakes and pastries
+p26093	p26093	all	100118	#Other fruit
+p26104	p26104	all	100118	#Other meat, offal
+p26140	p26140	all	100118	#Other sweets
+p26146	p26146	all	100118	#Other vegetables, including mushrooms, fruiting and mixed vegetables
+p26115	p26115	all	100118	#Peas and sweetcorn
+p26116	p26116	all	100118	#Pizza
+p26111	p26111	all	100118	#Plant-based spread lower fat
+p26112	p26112	all	100118	#Plant-based spread normal
+p26117	p26117	all	100118	#Pork
+p26118	p26118	all	100118	#Potatoes and sweet potatoes (baked/boiled)
+p26121	p26121	all	100118	#Poultry
+p26122	p26122	all	100118	#Processed meat
+p26123	p26123	all	100118	#Raw salad
+p26152	p26152	all	100118	#Red wine
+p26124	p26124	all	100118	#Rice/oat milk
+p26125	p26125	all	100118	#Root vegetables
+p26108	p26108	all	100118	#Salted nuts and seeds
+p26128	p26128	all	100118	#Samosa, pakora
+p26129	p26129	all	100118	#Sauces and condiments (high fat)
+p26130	p26130	all	100118	#Sauces and condiments (low fat)
+p26083	p26083	all	100118	#Savoury crackers
+p26134	p26134	all	100118	#Savoury snacks
+p26131	p26131	all	100118	#Semi skimmed milk
+p26132	p26132	all	100118	#Shellfish
+p26133	p26133	all	100118	#Skimmed milk and cholesterol-lowering milk
+p26135	p26135	all	100118	#Soups
+p26086	p26086	all	100118	#Soy desserts and yogurt
+p26136	p26136	all	100118	#Soy milk
+p26138	p26138	all	100118	#Spirits
+p26094	p26094	all	100118	#Stewed fruit
+p26127	p26127	all	100118	#Sugar-sweetened beverages and other sugary drinks
+p26139	p26139	all	100118	#Sushi
+p26141	p26141	all	100118	#Tea
+p26142	p26142	all	100118	#Tea, decaffeinated
+p26143	p26143	all	100118	#Tomatoes
+p26107	p26107	all	100118	#Unsalted nuts and seeds
+p26144	p26144	all	100118	#Vegetable dips
+p26147	p26147	all	100118	#Vegetable side dishes
+p26148	p26148	all	100118	#Water (still and sparkling)
+p26073	p26073	all	100118	#White bread
+p26149	p26149	all	100118	#White fish and tinned tuna
+p26113	p26113	all	100118	#White pasta and rice
+p26153	p26153	all	100118	#White wine
+p26150	p26150	all	100118	#Whole milk
+p26074	p26074	all	100118	#Wholemeal bread
+p26114	p26114	all	100118	#Wholemeal pasta, brown rice and other wholegrains
+p100010	p100010	all	100097	#Portion size
+p100020	p100020	all	100097	#Typical diet yesterday
+p20085	p20085	all	100097	#Reason for not eating or drinking normally
+p20086	p20086	all	100097	#Type of special diet followed
+p100150	p100150	all	100104	#Drinking water intake
+p100160	p100160	all	100104	#Low calorie drink intake
+p100170	p100170	all	100104	#Fizzy drink intake
+p100180	p100180	all	100104	#Squash intake
+p100190	p100190	all	100104	#Orange juice intake
+p100200	p100200	all	100104	#Grapefruit juice intake
+p100210	p100210	all	100104	#Pure fruit/vegetable juice intake
+p100220	p100220	all	100104	#Fruit smoothie intake
+p100230	p100230	all	100104	#Dairy smoothie intake
+p100240	p100240	all	100104	#Coffee consumed
+p100250	p100250	all	100104	#Instant coffee intake
+p100270	p100270	all	100104	#Filtered coffee intake
+p100290	p100290	all	100104	#Cappuccino intake
+p100300	p100300	all	100104	#Latte intake
+p100310	p100310	all	100104	#Espresso intake
+p100330	p100330	all	100104	#Other coffee type
+p100260	p100260	all	100104	#Added milk to instant coffee
+p100280	p100280	all	100104	#Added milk to filtered coffee
+p100320	p100320	all	100104	#Added milk to espresso
+p100350	p100350	all	100104	#Added milk to other coffee type
+p100360	p100360	all	100104	#Decaffeinated coffee
+p100370	p100370	all	100104	#Intake of sugar added to coffee
+p100380	p100380	all	100104	#Intake of artificial sweetener added to coffee
+p100390	p100390	all	100104	#Tea consumed
+p100400	p100400	all	100104	#Standard tea intake
+p100410	p100410	all	100104	#Rooibos tea intake
+p100420	p100420	all	100104	#Green tea intake
+p100430	p100430	all	100104	#Herbal tea intake
+p100440	p100440	all	100104	#Other tea intake
+p100460	p100460	all	100104	#Added milk to standard tea
+p100470	p100470	all	100104	#Decaffeinated tea
+p100480	p100480	all	100104	#Added milk to rooibos tea
+p100490	p100490	all	100104	#Intake of sugar added to tea
+p100500	p100500	all	100104	#Intake of artificial sweetener added to tea
+p100510	p100510	all	100104	#Other non-alcoholic drinks
+p100520	p100520	all	100104	#Milk intake
+p100530	p100530	all	100104	#Flavoured milk intake
+p100540	p100540	all	100104	#Low calorie hot chocolate intake
+p100550	p100550	all	100104	#Hot chocolate intake
+p100560	p100560	all	100104	#Other drink intake
+p100580	p100580	all	100100	#Alcohol consumed
+p100590	p100590	all	100100	#Red wine intake
+p20096	p20096	all	100100	#Size of red wine glass drunk
+p100630	p100630	all	100100	#Rose wine intake
+p20097	p20097	all	100100	#Size of rose wine glass drunk
+p100670	p100670	all	100100	#White wine intake
+p20095	p20095	all	100100	#Size of white wine glass drunk
+p100710	p100710	all	100100	#Beer/cider intake
+p100720	p100720	all	100100	#Fortified wine intake
+p100730	p100730	all	100100	#Spirits intake
+p100740	p100740	all	100100	#Other alcohol intake
+p100760	p100760	all	100102	#Breakfast cereal consumed
+p100770	p100770	all	100102	#Porridge intake
+p20105	p20105	all	100102	#Liquid used to make porridge
+p100800	p100800	all	100102	#Muesli intake
+p100810	p100810	all	100102	#Oat crunch intake
+p100820	p100820	all	100102	#Sweetened cereal intake
+p100830	p100830	all	100102	#Plain cereal intake
+p100840	p100840	all	100102	#Bran cereal intake
+p100850	p100850	all	100102	#Whole-wheat cereal intake
+p100860	p100860	all	100102	#Other cereal intake
+p100880	p100880	all	100102	#Dried fruit added to cereal
+p100890	p100890	all	100102	#Milk added to cereal
+p100900	p100900	all	100102	#Intake of sugar added to cereal
+p100910	p100910	all	100102	#Intake of artificial sweetener added to cereal
+p100920	p100920	all	100107	#Type milk consumed
+p102800	p102800	all	100107	#Cheese consumers
+p102810	p102810	all	100107	#Low fat hard cheese intake
+p102820	p102820	all	100107	#Hard cheese intake
+p102830	p102830	all	100107	#Soft cheese intake
+p102840	p102840	all	100107	#Blue cheese intake
+p102850	p102850	all	100107	#Low fat cheese spread intake
+p102860	p102860	all	100107	#Cheese spread intake
+p102870	p102870	all	100107	#Cottage cheese intake
+p102880	p102880	all	100107	#Feta intake
+p102890	p102890	all	100107	#Mozzarella intake
+p102900	p102900	all	100107	#Goat's cheese intake
+p102910	p102910	all	100107	#Other cheese intake
+p102930	p102930	all	100107	#Egg consumers
+p102940	p102940	all	100107	#Whole egg intake
+p102950	p102950	all	100107	#Omelette intake
+p102960	p102960	all	100107	#Eggs in sandwiches intake
+p102970	p102970	all	100107	#Scotch egg intake
+p102980	p102980	all	100107	#Other egg intake
+p100940	p100940	all	100101	#Bread consumed
+p100950	bread	all	100101	#Sliced bread intake
+p20091	type_bread	all	100101	#Type of sliced bread eaten
+p101020	baguette	all	100101	#Baguette intake
+p20092	type_baguette	all	100101	#Type of baguette eaten
+p101090	bap	all	100101	#Bap intake
+p20093	type_bap	all	100101	#Type of large bap eaten
+p101160	roll	all	100101	#Bread roll intake
+p20094	type_roll	all	100101	#Type of bread roll eaten
+p101230	p101230	all	100101	#Naan bread intake
+p101240	p101240	all	100101	#Garlic bread intake
+p101250	p101250	all	100101	#Crispbread intake
+p101260	p101260	all	100101	#Oatcakes intake
+p101270	p101270	all	100101	#Other bread intake
+p101300	p101300	all	100101	#Butter/margarine on bread/crackers
+p101310	p101310	all	100101	#Number of bread slices with butter/margarine
+p20098	p20098	all	100101	#Thickness of butter/margarine spread on sliced bread
+p101350	p101350	all	100101	#Number of baguettes with butter/margarine
+p20099	p20099	all	100101	#Thickness of butter/margarine spread on baguettes
+p101390	p101390	all	100101	#Number of baps with butter/margarine
+p20100	p20100	all	100101	#Thickness of butter/margarine spread on large baps
+p101430	p101430	all	100101	#Number of bread rolls with butter/margarine
+p20101	p20101	all	100101	#Thickness of butter/margarine spread on bread rolls
+p101470	p101470	all	100101	#Number of crackers/crispbreads with butter/margarine
+p20102	p20102	all	100101	#Thickness of butter/margarine spread on crackers/crispbreads
+p101510	p101510	all	100101	#Number of oatcakes with butter/margarine
+p20103	p20103	all	100101	#Thickness of butter/margarine spread on oatcakes
+p101550	p101550	all	100101	#Number of other bread types with butter/margarine
+p20104	p20104	all	100101	#Thickness of butter/margarine spread on other bread
+p20087	p20087	all	100101	#Types of spread used on bread/crackers
+p102700	p102700	all	100101	#Starchy food consumers
+p102710	p102710	all	100101	#White pasta intake
+p102720	p102720	all	100101	#Wholemeal pasta intake
+p102730	p102730	all	100101	#White rice intake
+p102740	p102740	all	100101	#Brown rice intake
+p102750	p102750	all	100101	#Sushi intake
+p102760	p102760	all	100101	#Snackpot intake
+p102770	p102770	all	100101	#Couscous intake
+p102780	p102780	all	100101	#Other grain intake
+p101970	p101970	all	100109	#Double crust pastry intake
+p101980	p101980	all	100109	#Single crust pastry intake
+p101990	p101990	all	100109	#Crumble intake
+p102000	p102000	all	100109	#Pizza intake
+p102010	p102010	all	100109	#Pancake intake
+p102020	p102020	all	100109	#Scotch pancake intake
+p102030	p102030	all	100109	#Yorkshire pudding intake
+p102040	p102040	all	100109	#Indian snacks intake
+p102050	p102050	all	100109	#Croissant intake
+p102060	p102060	all	100109	#Danish pastry intake
+p102070	p102070	all	100109	#Scone intake
+p102080	p102080	all	100109	#Yogurt/ice-cream consumers
+p102090	p102090	all	100109	#Yogurt intake
+p20106	p20106	all	100109	#Type of yogurt eaten
+p102120	p102120	all	100109	#Ice-cream intake
+p102130	p102130	all	100109	#Dessert consumers
+p102140	p102140	all	100109	#Milk-based pudding intake
+p102150	p102150	all	100109	#Other milk-based pudding intake
+p102170	p102170	all	100109	#Soya dessert intake
+p102180	p102180	all	100109	#Fruitcake intake
+p102190	p102190	all	100109	#Cake intake
+p102200	p102200	all	100109	#Doughnut intake
+p102210	p102210	all	100109	#Sponge pudding intake
+p102220	p102220	all	100109	#Cheesecake intake
+p102230	p102230	all	100109	#Other dessert intake
+p102250	p102250	all	100109	#Sweet snack consumers
+p102260	p102260	all	100109	#Chocolate bar intake
+p102270	p102270	all	100109	#White chocolate intake
+p102280	p102280	all	100109	#Milk chocolate intake
+p102290	p102290	all	100109	#Dark chocolate intake
+p102300	p102300	all	100109	#Chocolate-covered raisin intake
+p102310	p102310	all	100109	#Chocolate sweet intake
+p102320	p102320	all	100109	#Diet sweets intake
+p102330	p102330	all	100109	#Sweets intake
+p102340	p102340	all	100109	#Chocolate-covered biscuits intake
+p102350	p102350	all	100109	#Chocolate biscuits intake
+p102360	p102360	all	100109	#Sweet biscuits intake
+p102370	p102370	all	100109	#Cereal bar intake
+p102380	p102380	all	100109	#Other sweets intake
+p102400	p102400	all	100109	#Savoury snack consumers
+p102410	p102410	all	100109	#Salted peanuts intake
+p102420	p102420	all	100109	#Unsalted peanuts intake
+p102430	p102430	all	100109	#Salted nuts intake
+p102440	p102440	all	100109	#Unsalted nuts intake
+p102450	p102450	all	100109	#Seeds intake
+p102460	p102460	all	100109	#Crisp intake
+p102470	p102470	all	100109	#Savoury biscuits intake
+p102480	p102480	all	100109	#Cheesy biscuits intake
+p102490	p102490	all	100109	#Olives intake
+p102500	p102500	all	100109	#Other savoury snack intake
+p102520	p102520	all	100109	#Soup consumers
+p102530	p102530	all	100109	#Powdered/instant soup intake
+p102540	canned	all	100109	#Canned soup intake
+p20108	type_canned	all	100109	#Ingredients in canned soup
+p102620	homemade	all	100109	#Homemade soup intake
+p20109	type_homemade	all	100109	#Ingredients in homemade soup
+p103000	p103000	all	100106	#Meat consumers
+p103010	p103010	all	100106	#Sausage intake
+p103020	p103020	all	100106	#Beef intake
+p103030	p103030	all	100106	#Pork intake
+p103040	p103040	all	100106	#Lamb intake
+p103050	p103050	all	100106	#Crumbed or deep-fried poultry intake
+p103060	p103060	all	100106	#Poultry intake
+p103070	p103070	all	100106	#Bacon intake
+p103080	p103080	all	100106	#Ham intake
+p103090	p103090	all	100106	#Liver intake
+p103100	p103100	all	100106	#Other meat intake
+p103130	p103130	all	100106	#Skin removed from poultry
+p103120	p103120	all	100106	#Fat removed from meat
+p103140	p103140	all	100106	#Fish consumer
+p103150	p103150	all	100106	#Tinned tuna intake
+p103160	p103160	all	100106	#Oily fish intake
+p103170	p103170	all	100106	#Breaded fish intake
+p103180	p103180	all	100106	#Battered fish intake
+p103190	p103190	all	100106	#White fish intake
+p103200	p103200	all	100106	#Prawns intake
+p103210	p103210	all	100106	#Lobster/crab intake
+p103220	p103220	all	100106	#Shellfish intake
+p103230	p103230	all	100106	#Other fish intake
+p103250	p103250	all	100111	#Vegetarian alternatives intake
+p103260	p103260	all	100111	#Vegetarian sausages/burgers intake
+p103270	p103270	all	100111	#Tofu intake
+p103280	p103280	all	100111	#Quorn intake
+p103290	p103290	all	100111	#Other vegetarian alternative intake
+p103310	p103310	all	100110	#Spreads/sauces consumers
+p20088	type_sauce	all	100110	#Types of spreads/sauces consumed
+p104660	p104660	all	100110	#Added salt to food
+p20090	type_oil	all	100110	#Type of fat/oil used in cooking
+p103980	p103980	all	100110	#No fat for cooking
+p103990	p103990	all	100103	#Vegetable consumers
+p104000	p104000	all	100103	#Baked bean intake
+p104010	p104010	all	100103	#Pulses intake
+p104020	p104020	all	100103	#Fried potatoes intake
+p104030	p104030	all	100103	#Boiled/baked potatoes intake
+p104040	p104040	all	100103	#Butter/margarine added to potatoes
+p104050	p104050	all	100103	#Mashed potato intake
+p104060	p104060	all	100103	#Mixed vegetable intake
+p104070	p104070	all	100103	#Vegetable pieces intake
+p104080	p104080	all	100103	#Coleslaw intake
+p104090	p104090	all	100103	#Side salad intake
+p104100	p104100	all	100103	#Avocado intake
+p104110	p104110	all	100103	#Broad bean intake
+p104120	p104120	all	100103	#Green bean intake
+p104130	p104130	all	100103	#Beetroot intake
+p104140	p104140	all	100103	#Broccoli intake
+p104150	p104150	all	100103	#Butternut squash intake
+p104160	p104160	all	100103	#Cabbage/kale intake
+p104170	p104170	all	100103	#Carrot intake
+p104180	p104180	all	100103	#Cauliflower intake
+p104190	p104190	all	100103	#Celery intake
+p104200	p104200	all	100103	#Courgette intake
+p104210	p104210	all	100103	#Cucumber intake
+p104220	p104220	all	100103	#Garlic intake
+p104230	p104230	all	100103	#Leek intake
+p104240	p104240	all	100103	#Lettuce intake
+p104250	p104250	all	100103	#Mushroom intake
+p104260	p104260	all	100103	#Onion intake
+p104270	p104270	all	100103	#Parsnip intake
+p104280	p104280	all	100103	#Pea intake
+p104290	p104290	all	100103	#Sweet pepper intake
+p104300	p104300	all	100103	#Spinach intake
+p104310	p104310	all	100103	#Sprouts intake
+p104320	p104320	all	100103	#Sweetcorn intake
+p104330	p104330	all	100103	#Sweet potato intake
+p104340	p104340	all	100103	#Fresh tomato intake
+p104350	p104350	all	100103	#Tinned tomato intake
+p104360	p104360	all	100103	#Turnip/swede intake
+p104370	p104370	all	100103	#Watercress intake
+p104380	p104380	all	100103	#Other vegetables intake
+p104400	p104400	all	100103	#Fruit consumers
+p104410	p104410	all	100103	#Stewed fruit intake
+p104420	p104420	all	100103	#Prune intake
+p104430	p104430	all	100103	#Dried fruit intake
+p104440	p104440	all	100103	#Mixed fruit intake
+p104450	p104450	all	100103	#Apple intake
+p104460	p104460	all	100103	#Banana intake
+p104470	p104470	all	100103	#Berry intake
+p104480	p104480	all	100103	#Cherry intake
+p104490	p104490	all	100103	#Grapefruit intake
+p104500	p104500	all	100103	#Grape intake
+p104510	p104510	all	100103	#Mango intake
+p104520	p104520	all	100103	#Melon intake
+p104530	p104530	all	100103	#Orange intake
+p104540	p104540	all	100103	#Satsuma intake
+p104550	p104550	all	100103	#Peach/nectarine intake
+p104560	p104560	all	100103	#Pear intake
+p104570	p104570	all	100103	#Pineapple intake
+p104580	p104580	all	100103	#Plum intake
+p104590	p104590	all	100103	#Other fruit intake
+p20089	p20089	all	100105	#Type of meals eaten
+p104670	p104670	all	100112	#Vitamin supplement user
+p20084	p20084	all	100112	#Vitamin and/or mineral supplement use
+p20080	p20080	all	100114	#Day-of-week questionnaire completed
+p20079	p20079	all	100114	#Day-of-week questionnaire completion requested
+p20083	p20083	all	100114	#Delay between questionnaire request and completion
+p20082	p20082	all	100114	#Duration of questionnaire
+p20081	p20081	all	100114	#Hour-of-day questionnaire completed
+p20077	p20077	all	100114	#Number of diet questionnaires completed
+p105010	p105010	all	100114	#When diet questionnaire completed
+p20078	p20078	all	100114	#When diet questionnaire completion requested
+p105030	p105030	all	100114	#When diet questionnaire started

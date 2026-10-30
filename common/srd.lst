@@ -1,0 +1,16 @@
+1074|1075	cvd_cad
+1076	cvd_hfail
+1471|1472	cvd_afib
+1079|1588	cvd_cmyo
+1490	cvd_aosten
+1081|1082|1086|1491|1583	stroke
+1082	cvd_stroke_tia
+1583	cvd_stroke_i
+1491	cvd_stroke_ih
+1086	cvd_stroke_sh
+1065|1072	cvd_htn
+1094	cvd_dvt
+1093	cvd_pe
+1067|1087	cvd_pad
+1220|1222|1223	dm
+1223	t2dm

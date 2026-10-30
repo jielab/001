@@ -1,0 +1,14 @@
+41[0-4]	cvd_cad
+428|402[019]1|404[019][13]	cvd_hfail
+4273	cvd_afib
+4275	carrest
+441[12]	cvd_thaneu
+441[34]	cvd_abaneu
+43[46]	cvd_stroke_i
+435	cvd_tia
+431	cvd_stroke_ih
+430	cvd_stroke_sh
+4511	cvd_dvt
+4151	cvd_pe
+443[89]	cvd_pad
+401	primary_htn

@@ -1,0 +1,225 @@
+p31	sex	i0	
+p34	birth_year	i0	
+p48	waist	i0	
+p49	hip	i0	
+p50	height	i0
+p51	height_sit	i0
+p52	birth_month	i0	
+p53	date_attend	i0	
+p54	center	i0	
+p93	sbp_man	all	
+p94	dbp_man	all	
+p129	birth_north	i0	# Place of birth in UK - north co-ordinate
+p130	birth_east	i0	# Place of birth in UK - east co-ordinate
+p191	date_lost	i0
+p709	householdCt	i0
+p738	inc	i0	
+p767	job_week_hours	i0	# Length of working week for main job
+p777	job_travel_freq	i0	# Frequency of travelling from home to job workplace
+p796	job_travel_dist	i0	# Distance between home and job workplace
+p806	job_stand	i0	# Job involves mainly walking or standing
+p816	job_heavy	i0	# Job involves heavy manual or physical work
+p826	job_shift	i0	# Job involves shift work
+p845	age_edu	i0	
+p884	days_pa_mod	i0	
+p894	dura_pa_mod	i0	# minutes/day
+p904	days_pa_vig	i0	
+p914	dura_pa_vig	i0	# minutes/day
+p924	walk_pace	i0	
+p971	walk_freq	i0	
+p981	walk_time	i0
+p1031	ffvisit	i0
+p1070	tv_time	i0	
+p1080	computer_time	i0	
+p1090	driving_time	i0	
+p1160	sleep_duration	i0	
+p1180	sleep_chronotype	i0	
+p1200	sleep_insomnia	i0	
+p1210	sleep_snoring	i0	
+p1220	sleep_narcolepsy	i0	
+p1249	smoke_past	i0	
+p1259	smoke_at_home	i0	
+p1269	smoke_2nd_home	i0	
+p1279	smoke_2nd_outside	i0
+p1558	alcohol_freq	i0	
+p1647	birth_country	i0	
+p1757	age_facial	i0
+p1767	adopted	i0
+p1873	cnt_brother
+p1883	cnt_sister
+p1920	mood_swing	i0
+p1970	tense_freq	i0
+p2020	lone	i0
+p2050	depress_freq	i0
+p2060	disinterest_freq	i0
+p2110	confide	i0
+p2139	sex_first	i0	
+p2149	sex_par	i0	
+p2159	gay	i0	
+p2395	bald	i0	
+p2443	dm_dr	i0	
+p2714	age_mn	i0	
+p2897	smoke_quit_age	i0	
+p3426	job_night	i0	# Job involves night shift work
+p3581	age_menopause	i0	
+p4041	dm_gestational	i0	
+p4079	dbp_auto	all	
+p4080	sbp_auto	all	
+p4537	job_satisfy	i0	# Work/job satisfaction
+p5057	cnt_older
+p6138	edu	i0	
+p6142	job	i0	# Current employment status
+p6143	job_transport	i0
+p6150	cvd_dr	i0	
+p6153	drug.big3a	all	#Medication for cholesterol, blood pressure, diabetes, or take exogenous hormones
+p6160	social	i0
+p6177	drug.big3b	all	#Medication for cholesterol, blood pressure or diabetes
+p20015	chunk	i0	
+p20022	birth_weight	i0	
+p20115	birth_country_nonUK	i0	# Country of Birth (non-UK origin)
+p20116	smoke_status	i0	
+p20117	alcohol_status	i0	
+p20119	job2	i0	# Current employment status - corrected
+p20126	depress	i0	
+p20127	neuroticism	i0	
+p20160	smoke_ever	i0	
+p20161	smoke_pack	i0	
+p20277	job_code	i0	# Job code at visit
+p20282	met.batch
+p20283	met.plate_swaps
+p20403	alcohol_amount	i0	
+p20453	cannabis	i0	
+p20458	happy_general	i0	
+p20459	happy_health	i0	
+p20460	happy_life	i0	
+p20544	mental	i0	
+p21000	ethnicity	i0	
+p21001	bmi	i0	
+p21002	weight	i0	
+p21003	age	i0	
+p21021	stiffness	i0	
+p21022	age_recruit	i0	
+p22000	gen_batch	i0	
+p22001	gen_sex	i0	
+p22003	hetero	i0	
+p22004	hetero2	i0	
+p22005	missingness	i0	
+p22006	gen_ethnicity	i0	
+p22007	gen_plate	i0	
+p22008	gen_well	i0	
+p22011	related_pair	all
+p22013	related_ibs	all
+p22019	aneuploidy	i0	
+p22020	in_pca	i0
+p22021	gen_kinship	i0	
+p22027	gen_outliers	i0	
+p22032	IPAQ_activity	i0	
+p22038	pa_met_mod	all	
+p22039	pa_met_vig	all
+p22040	pa_met_tot	all
+p22189	tdi	i0
+p22190	telomere	i0	
+p22191	telomere_adj	i0	
+p22192	telomere_adjZ	i0	
+p22194	telomere_reg	i0	
+p22599	job_num	i0	# Number of jobs held
+p22601	job_code	all
+p22602	job_year0	all
+p22603	job_year1	all
+p22617	job_soc	all # 22617是取22601的前四位
+p22620	job_shift_hist	all
+p22660	job_gap	all	# Gap coding
+p22661	job_gap_cnt all	# Number of gap periods
+p22663	job_gap_year0	all	# Year gap started
+p22664	job_gap_year1	all # Year gap ended
+p22688	home_east	i0	# Home location at assessment - east co-ordinate (1km resolution)
+p22689	home_north	i0	# Home location at assessment - north co-ordinate (1km resolution)
+p23099	fat_pct	i0
+p23105	metab_rate	i0
+p23165	blood_type	i0
+p23652	met.high_lactate
+p23653	met.high_pyruvate
+p23654	met.low_glucose
+p23655	met.low_protein
+p23651	met.flagged
+p23658	met.measured_time
+p23659	met.prepared_time
+p23649	met.plate
+p23650	met.spectrometer
+p23660	met.well
+p24003	air_no2       	i0	
+p24004	air_nox      	i0	
+p24005	pm10    	i0	
+p24006	pm25      	i0	
+p24008	pm2510	i0	
+p24010	dist_road	i0	# Inverse distance to the nearest road
+p24011	traffic	i0	
+p24012	dist_mroad	i0	# Inverse distance to the nearest major road 
+p24020	noise_day      	i0	
+p24021	noise_evening    	i0	
+p24022	noise_night	i0	
+p24500	green_1km	i0	# Greenspace percentage, buffer 1000m
+p24501	garden_1km	i0	# Domestic garden percentage, buffer 1000m
+p24502	water_1000m	i0	# Water percentage, buffer 1000m
+p24503	green_300m	i0	# Greenspace percentage, buffer 300m
+p24504	garden_300m	i0	# Domestic garden percentage, buffer 300m 
+p24505	water_300m	i0	# Water percentage, buffer 300m
+p24506	nature_1km	i0	# Natural environment percentage, buffer 1000m
+p24507	nature_300m	i0	# Natural environment percentage, buffer 300m
+p24508	dist_coast	i0	# Distance (Euclidean) to coast
+p25731	QC_T1
+p25732	QC_T1_nonlinear_discrepancy
+p25733	QC_T1_nonlinear_warping
+p25734	QC_T1_inverse_SNR
+p25735	QC_T1_inverse_CNR
+p25736	QC_T2_T1
+p25737	QC_dMRI_T1
+p25738	QC_SWI_T1
+p25739	QC_rfMRI_T1
+p25740	QC_tfMRI_T1
+p25741	QC_rfMRI_head_motion
+p25742	QC_tfMRI_head_motion
+p25743	QC_rfMRI_inverse_tSNR
+p25744	QC_rfMRI_cleaned_inverse_tSNR
+p25745	QC_tfMRI_inverse_tSNR
+p25746	QC_dMRI_eddy_outlier
+p26248	prs_istroke	i0	
+p26249	prs2_istroke	i0	
+p26410	tdi_eng	i0
+p26411	income_sco_eng	i0
+p26412	job_sco_eng	i0
+p26413	health_sco_eng	i0
+p26414	edu_sco_eng	i0
+p26415	house_sco_eng	i0
+p26416	crime_sco_eng	i0
+p26417	env_sco_eng	i0
+p26418	income_sco_wal	i0
+p26419	job_sco_wal	i0
+p26420	health_sco_wal	i0
+p26421	edu_sco_wal	i0
+p26422	service_sco_wal	i0
+p26423	house_sco_wal	i0
+p26424	env_sco_wal	i0
+p26425	safety_sco_wal	i0
+p26426	tdi_wal	i0
+p26427	tdi_sct	i0
+p26428	income_sco_sct	i0
+p26429	job_sco_sct	i0
+p26430	health_sco_sct	i0
+p26431	edu_sco_sct	i0
+p26432	house_sco_sct	i0
+p26433	service_sco_sct	i0
+p26434	crime_sco_sct	i0
+p30900	prot.cnt	i0
+p30901	prot.plate	i0
+p30902	prot.well	i0
+p31045	nb.batch	i0
+p31046	nb.plate	i0
+p31047	nb.well	i0
+p32220	home_date_hist	all	# Home location history - date first recorded	Home locations  
+p32223	home_east_hist	all	# Home location history - east co-ordinate (1km resolution)
+p32224	home_north_hist	all	# Home location history - north co-ordinate (1km resolution)
+p42000	date_mi	i0
+p42006	date_stroke	i0
+p42008	date_istroke	i0
+p42020	date_ad	i0

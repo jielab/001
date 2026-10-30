@@ -1,0 +1,38 @@
+E11	t2dm
+E1[0-4]	dm
+F0[0-3]|F051|F106|G30|G31|A810|I673	qi_dementia
+F0[0-3]|G30	acd
+F00|G30	ad
+F3[2-3]	depress
+G4[0-1]	epilepsy
+I2[1-2]	mi	#I2[1-3]|I241
+I63[0-6]|I638|I639	stroke
+I6[0-4]	qi_stroke
+I67	stroke_o
+I42	cvd_cmyo	Cardiomyopathy	#|I255	
+I2[0-5]	cvd_cad	Coronary artery disease # I2[1-4]|I25(1|2|5|6|8|9)	
+I46	carrest
+I48	cvd_afib	Atrial fibrillation
+I50|I110|I130|I132	cvd_hfail	Heart failure	#I42|I131
+I350|I352	cvd_aosten	Aortic valve stenosis	#I060|I062|
+I711|I712	cvd_thaneu	Thoracic aneurysm
+I713|I714	cvd_abaneu	Abdominal aneurysm
+I63	cvd_stroke_i	Ischemic stroke
+G45	cvd_tia	Transient Ischemic attack
+I61	cvd_stroke_ih	Intracerebral hemorrhage
+I60	cvd_stroke_sh	Subarachnoid hemorrhage	#I6(1|2|5)
+I802	cvd_dvt	Deep vein thrombosis
+I26	cvd_pe	Pulmonary embolism	#|I8[0-2]|O882
+I73[8-9]	cvd_pad	Peripheral arterial disease	#通常会包含 I70.2(四肢动脉粥样硬化)
+I10	primary_ahtn	#原发性高血压
+I1[0-5]	cvd_htn	#所有高血压
+J44	copd
+J45	asthma
+M0[5-6]	ra
+M32	sle
+M32|L93	sle2
+N18[3-4]	ckdmh
+N185|N180|Z992|Z940|Z490|Z491	ckdex
+N18	ckd
+K758|K760	masld
+^(?!U85)U8	amr

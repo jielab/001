@@ -1,0 +1,61 @@
+A0[1-9]|A[1-9][0-9]|B[0-8][0-9]	infect	Diseases of Infections
+A0[1-9]|A[1-6][0-9]|A7[0-9]	infect_bact	Bacterial infections
+A8[0-9]|A9[0-9]|B0[0-9]|B1[0-9]|B2[0-9]|B3[0-4]	infect_viral	Viral infections
+C[0-9][0-9]	cancer	Cancer
+C1[89]|C20	ca_crc	Colorectal cancer
+C15	ca_esophagus	Esophagus cancer
+C16	ca_stomach	Stomach cancer
+C34	ca_lung	Lung cancer
+C4[34]	ca_melanoma	Melanoma / non-melanoma skin cancer
+C50	ca_breast	Breast cancer
+C61	ca_prostate	Prostate cancer
+C8[1-9]|C9[0-6]	ca_leukemia	Leukemia / lymphoma / hematologic malignancy
+D[5-8][0-9]	blood_immune	Blood and immune disorders
+D5[0-9]|D6[0-4]	anemia	Anemia
+E[0-8][0-9]|E90	endo	Endocrine disorders
+E1[0-4]	dm	Diabetes
+E66	obesity	Obesity
+F[0-9][0-9]	mental	Mental and behavioural disorders
+F0[0-3]|G30|G31	dementia	Dementia
+F1[0-9]	substance_abuse	Substance abuse
+F2[0-9]	psychotic	Psychotic disorders
+F3[0-9]	mood	Mood disorders
+F4[0-8]	neurotic	Neurotic disorders
+G[0-9][0-9]	neuro	Nervous system disorders
+G2[0-2]	parkinson	Parkinson disease
+G4[0-2]	epilepsy	Epilepsy
+G4[56]	tia	Transient ischemic attack
+G47	sleep_disorder	Sleep disorders
+H[0-5][0-9]	eye	Eye disorders
+H2[56]	cataract	Cataracts
+H40	glaucoma	Glaucoma
+H[6-9][0-9]	ear	Ear disorders
+I[0-9][0-9]	cvd	Circulatory system disorders
+I1[0-5]	htn	Hypertension
+I2[0-5]	ihd	Ischemic heart diseases
+I4[6-9]	arrhythmia	Arrhythmias
+I48	cvd_afib	Atrial fibrillation
+I50	hf	Heart failure
+I26|I802	cvd_vte	Venous thromboembolism
+I6[01]|I6[34]	stroke	Stroke
+I6[0-9]	cerebro	Cerebrovascular diseases
+I7[0-9]	pad	Peripheral artery diseases
+J[0-9][0-9]	resp	Respiratory system disorders
+J09|J1[0-8]	flu_pneumonia	Influenza and Pneumonia
+J4[0-4]|J47	copd	Chronic obstructive pulmonary disease
+J4[56]	asthma	Asthma
+K0[0-9]|K[1-8][0-9]|K9[0-3]	digestive	Digestive system disorders
+K5[0-2]	ibd	Inflammatory bowel disease
+K7[0-7]	liver	Liver diseases
+K85	pancreatitis	Pancreatitis
+L[0-9][0-9]	skin	Skin disorders
+L0[0-8]|L2[0-9]|L30	skin_infect_eczema	Infections and eczema
+M[0-9][0-9]	musculo	Musculoskeletal system disorders
+M0[56]|M08|M13|M3[0-5]|M45	ra_disorder	Rheumatoid arthritis disorders
+M1[5-9]	oa	Osteoarthritis
+M5[01]	sciatica	Sciatica
+M[67][0-9]	soft_tissue	Soft tissue disorders
+M8[0-2]	oporosis	Osteoporosis
+N[0-9][0-9]	gu	Genitourinary system disorders
+N1[7-9]	renal_failure	Renal failure
+N18	ckd	Chronic kidney disease
