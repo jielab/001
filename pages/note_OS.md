@@ -47,24 +47,12 @@ netsh winsock reset
 使用指南：https://hpc.sustech.edu.cn/ref/HPMS_UserGuide.pdf
 
 ```bash
-【太乙】: ssh sph-huangj@172.18.6.178
-【启明】: ssh -p 18188 sph-huangj@172.18.6.10 
-```
+【太乙】: ssh sph-huangj@172.18.6.175[6|8]
+【启明】: ssh -p 18188 sph-huangj@172.18.6.10[1|2] 
 
-后台运行
-```
-nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
-```
-
-硬盘额度
-```
-du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
-```
-
-bsub
-```
-queueinfo -gpu -cpu; module avail
-bjobs -wu sph-huangj | awk 'NR>1 {print $6}' | awk -F "*" '{print $NF}' | tr '\n' ' ' | xargs lsload
+硬盘额度： du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
+后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
+慧园5栋一层科学与计算中心机房
 ```
 
 创园301🖨
