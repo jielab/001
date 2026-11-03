@@ -1,0 +1,40 @@
+welcome to the Qiming 2.0
+----------------------------------------------------------------------------------------------
+CPU QUEUE           NODENUM          NODEINFO     RUNLIMIT    TASKLIMIT     STATUS
+38                       36         64核|512G         720h      unlimit     open
+ot38                      1         64核|2.5T         336h      unlimit     open
+2t50c                     4           64核|2T         336h      unlimit     open
+73x                       2        128核|512G         336h      unlimit     open
+63                        1        128核|512G         336h      unlimit     open
+v4-3t                     1           72核|3T         336h      unlimit     open
+v3-6t                     3          144核|6T         336h      unlimit     open
+sk-6t-104                 1          104核|6T         336h      unlimit     closed
+v3-64                   220          24核|64G        1440h      unlimit     open
+1t75c                    10           64核|1T         336h      unlimit     open
+1t81c                    24          120核|1T         336h      unlimit     open
+1t88c                    20           96核|1T         336h      unlimit     open
+52                        1         48核|512G         336h      unlimit     open
+33                      155         40核|192G         720h      unlimit     open
+75m                       2         48核|192G         720h      unlimit     open
+9654                      1        192核|768G         720h      unlimit     open
+spec-cpu                  -                 -      unlimit      unlimit     Apply for using
+
+GPU QUEUE           NODENUM          NODEINFO     RUNLIMIT    TASKLIMIT     STATUS
+2a100-40                  1   2'CARD|40G|192G         336h      unlimit     closed
+2a100-80                  1   2'CARD|80G|192G         336h      unlimit     closed
+4a100-40                  1   4'CARD|40G|384G         336h      unlimit     closed
+4a100-80                  4   4'CARD|80G|512G         336h      unlimit     closed
+hgx                       7     8'CARD|80G|1T         336h      unlimit     closed
+2v100-32-sc               1   2'CARD|32G|192G         336h      unlimit     open
+2v100-32-e5               1   2'CARD|32G|256G         336h      unlimit     open
+2v100-16-sc               3   2'CARD|16G|384G         336h      unlimit     open
+4v100-16-e5               2    4'CARD|16G|64G         336h      unlimit     open
+4v100-16-sc               1   4'CARD|16G|192G         336h      unlimit     open
+8v100-32-sc               2   8'CARD|32G|384G         336h      unlimit     open
+4h100-80                  1   4'CARD|80G|1.5T         336h      unlimit     closed
+8a100-40                  1   8'CARD|40G|512G         336h      unlimit     closed
+2-4090                    1   2'CARD|48G|128G         336h      unlimit     closed
+spec-gpu                  -                 -      unlimit      unlimit     Apply for using
+----------------------------------------------------------------------------------------------
+User guide:  https://hpc.sustech.edu.cn/ref/cluster_User_Manual.pdf
+Login ip:  172.18.6.10 172.18.6.11

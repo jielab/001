@@ -50,7 +50,10 @@ netsh winsock reset
 ```bash
 【太乙】: ssh sph-huangj@172.18.6.175[6|8]
 【启明】: ssh -p 18188 sph-huangj@172.18.6.10[1|2] 
-
+	shownodes; queueinfo
+	CPU一般用 33 [155节点, 40核, 192G, 720h]，中等用38（36节点, 64核, 512G, 720h），最高用 v3-6t (3节点, 144核, 6T, 336h)
+	GPU一般用 4v100-16-e5 (2节点，4'CARD，16G|64G，336h)
+	
 硬盘额度： du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
 后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
 慧园5栋一层科学与计算中心机房
@@ -74,7 +77,7 @@ VPN 使用 `http://127.0.0.1:7897`，关闭随机端口 📍
 
 ### 3.1 Windows 桌面 ChatGPT
 
-`%USERPROFILE%\.codex\.env`：合并以下项，保留其他内容；修改后完全退出并重开桌面应用。
+`%USERPROFILE%\.codex\.env`
 
 ```dotenv
 HTTP_PROXY=http://127.0.0.1:7897
@@ -82,18 +85,14 @@ HTTPS_PROXY=http://127.0.0.1:7897
 NO_PROXY=localhost,127.0.0.1,::1
 ```
 
-PowerShell 测试 Windows 经过该代理访问认证地址：
-
 ```powershell
 curl.exe -q -I --proxy http://127.0.0.1:7897 --noproxy localhost `
   --connect-timeout 8 --max-time 20 https://auth.openai.com/oauth/token
 ```
 
-最终返回 `405 Method Not Allowed` 表示 HEAD 方法不被接受，但已收到认证服务响应；不等于登录成功。连接本地代理失败，先检查 VPN 是否运行及端口是否为 `7897`。
-
 ### 3.2 WSL
 
-`%USERPROFILE%\.wslconfig`：合并到同一个 `[wsl2]` 段，保留其他设置。
+`%USERPROFILE%\.wslconfig`
 
 ```ini
 [wsl2]
@@ -102,130 +101,33 @@ dnsTunneling=true
 autoProxy=true
 ```
 
-**仅修改 `.wslconfig` 后**，保存 WSL 工作，再在 PowerShell 执行 `wsl --shutdown`。本次只改代理端口，不需要关闭 WSL。
-
-保留现有 `~/.wsl_proxy.sh` 的代理函数，只确认端口设置：
-
-```bash
-export WSL_PROXY_HOST=127.0.0.1
-export WSL_PROXY_PORT=7897
-```
-
-`~/.bashrc` 只保留一次加载，不重复定义代理：
-
-```bash
-[ -f ~/.wsl_proxy.sh ] && . ~/.wsl_proxy.sh
-```
-
-当前 Bash 重新加载并检查：
-
-```bash
-source ~/.wsl_proxy.sh
-proxy_status
-curl -I --connect-timeout 8 --max-time 20 https://github.com
-```
-
-### 3.3 aria2 / apt / 停用代理
-
-`~/.aria2/aria2.conf`：
-
-```ini
-all-proxy=http://127.0.0.1:7897
-no-proxy=localhost,127.0.0.1,::1
-auto-file-renaming=false
-```
-
-`/etc/apt/apt.conf.d/95proxy`：
-
-```text
-Acquire::http::Proxy "http://127.0.0.1:7897";
-Acquire::https::Proxy "http://127.0.0.1:7897";
-```
-
-不再使用代理时：Bash 执行 `proxy_off`；桌面端注释 `.codex\.env` 的代理项并重开；aria2 注释 `all-proxy`；apt 将 `95proxy` 移出 `apt.conf.d`。新 Bash 也不使用代理时，停用 `.bashrc` 中上述加载行。
-
-**`proxy_off` 只影响当前 shell，不会取消桌面端、aria2 或 apt 的固定代理。** 配置修改不影响已运行的程序；下载任务需正常停止后重启，保留续传文件。
-
 ---
 
 ## 4. PyTorch and common AI packages
-
-Windows Powershell 上安装，可以不用conda
-Example conda environment:
 
 ```bash
 conda env list
 conda create -n ai python=3.12
 conda activate ai
-```
 
-Install PyTorch and common packages. Choose the PyTorch command appropriate for your CUDA/driver version from the official PyTorch installation page.
-
-```bash
 pip uninstall -y torch torchvision torchaudio
 pip install --upgrade pip
 pip install torch torchvision torchaudio
 pip install --upgrade numpy tqdm transformers pandas requests openpyxl bitsandbytes accelerate datasets peft evaluate scikit-learn protobuf sentencepiece huggingface_hub tabpfn pytorch-tabular[all]
-```
 
-Check GPU availability:
-
-```bash
 python -c "import torch; print(torch.cuda.is_available()); print(torch.__version__); print(torch.version.cuda); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU only')"
 ```
 ---
 
 ## 5. Hugging Face downloads
 
-After the clean WSL proxy setup above, Hugging Face commands should work without manually typing `proxy_on`.
-
-Install the Hugging Face CLI with `pipx`:
-
-```bash
-sudo apt update
-sudo apt install -y pipx python3.12-venv git git-lfs
-pipx ensurepath
-source ~/.bashrc
-pipx install "huggingface_hub[cli]"
-```
-
-Check:
-
-```bash
-hf --help
-hf version
-hf env
-```
-
-Login and Download:
-
 ```bash
 hf auth login
 hf download Qwen/Qwen3-8B --local-dir /mnt/d/models/qwen/Qwen3-8B
-```
 
-Optional Git LFS clone:
-
-```bash
 git lfs install
 git clone https://huggingface.co/Qwen/Qwen3-8B
+
+scripts/f/00hf_download.py 
 ```
-
-If Hugging Face still fails, check proxy status first:
-
-```bash
-proxy_status
-curl -I --connect-timeout 8 https://huggingface.co
-```
-
-再不行，就用 scripts/f/00hf_download.py 
 ---
-
-## 6. Background downloads
-
-```bash
-sudo apt install -y aria2 screen
-screen -dmS download aria2c -x 4 -i url.txt --log-level=info --log=download.log
-screen -ls
-screen -S download -X quit
-```
