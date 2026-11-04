@@ -32,12 +32,6 @@ wsl --list --online
 wsl --install -d Ubuntu-24.04; wsl --set-default-version 2
 wsl -l -v; wsl --status; wsl --version
 
-# 安装Anaconda后
-conda init powershell; Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-# 备份文件到J盘
-rsync -a --delete --info=progress2 --exclude='/analysis/' --exclude='/System Volume Information/' --exclude='/$RECYCLE.BIN/' /mnt/d/ '/mnt/j/黄捷备份文件/'
-
 # 当出现 `press any key to continue` :
 netsh winsock reset
 
@@ -54,9 +48,11 @@ netsh winsock reset
 	CPU一般用 33 [155节点, 40核, 192G, 720h]，中等用38（36节点, 64核, 512G, 720h），大内存需求用1t81c和v3-6t (3节点, 144核, 6T, 336h)
 	GPU一般用 4v100-16-e5 (2节点，4'CARD，16G|64G，336h)
 
-	
+bsub -J copy -q 38 -n 1 -W 120:00 -o copy.LOG -e copy.ERR 'rsync -a --partial --info=progress2 /scratch/2026-11-01/sph-huangj/XXX/ /work/sph-huangj/data/XXX/'
+	 
 硬盘额度： du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
 后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
+
 慧园5栋一层科学与计算中心机房
 ```
 
