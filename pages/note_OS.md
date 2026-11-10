@@ -49,8 +49,8 @@ netsh winsock reset
 	GPU一般用 4v100-16-e5 (2节点，4'CARD，16G|64G，336h)
 
 bsub -J copy -q 38 -n 1 -W 120:00 -o copy.LOG -e copy.ERR 'rsync -a --partial --info=progress2 /scratch/2026-11-01/sph-huangj/XXX/ /work/sph-huangj/data/XXX/'
-	 
-硬盘额度： du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
+
+du -h --max-depth=1🏮; du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
 后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
 
 慧园5栋一层科学与计算中心机房
