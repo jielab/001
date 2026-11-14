@@ -42,11 +42,14 @@ netsh winsock reset
 使用指南：https://hpc.sustech.edu.cn/ref/HPMS_UserGuide.pdf
 
 ```bash
-【太乙】: ssh sph-huangj@172.18.6.175[6|8]
-【启明】: ssh -p 18188 sph-huangj@172.18.6.10[1|2] 
-	shownodes; queueinfo
-	CPU一般用 33 [155节点, 40核, 192G, 720h]，中等用38（36节点, 64核, 512G, 720h），大内存需求用1t81c和v3-6t (3节点, 144核, 6T, 336h)
-	GPU一般用 4v100-16-e5 (2节点，4'CARD，16G|64G，336h)
+【启明】: ssh -p 18188 sph-huangj@172.18.6.10[1|2]; shownodes; queueinfo
+在 WSL 的 ~/.ssh/config 中加入后，只需要 ssh hpc
+	Host hpc
+    HostName 172.18.6.11
+    Port 18188
+    User sph-huangj
+    ServerAliveInterval 30
+    ServerAliveCountMax 3
 
 bsub -J copy -q 38 -n 1 -W 120:00 -o copy.LOG -e copy.ERR 'rsync -a --partial --info=progress2 /scratch/2026-11-01/sph-huangj/XXX/ /work/sph-huangj/data/XXX/'
 
