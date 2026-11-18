@@ -42,7 +42,7 @@ netsh winsock reset
 使用指南：https://hpc.sustech.edu.cn/ref/HPMS_UserGuide.pdf
 
 ```bash
-【启明】: ssh -p 18188 sph-huangj@172.18.6.10[1|2]; shownodes; queueinfo
+【启明】: ssh -p 18188 sph-huangj@172.18.6.12[0|1]; shownodes; queueinfo
 在 WSL 的 ~/.ssh/config 中加入后，只需要 ssh hpc
 	Host hpc
     HostName 172.18.6.11
@@ -56,7 +56,7 @@ bsub -J copy -q 38 -n 1 -W 120:00 -o copy.LOG -e copy.ERR 'rsync -a --partial --
 mmlsquota -g sph-huangj --block-size auto
 后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
 
-📍 module load python/anaconda3/2022.10; conda activate; conda activate R4.5.3
+📍 module load python/anaconda3/2022.10; source activate; conda activate R4.5.3
 
 慧园5栋一层科学与计算中心机房
 ```
