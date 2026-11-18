@@ -53,8 +53,10 @@ netsh winsock reset
 
 bsub -J copy -q 38 -n 1 -W 120:00 -o copy.LOG -e copy.ERR 'rsync -a --partial --info=progress2 /scratch/2026-11-01/sph-huangj/XXX/ /work/sph-huangj/data/XXX/'
 
-du -h --max-depth=1🏮; du -h --max-depth=2; mmlsquota -g sph-huangj --block-size auto
+mmlsquota -g sph-huangj --block-size auto
 后台运行： nohup ./assoc.sum.sh & 之后 ps aux | grep ?.sh 之后 kill
+
+📍 module load python/anaconda3/2022.10; conda activate; conda activate R4.5.3
 
 慧园5栋一层科学与计算中心机房
 ```
