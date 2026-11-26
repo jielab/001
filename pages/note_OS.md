@@ -19,7 +19,7 @@ rm -rf .git
 git init -b main
 git add -A
 git commit -m "Initial commit"
-git rev-list --count HEAD # 🏮1
+git rev-list --count HEAD
 # git config --global user.name "Jie Huang"
 # git config --global user.email "jielab@users.noreply.github.com"
 # gh auth login
